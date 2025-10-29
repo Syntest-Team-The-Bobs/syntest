@@ -1,119 +1,339 @@
-/* ====== scoped to color page ====== */
-*{box-sizing:border-box}
-html,body{height:100%}
+/* ===========================================================
+   SYNTEST — Color Test Stylesheet
+   Purpose:
+   Defines the full UI styling for the Color-to-Concept Test (CCT)
+   used by both researchers and participants.
+   Emphasis on clean layout, focusable interaction, and clear visual
+   feedback for color selection and stimuli presentation.
+   =========================================================== */
 
-.page-color{
-  margin:0;
-  background:#fff;
-  color:#111;
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
-  -webkit-font-smoothing:antialiased;
-  line-height:1.35;
-}
-
-/* Top bar (same as other pages) */
-.page-color .topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 24px;
-  background:#fff;
-  border-bottom:1px solid #ececec;
-}
-.page-color .brand{font-weight:800; font-size:22px; letter-spacing:.2px}
-.page-color .top-right{display:flex; align-items:center; gap:16px}
-.page-color .about{color:#000; text-decoration:none; font-weight:600}
-.page-color .account-btn{
-  background:#0b0b0b; color:#fff; border:none;
-  padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer;
-  box-shadow:0 10px 18px rgba(0,0,0,.08), 0 2px 0 rgba(0,0,0,.04);
+/* ------------------ Global Layout ------------------ */
+body.page-color {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background-color: #f5f6fa;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* Panel band */
-.page-color .panel{
-  background:#f3f3f3;
-  padding:36px 0 56px;
+/* ------------------ Topbar ------------------
+   Fixed top navigation bar with project branding and control buttons.
+------------------------------------------------ */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e1e4eb;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Fixed content width to match figma proportions */
-.page-color .content{
-  width: 980px;          /* key change: narrows layout so elements match */
-  margin: 0 auto;
-  padding: 0 24px;
+.topbar .brand {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-size: 1.2rem;
 }
 
-/* Headline + button */
-.page-color .prompt{
-  margin:0 auto 16px;
-  text-align:center;
-  font-size:20px;            /* smaller per comp */
-  letter-spacing:.3px;
-  font-weight:700;
-  color:#222;
-}
-.page-color .home-wrap{display:flex; justify-content:center; margin:16px 0 28px}
-.page-color .home-btn{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:280px;                 /* was 240px */
-  height:72px;                 /* was 64px  */
-  background:#fff; color:#000; text-decoration:none;
-  border-radius:12px; font-weight:800;
-  font-size:20px;              /* a touch larger for readability */
-  box-shadow:0 10px 18px rgba(0,0,0,.08), 0 2px 0 rgba(0,0,0,.04);
+.topbar .btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-/* Layout: wheel left, swatch right */
-.page-color .work-area{
-  display:grid;
-  grid-template-columns: 420px 420px;  /* keeps visual balance with content width */
-  gap: 96px;                            /* space between wheel and swatch */
-  justify-content:center;
-  align-items:start;
+.topbar .btn:hover {
+  background: #eee;
 }
 
-/* Color wheel */
-.page-color .color-wheel{
-  width:360px; 
-  height:360px; 
-  border-radius:50%;
-  /* remove the black ring */
-  border:none;                 /* ← changed from 10px solid #111 */
-  position:relative;
-  background:
-    conic-gradient(
-      #ff0000, #ff9900, #ffff00, #66ff66, #00ffff,
-      #0066ff, #3300ff, #cc00ff, #ff0099, #ff0000
-    );
-}
-.page-color .color-wheel::after{
-  /* white bloom in center like the design */
-  content:""; position:absolute; inset:12%;
-  background: radial-gradient(closest-side, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);
-  border-radius:50%;
-}
-.page-color .dot{
-  position:absolute; width:14px; height:14px; border-radius:50%;
-  border:3px solid #000; right:66px; top:84px; background:transparent; /* tuned to comp */
+/* ------------------ Main Container ------------------
+   Central shell that constrains and centers main content.
+------------------------------------------------------- */
+.shell {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+  padding: 40px 20px;
 }
 
-/* Swatch */
-.page-color .swatch-wrap{
-  display:flex; align-items:center; justify-content:center;
-  margin-top:18px;             /* NEW: lowers the tile a bit */
-}
-.page-color .swatch{
-  width:260px; height:260px;            /* exact as figma tile */
-  background:#FF2E1E;
-  border:4px solid #111;                /* thin black border */
-  display:flex; align-items:center; justify-content:center;
-}
-.page-color .hex{
-  color:#fff; font-weight:600; letter-spacing:.5px; font-size:18px;
+.content {
+  max-width: 1000px;
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Responsive */
-@media (max-width: 1020px){
-  .page-color .content{width:auto}
-  .page-color .work-area{grid-template-columns:1fr; gap:32px}
-  .page-color .swatch{width:240px; height:240px}
-  .page-color .color-wheel{width:320px; height:320px}
-  .page-color .dot{right:58px; top:76px}
+.hdr h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.sub {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* ------------------ Section Blocks ------------------
+   Reusable layout blocks for grouping test elements.
+------------------------------------------------------ */
+.block {
+  margin-top: 30px;
+}
+
+.block-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.status {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* ------------------ Work Area ------------------
+   Horizontal split between color wheel and swatch/preview area.
+------------------------------------------------- */
+.work-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 50px;
+  margin-top: 20px;
+}
+
+/* ------------------ Color Wheel ------------------
+   Canvas area where participants pick or match a color stimulus.
+---------------------------------------------------- */
+#wheel {
+  border-radius: 8px;
+  border: 2px solid #222;
+  cursor: crosshair;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wheel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wheel-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ------------------ Dot ------------------
+   Visual marker for user’s color selection on the wheel.
+-------------------------------------------- */
+.dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #000;
+  border-radius: 50%;
+  pointer-events: none;
+  display: none;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+
+/* ------------------ Buttons ------------------
+   Shared button styles across UI, including navigation and actions.
+------------------------------------------------ */
+.btn {
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  background: #eaeaea;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+}
+
+.btn-primary:hover {
+  background: #111;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ------------------ Swatch Preview ------------------
+   Displays participant’s selected color and HEX code.
+------------------------------------------------------ */
+.swatch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.swatch {
+  width: 200px;
+  height: 200px;
+  border: 4px solid #111;
+  border-radius: 12px;
+  background: #e3e6ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.hex {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.tip {
+  font-size: 0.85rem;
+  color: #777;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ------------------ Stimulus Box ------------------
+   Central box showing the test stimulus (word or color).
+   Changes dynamically between trials.
+---------------------------------------------------- */
+.cct-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+#stimulusBox {
+  width: 200px;
+  height: 200px;
+  border: 3px solid #111;
+  border-radius: 12px;
+  background: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #333;
+  user-select: none;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Alternate background when stimulus is a word cue */
+#stimulusBox[data-type="word"] {
+  background: #fff8e1;
+}
+
+/* Stimulus content animation */
+#stimulusContent {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ------------------ Developer Slider ------------------
+   Debugging tool to cycle through trials manually.
+--------------------------------------------------------- */
+.trial-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 25px 0 10px 0;
+  gap: 10px;
+}
+
+.trial-slider-container label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+#trialSlider {
+  width: 220px;
+  cursor: pointer;
+  accent-color: #000;
+}
+
+/* ------------------ Summary Section ------------------
+   Appears after test completion to show color matches or results.
+-------------------------------------------------------- */
+.summary {
+  background: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.summary.hidden {
+  display: none;
+}
+
+/* ------------------ Dialog ------------------
+   Help/instruction modal used before or during the test.
+----------------------------------------------- */
+dialog.help {
+  border: none;
+  border-radius: 10px;
+  padding: 20px 30px;
+  max-width: 400px;
+  font-family: "Inter", sans-serif;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+dialog.help h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+dialog.help ul {
+  padding-left: 20px;
+}
+
+dialog.help li {
+  margin-bottom: 6px;
+}
+
+.dlg-actions {
+  text-align: right;
+  margin-top: 15px;
 }
