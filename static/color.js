@@ -433,3 +433,33 @@
   // Start controller
   cct = new CctController(ui, wheel);
 })();
+
+// ===== Color Test API Helpers (non-invasive) =====
+async function apiGetColorStimuli(setId = null) {
+  const url = setId ? `/api/color/stimuli?set_id=${encodeURIComponent(setId)}` : `/api/color/stimuli`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load color stimuli: ${res.status}`);
+  return await res.json(); // [{id,set_id,description,owner_researcher_id,family,r,g,b,hex,trigger_type}, ...]
+}
+
+async function apiPostColorTrials(trials) {
+  // trials can be one object or an array of objects
+  const body = Array.isArray(trials) ? trials : [trials];
+  const res = await fetch(`/api/color/trials`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Failed to save trials: ${res.status}`);
+  return await res.json(); // { saved, ids: [...] }
+}
+
+// Optional: quick seed helper you can call from console once.
+async function apiSeedColor() {
+  const res = await fetch(`/api/color/seed`, { method: "POST" });
+  if (!res.ok) throw new Error(`Seed failed: ${res.status}`);
+  return await res.json();
+}
+
+// Make available to existing code or console usage
+window.ColorAPI = { apiGetColorStimuli, apiPostColorTrials, apiSeedColor };
