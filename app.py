@@ -16,7 +16,7 @@ from models import (
 
 # -----------------------------
 # Screening API blueprint (expects views/api_screening.py to expose `bp`)
-# Adjust import path if your layout differs.
+# Adjust the import path if your layout differs.
 # -----------------------------
 from views import api_screening as screening_api
 
