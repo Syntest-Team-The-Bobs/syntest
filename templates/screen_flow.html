@@ -1,9 +1,10 @@
-<!-- Screening Questionnaire -->
+<!-- Screening Questionnaire (extends base.html) -->
+<!-- rishit chatterjee -->
 
-<!-- The following html files uses html inheritance and sets up the questions pages -->
- <!-- rishit chatterjee -->
+
 
 {% extends "base.html" %}
+
 {% block title %}
   {% if step == 0 %}SYNTEST — Screening{% elif step == 1 %}SYNTEST — Step 1 of 5{% elif step == 2 %}SYNTEST — Step 2 of 5{% elif step == 3 %}SYNTEST — Step 3 of 5{% elif step == 4 %}SYNTEST — Step 4 of 5{% else %}SYNTEST — Step 5 of 5{% endif %}
 {% endblock %}
@@ -21,8 +22,9 @@
         your experiences.
       </p>
 
+      <!-- Add stable id="consent" so JS can bind reliably -->
       <label class="consent">
-        <input type="checkbox" />
+        <input id="consent" type="checkbox" />
         <span>I consent to take part in this study.</span>
       </label>
 
@@ -33,8 +35,8 @@
         time without penalty.
       </p>
 
-      <!-- Navigate to step 1 -->
-      <a class="btn-primary" href="{{ url_for('flow', step=1) }}">Begin screening</a>
+      <!-- Add stable id="begin-screening" so JS can enable/disable this link -->
+      <a id="begin-screening" class="btn-primary" href="{{ url_for('flow', step=1) }}">Begin screening</a>
     </section>
 
     <p class="footnote">You can stop at any time.</p>
@@ -114,7 +116,8 @@
         </a>
       </div>
 
-      <a class="choice-negative" href="{{ url_for('flow', step=0) }}">
+      <!-- NO routes directly to Exit A (works even without JS) -->
+      <a class="choice-negative" href="{{ url_for('exit_page', code='A') }}">
         <div class="choice-negative-title">No — exit per criterion A</div>
         <div class="choice-negative-sub">I don’t experience these sensory connections</div>
       </a>
@@ -146,7 +149,6 @@
         neutral stimuli.
       </p>
 
-      <!-- info panel (aligned rows) -->
       <div class="info-panel">
         <ul class="info-rows">
           <li><span class="i bolt"></span><span class="info-label">Pain</span><span class="info-text">→ flashes of light or color</span></li>

@@ -1,20 +1,19 @@
 <!-- Base mockup for screening test: setting up inheritance -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}SYNTEST{% endblock %}</title>
+
+  <!-- Your styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="page-frame">
     <header class="site-header">
       <div class="container header-inner">
-
-        <!-- SYNTEST logo (top-left) -->
-         
+        <!-- SYNTEST logo (top-left) takes you to step 0 -->
         <a class="logo" href="{{ url_for('flow', step=0) }}"><span>SYNTEST</span></a>
         <nav class="nav">
           <a class="nav-link" href="#">About This Study</a>
@@ -27,5 +26,8 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <!-- Load once so it runs on all pages that extend base.html -->
+  <script defer src="{{ url_for('static', filename='screening.js') }}?v=3"></script>
 </body>
 </html>

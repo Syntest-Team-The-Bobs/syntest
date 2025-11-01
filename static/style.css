@@ -499,3 +499,8 @@ body {
 .chip--blue { background:#e7efff; color:#2b50ff; font-weight:600; } /* already used on flow pages */
 .lead-strong { font-weight:700; margin:8px 0; }
 
+/* Make a disabled anchor behave like a disabled button */
+a.btn-primary[aria-disabled="true"] { pointer-events: none; opacity: .6; }
+a.btn-primary:not([aria-disabled="true"]) { pointer-events: auto; opacity: 1; }
+
+
