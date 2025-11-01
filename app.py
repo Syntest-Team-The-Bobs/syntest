@@ -1,11 +1,14 @@
 # app.py (snippet)
 from flask import Flask, render_template
+from views import api_screening as screening_api
 
 app = Flask(__name__)
 
 @app.route("/")
 def home_redirect():
     return render_template("screen_flow.html", step=0)
+
+app.register_blueprint(screening_api.bp)
 
 @app.route("/screening/<int:step>")
 def flow(step):
