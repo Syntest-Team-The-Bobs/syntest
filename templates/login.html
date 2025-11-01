@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Synesthesia Research Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <h1>Login</h1>
+        
+        {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="role-selector">
+            <div class="role-card active" id="participant-role" onclick="selectRole('participant')">
+                <h3>Participant</h3>
+                <p>Take synesthesia tests</p>
+            </div>
+            <div class="role-card" id="researcher-role" onclick="selectRole('researcher')">
+                <h3>Researcher</h3>
+                <p>Access research data</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/login" id="login-form">
+            <input type="hidden" name="role" id="role-input" value="participant">
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-full">Login</button>
+        </form>
+
+        <div class="text-center mt-20">
+            <p>Don't have an account? <a href="/signup" class="link">Sign up here</a></p>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            // Update visual selection
+            document.getElementById('participant-role').classList.remove('active');
+            document.getElementById('researcher-role').classList.remove('active');
+            document.getElementById(role + '-role').classList.add('active');
+            
+            // Update hidden form input
+            document.getElementById('role-input').value = role;
+        }
+    </script>
+</body>
+</html>

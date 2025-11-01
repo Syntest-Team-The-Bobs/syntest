@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Synesthesia Research Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% block header %}
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                {% block nav_links %}
+                <a href="/">Home</a>
+                {% if current_user.is_authenticated %}
+                {% if current_user.role == 'participant' %}
+                <a href="/participant/dashboard">Dashboard</a>
+                {% elif current_user.role == 'researcher' %}
+                <a href="/researcher/dashboard">Dashboard</a>
+                {% endif %}
+                <a href="/logout">Logout</a>
+                {% else %}
+                <a href="/login">Login</a>
+                <a href="/signup">Sign Up</a>
+                {% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% block footer %}
+    <footer style="text-align: center; padding: 40px 20px; border-top: 2px solid #000; margin-top: 60px;">
+        <p>&copy; 2025 Synesthesia Research Platform. All data is anonymized and used for research purposes only.</p>
+    </footer>
+    {% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

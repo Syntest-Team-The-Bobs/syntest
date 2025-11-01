@@ -1,136 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST – Participant</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- Dashboard-only CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synesthesia Research Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="page-dashboard">
-  <div class="app">
-
-    <!-- ===== Sidebar ===== -->
-    <aside class="sidebar">
-      <div class="brand">SYNTEST</div>
-
-      <nav class="side-nav">
-        <a class="nav-item active" href="{{ url_for('participants') }}">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 9 5-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>Participants</span>
-        </a>
-
-        <a class="nav-item" href="{{ url_for('color') }}">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="1.8"/>
-          </svg>
-          <span>Color Test</span>
-        </a>
-        <!-- Link to the flavor page -->
-        <a class="nav-item" href="{{ url_for('flavor') }}">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="19" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.8"/>
-          </svg>
-          <span>Flavor Test</span>
-        </a>
-
-        <a class="nav-item" href="{{ url_for('association') }}">
-        <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-          <rect x="3" y="6" width="4.5" height="12" fill="currentColor"/>
-          <rect x="9.75" y="6" width="4.5" height="12" fill="currentColor"/>
-          <rect x="16.5" y="6" width="4.5" height="12" fill="currentColor"/>
-        </svg>
-        <span>Association</span>
-      </a>
-
-        <a class="nav-item" href="#">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <path d="M4 15h4v6H4zM10 9h4v12h-4zM16 3h4v18h-4z" fill="currentColor"/>
-          </svg>
-          <span>Analytics</span>
-        </a>
-
-        <a class="nav-item" href="#">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <path d="M12 15a3 3 0 1 0 0-6m8.5 3a8.5 8.5 0 0 1-.1 1l2.1 1.7-2 3.5-2.6-1a8.5 8.5 0 0 1-1.7 1l-.4 2.7H10.2l-.4-2.7a8.5 8.5 0 0 1-1.7-1l-2.6 1-2-3.5 2.1-1.7a8.5 8.5 0 0 1 0-2L1.5 9.3l2-3.5 2.6 1a8.5 8.5 0 0 1 1.7-1l.4-2.7h4.6l.4 2.7a8.5 8.5 0 0 1 1.7 1l2.6-1 2 3.5-2.1 1.7c.1.3.1.7.1 1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>Settings</span>
-        </a>
-      </nav>
-    </aside>
-
-    <!-- ===== Main ===== -->
-    <main class="main">
-      <header class="topbar">
-        <a class="toplink" href="#">About This Study</a>
-        <button class="account-btn">Your Account</button>
-      </header>
-
-      <section class="section">
-        <h2 class="section-title">PARTICIPANT DETAIL</h2>
-
-        <div class="detail-row">
-          <!-- Participant card -->
-          <article class="card card-detail">
-            <div class="avatar" aria-hidden="true">👩🏼‍🦰</div>
-            <div class="detail-grid">
-              <div class="kv"><span class="k">Name:</span> <span class="v">Jane Doe</span></div>
-              <div class="kv"><span class="k">Age :</span> <span class="v">28</span></div>
-              <div class="kv"><span class="k">Gender:</span> <span class="v">Female</span></div>
-              <div class="kv"><span class="k">Date joined:</span> <span class="v">2026-01-15</span></div>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/login">Login</a>
+                <a href="/signup">Sign Up</a>
             </div>
-          </article>
-
-          <!-- Small stats -->
-          <article class="card stat">
-            <div class="stat-label">Test completed</div>
-            <div class="stat-value">5</div>
-          </article>
-
-          <article class="card stat">
-            <div class="stat-label">Average reaction times</div>
-            <div class="stat-value">1.5s</div>
-          </article>
-
-          <article class="card stat">
-            <div class="stat-label">Synesthesia type</div>
-            <div class="stat-value stat-right">Graphem<br>e-color</div>
-          </article>
         </div>
-      </section>
+    </div>
 
-      <section class="section">
-        <h2 class="section-title">PERFORMANCE</h2>
-        <div class="performance-row">
-          <div class="mini-chart peach"></div>
-          <div class="mini-chart rose"></div>
-          <div class="mini-chart sky"></div>
-        </div>
-      </section>
-
-      <section class="section notes">
-        <h2 class="section-title">RESEARCHER’S NOTES</h2>
-        <div class="card note-card">
-          <p class="note-text">Edge case!</p>
+    <div class="container">
+        <!-- Hero Section -->
+        <div style="text-align: center; padding: 80px 20px;">
+            <h1 style="font-size: 48px; margin-bottom: 20px;">Synesthesia Research Platform</h1>
+            <p style="font-size: 20px; max-width: 800px; margin: 0 auto 40px; color: #666;">
+                A comprehensive web-based platform for testing and researching synesthesia among participants in Spain.
+            </p>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <a href="/signup" class="btn" style="font-size: 18px; padding: 15px 40px;">Join as Participant</a>
+                <a href="/login" class="btn btn-secondary" style="font-size: 18px; padding: 15px 40px;">Researcher Login</a>
+            </div>
         </div>
 
-        <div class="actions">
-          <button class="btn ghost">Export</button>
-          <button class="btn ghost">View raw</button>
+        <!-- About Section -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">About This Study</h2>
+            </div>
+            <div class="card-body">
+                <p>This platform is designed to identify and study synesthesia through a series of carefully designed assessments. Participants will complete screening questionnaires and specialized tests to determine if they experience synesthetic patterns.</p>
+                <p class="mt-20">All data collected is anonymized and used solely for research purposes, in compliance with ethical research standards.</p>
+            </div>
         </div>
-      </section>
-    </main>
-  </div>
+
+        <!-- Features Grid -->
+        <h2 style="text-align: center; margin-bottom: 40px;">Platform Features</h2>
+        <div class="grid-3" style="margin-bottom: 60px;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Pre-Screening</h3>
+                </div>
+                <div class="card-body">
+                    <p>Complete an initial questionnaire to determine eligibility and receive personalized test recommendations based on your experiences.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Specialized Tests</h3>
+                </div>
+                <div class="card-body">
+                    <p>Take scientifically designed tests for Trigger-Color, Trigger-Gustatory, and Sequence-Space synesthesia types.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Personal Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <p>Track your progress, view test results, and access your personalized synesthesia profile through your secure dashboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Types Section -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">Types of Synesthesia Tests</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid-2" style="gap: 30px;">
+                    <div>
+                        <h3>Trigger-Color Synesthesia</h3>
+                        <p>Tests for associations between triggers (letters, numbers, sounds) and specific colors. Includes color consistency and speed congruency assessments.</p>
+                    </div>
+                    <div>
+                        <h3>Trigger-Gustatory Synesthesia</h3>
+                        <p>Evaluates experiences where certain triggers evoke specific taste sensations.</p>
+                    </div>
+                    <div>
+                        <h3>Sequence-Space Synesthesia</h3>
+                        <p>Assesses the visualization of sequences (numbers, days, months) in specific spatial arrangements.</p>
+                    </div>
+                    <div>
+                        <h3>Comprehensive Analysis</h3>
+                        <p>Results are analyzed for consistency and patterns to provide insights into your synesthetic experiences.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- For Researchers -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">For Researchers</h2>
+            </div>
+            <div class="card-body">
+                <p>Access aggregated participant data, export datasets, and analyze results through the researcher dashboard. All data is anonymized and complies with research ethics standards.</p>
+                <div class="mt-20">
+                    <a href="/login" class="btn">Researcher Access</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Notice -->
+        <div class="alert alert-info">
+            <strong>Privacy & Data Protection:</strong> Your participation is completely voluntary. All personal information is kept confidential and data is anonymized for research analysis. You can withdraw from the study at any time.
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 40px 20px; border-top: 2px solid #000; margin-top: 60px;">
+        <p>&copy; 2025 Synesthesia Research Platform. Conducted by Sophie Hausladen, Colby College.</p>
+        <p style="margin-top: 10px;">All data is anonymized and used for research purposes only.</p>
+    </footer>
 </body>
 </html>

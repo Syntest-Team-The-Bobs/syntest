@@ -1,87 +1,206 @@
-# app.py
-from flask import Flask, render_template, jsonify, request
-from models import db, ColorStimulus, ColorTrial
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from models import (
+    db, Participant, Researcher, Test, TestResult, ScreeningResponse,
+    ColorStimulus, ColorTrial
+)
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__)
 
-# ---- DB config (Color Test only) ----
+# =====================================
+# CONFIGURATION
+# =====================================
+app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///syntest.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
 
+# Initialize database
+db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# =====================================
+# LANDING PAGE
+# =====================================
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# ---- Pages ----
-@app.route("/")
-def participants():
-    return render_template("index.html")
+# =====================================
+# AUTHENTICATION ROUTES
+# =====================================
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
 
-@app.route("/flavor")
-def flavor():
-    return render_template("flavor.html")
+        user = Participant.query.filter_by(email=email).first() if role == 'participant' \
+               else Researcher.query.filter_by(email=email).first()
 
-@app.route("/color")
-def color():
-    return render_template("color.html")
+        if user and check_password_hash(user.password_hash, password):
+            user.last_login = datetime.utcnow()
+            db.session.commit()
 
+            session['user_id'] = user.id
+            session['user_role'] = role
+            session['user_name'] = user.name
+
+            flash('Login successful!', 'success')
+            return redirect(url_for('participant_dashboard' if role == 'participant' else 'researcher_dashboard'))
+        else:
+            flash('Invalid email or password', 'error')
+    return render_template('login.html')
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        role = request.form.get('role')
+
+        if password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return render_template('signup.html')
+
+        existing_user = Participant.query.filter_by(email=email).first() if role == 'participant' \
+                         else Researcher.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email already registered', 'error')
+            return render_template('signup.html')
+
+        password_hash = generate_password_hash(password)
+        try:
+            if role == 'participant':
+                new_user = Participant(
+                    name=name,
+                    email=email,
+                    password_hash=password_hash,
+                    age=request.form.get('age'),
+                    country=request.form.get('country', 'Spain')
+                )
+            else:
+                access_code = request.form.get('access_code')
+                if access_code != 'RESEARCH2025':
+                    flash('Invalid researcher access code', 'error')
+                    return render_template('signup.html')
+
+                new_user = Researcher(
+                    name=name,
+                    email=email,
+                    password_hash=password_hash,
+                    institution=request.form.get('institution')
+                )
+
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Account created successfully! Please login.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating account: {e}', 'error')
+    return render_template('signup.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('index'))
+
+# =====================================
+# PARTICIPANT DASHBOARD
+# =====================================
+@app.route('/participant/dashboard')
+def participant_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+
+    user = Participant.query.get(session['user_id'])
+    completed_tests = TestResult.query.filter_by(participant_id=user.id, status='completed').all()
+    all_tests = Test.query.all()
+
+    completion_percentage = int((len(completed_tests) / len(all_tests)) * 100) if all_tests else 0
+    recommended_tests = Test.query.all()
+
+    return render_template(
+        'participant_dashboard.html',
+        user=user,
+        tests_completed=len(completed_tests),
+        tests_pending=len(all_tests) - len(completed_tests),
+        completion_percentage=completion_percentage,
+        recommended_tests=recommended_tests,
+        completed_tests=completed_tests
+    )
+
+# =====================================
+# RESEARCHER DASHBOARD
+# =====================================
+@app.route('/researcher/dashboard')
+def researcher_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'researcher':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+
+    user = Researcher.query.get(session['user_id'])
+    total_participants = Participant.query.count()
+    completed_tests = TestResult.query.filter_by(status='completed').count()
+
+    return render_template(
+        'researcher_dashboard.html',
+        user=user,
+        total_participants=total_participants,
+        completed_tests=completed_tests
+    )
+
+# =====================================
+# ASSOCIATION PAGE
+# =====================================
 @app.route("/association")
 def association():
     return render_template("association.html")
 
-
-# ---- Helpers ----
+# =====================================
+# COLOR TEST API
+# =====================================
 def _clamp_255(x):
     try:
-        x = int(x)
+        return max(0, min(255, int(x)))
     except Exception:
         return None
-    return max(0, min(255, x))
 
 
 def _sanitize_meta(meta):
-    """
-    Keep ONLY these keys in meta_json:
-      - phase (string)
-      - repetition (int)
-      - stimulus_label (string)
-      - display_rgb: {r,g,b} (ints 0..255)
-    Everything else is dropped.
-    """
+    """Sanitize metadata for Color Trials"""
     if not isinstance(meta, dict):
         return None
-
     out = {}
-
     if "phase" in meta:
-        # keep short known values like "CCT" / "SCT" but don't hard-enforce
         out["phase"] = str(meta["phase"])[:16]
-
     if "repetition" in meta:
         try:
             out["repetition"] = int(meta["repetition"])
-        except Exception:
+        except:
             pass
-
     if "stimulus_label" in meta:
         out["stimulus_label"] = str(meta["stimulus_label"])[:128]
-
     if isinstance(meta.get("display_rgb"), dict):
         r = _clamp_255(meta["display_rgb"].get("r"))
         g = _clamp_255(meta["display_rgb"].get("g"))
         b = _clamp_255(meta["display_rgb"].get("b"))
         if None not in (r, g, b):
             out["display_rgb"] = {"r": r, "g": g, "b": b}
-
     return out or None
 
 
-# ---- Color API: stimuli ----
 @app.get("/api/color/stimuli")
 def get_color_stimuli():
-    """Return all stimuli (or use ?set_id=1 to filter)."""
     q = ColorStimulus.query
     set_id = request.args.get("set_id", type=int)
     if set_id is not None:
@@ -92,12 +211,10 @@ def get_color_stimuli():
 
 @app.post("/api/color/stimuli")
 def create_color_stimulus():
-    """Optional helper to add a stimulus from the UI/CLI."""
     data = request.get_json(force=True) or {}
     s = ColorStimulus(
         set_id=data.get("set_id"),
         description=data.get("description"),
-        owner_researcher_id=data.get("owner_researcher_id"),
         r=int(data["r"]),
         g=int(data["g"]),
         b=int(data["b"]),
@@ -108,67 +225,20 @@ def create_color_stimulus():
     return jsonify(s.to_dict()), 201
 
 
-@app.post("/api/color/seed")
-def seed_color_stimuli():
-    """
-    Quick seeding for dev: 12 colors around the wheel.
-    Safe to call multiple times (won't duplicate if already present).
-    """
-    if ColorStimulus.query.count() > 0:
-        return jsonify({"message": "already seeded", "count": ColorStimulus.query.count()})
-
-    basics = [
-        (255, 0, 0),      # red
-        (255, 128, 0),    # orange
-        (255, 255, 0),    # yellow
-        (128, 255, 0),    # yellow-green
-        (0, 255, 0),      # green
-        (0, 255, 128),    # spring green
-        (0, 255, 255),    # cyan
-        (0, 128, 255),    # sky
-        (0, 0, 255),      # blue
-        (128, 0, 255),    # purple
-        (255, 0, 255),    # magenta
-        (255, 0, 128),    # rose
-    ]
-    for i, (r, g, b) in enumerate(basics, start=1):
-        db.session.add(ColorStimulus(set_id=1, description=f"wheel-{i}", r=r, g=g, b=b, trigger_type="swatch"))
-    db.session.commit()
-    return jsonify({"message": "seeded", "count": ColorStimulus.query.count()}), 201
-
-
-# ---- Color API: trials ----
 @app.post("/api/color/trials")
 def save_color_trials():
-    """
-    Accepts either a single trial dict or a list of trial dicts.
-
-    Expected keys (optional except selected rgb if you use them):
-      participant_id, stimulus_id, trial_index, selected_r/g/b, response_ms, meta_json
-
-    NEW: meta_json is sanitized to keep ONLY:
-      - phase
-      - repetition
-      - stimulus_label
-      - display_rgb {r,g,b}
-    """
     payload = request.get_json(force=True)
     items = payload if isinstance(payload, list) else [payload]
 
     saved = []
     for t in items:
-        # Clamp selected RGB if present
-        sr = _clamp_255(t.get("selected_r")) if t.get("selected_r") is not None else None
-        sg = _clamp_255(t.get("selected_g")) if t.get("selected_g") is not None else None
-        sb = _clamp_255(t.get("selected_b")) if t.get("selected_b") is not None else None
-
         trial = ColorTrial(
             participant_id=t.get("participant_id"),
             stimulus_id=t.get("stimulus_id"),
             trial_index=t.get("trial_index"),
-            selected_r=sr,
-            selected_g=sg,
-            selected_b=sb,
+            selected_r=_clamp_255(t.get("selected_r")),
+            selected_g=_clamp_255(t.get("selected_g")),
+            selected_b=_clamp_255(t.get("selected_b")),
             response_ms=t.get("response_ms"),
             meta_json=_sanitize_meta(t.get("meta_json")),
         )
@@ -181,7 +251,6 @@ def save_color_trials():
 
 @app.get("/api/color/trials")
 def list_color_trials():
-    """Simple dev endpoint: inspect what was saved (filter by participant_id if provided)."""
     pid = request.args.get("participant_id")
     q = ColorTrial.query
     if pid:
@@ -190,5 +259,8 @@ def list_color_trials():
     return jsonify([r.to_dict() for r in rows])
 
 
-if __name__ == "__main__":
+# =====================================
+# RUN APP
+# =====================================
+if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Synesthesia Research Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <h1>Create Account</h1>
+
+        {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="role-selector">
+            <div class="role-card active" id="participant-role" onclick="selectRole('participant')">
+                <h3>Participant</h3>
+                <p>Join as a study participant</p>
+            </div>
+            <div class="role-card" id="researcher-role" onclick="selectRole('researcher')">
+                <h3>Researcher</h3>
+                <p>Access as a researcher</p>
+            </div>
+        </div>
+
+        <form method="POST" action="/signup" id="signup-form">
+            <input type="hidden" name="role" id="role-input" value="participant">
+
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm_password" required minlength="8">
+            </div>
+
+            <!-- Researcher-specific fields (hidden by default) -->
+            <div id="researcher-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="institution">Institution</label>
+                    <input type="text" id="institution" name="institution">
+                </div>
+
+                <div class="form-group">
+                    <label for="access-code">Researcher Access Code</label>
+                    <input type="text" id="access-code" name="access_code">
+                </div>
+            </div>
+
+            <!-- Participant-specific fields (shown by default) -->
+            <div id="participant-fields">
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" min="18" max="120">
+                </div>
+
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <input type="text" id="country" name="country" value="Spain">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-full">Create Account</button>
+        </form>
+
+        <div class="text-center mt-20">
+            <p>Already have an account? <a href="/login" class="link">Login here</a></p>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            // Update visual selection
+            document.getElementById('participant-role').classList.remove('active');
+            document.getElementById('researcher-role').classList.remove('active');
+            document.getElementById(role + '-role').classList.add('active');
+
+            // Update hidden form input
+            document.getElementById('role-input').value = role;
+
+            // Show/hide role-specific fields
+            if (role === 'researcher') {
+                document.getElementById('researcher-fields').style.display = 'block';
+                document.getElementById('participant-fields').style.display = 'none';
+                document.getElementById('access-code').required = true;
+                document.getElementById('age').required = false;
+            } else {
+                document.getElementById('researcher-fields').style.display = 'none';
+                document.getElementById('participant-fields').style.display = 'block';
+                document.getElementById('access-code').required = false;
+                document.getElementById('age').required = true;
+            }
+        }
+
+        // Password confirmation validation
+        document.getElementById('signup-form').addEventListener('submit', function (e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+            }
+        });
+    </script>
+</body>
+
+</html>
