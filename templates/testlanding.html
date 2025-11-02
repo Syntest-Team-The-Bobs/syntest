@@ -4,8 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SYNTEST — Take The Test</title>
-  <link rel="stylesheet" href="./static/testlanding.css" />
+
+  <!-- ✅ FIX: use Flask's url_for() to load static CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='testlanding.css') }}" />
 </head>
+
 <body>
   <!-- Top Bar -->
   <header class="topbar">
@@ -73,7 +76,7 @@
     <a class="nav-link" href="#">About This Study</a>
   </footer>
 
-  <!-- <script src="testlanding.js"></script> -->
+  <!-- Optional JS -->
+  <!-- <script src="{{ url_for('static', filename='testlanding.js') }}"></script> -->
 </body>
 </html>
-``

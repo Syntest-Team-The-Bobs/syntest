@@ -24,16 +24,16 @@
           {# Prefer session (your app.py uses session); fall back to flask_login if present #}
           {% if session.get('user_role') %}
             {% if session.get('user_role') == 'participant' %}
-              <a href="{{ url_for('participant_dashboard') }}">Dashboard</a>
+              <a href="{{ url_for('dashboard') }}">Dashboard</a>
             {% elif session.get('user_role') == 'researcher' %}
-              <a href="{{ url_for('researcher_dashboard') }}">Dashboard</a>
+              <a href="{{ url_for('dashboard') }}">Dashboard</a>
             {% endif %}
             <a href="{{ url_for('logout') }}">Logout</a>
           {% elif current_user is defined and current_user.is_authenticated %}
             {% if current_user.role == 'participant' %}
-              <a href="{{ url_for('participant_dashboard') }}">Dashboard</a>
+              <a href="{{ url_for('dashboard') }}">Dashboard</a>
             {% elif current_user.role == 'researcher' %}
-              <a href="{{ url_for('researcher_dashboard') }}">Dashboard</a>
+              <a href="{{ url_for('dashboard') }}">Dashboard</a>
             {% endif %}
             <a href="{{ url_for('logout') }}">Logout</a>
           {% else %}

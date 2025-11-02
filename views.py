@@ -1,5 +1,6 @@
 # views.py
 from datetime import datetime
+
 from flask import Blueprint, request, jsonify, session
 from models import (
     db, Participant,
@@ -130,3 +131,5 @@ def finalize_screening():
         selected_types=s.selected_types,
         recommended=s.recommended_tests,
     )
+
+api_screening = bp
