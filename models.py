@@ -213,106 +213,115 @@ class ScreeningSession(db.Model):
         self.events.append(ScreeningEvent(step=step, event=event, details=details or {}))
         return self
 
-    def compute_selected_types(self):
-        """
-        Build a canonical list from type_choice (yes/sometimes only).
-        """
-        out = []
-        tc = self.type_choice
-        if not tc:
-            return out
-        if tc.grapheme in {Frequency.yes, Frequency.sometimes}:
-            out.append("Grapheme – Color")
-        if tc.music in {Frequency.yes, Frequency.sometimes}:
-            out.append("Music – Color")
-        if tc.lexical in {Frequency.yes, Frequency.sometimes}:
-            out.append("Lexical – Taste")
-        if tc.sequence in {Frequency.yes, Frequency.sometimes}:
-            out.append("Sequence – Space")
-        if tc.other and tc.other.strip():
-            out.append(f"Other: {tc.other.strip()}")
-        return out
+    # Note: The following methods have been moved to service classes:
+    # - compute_selected_types → TypeSelectionService.compute_selected_types
+    # - compute_eligibility_and_exit → EligibilityService.compute_eligibility_and_exit
+    # - compute_recommendations → RecommendationService.compute_recommendations
+    
+    # def compute_selected_types(self):
+    #     """
+    #     Build a canonical list from type_choice (yes/sometimes only).
+    #     """
+    #     out = []
+    #     tc = self.type_choice
+    #     if not tc:
+    #         return out
+    #     if tc.grapheme in {Frequency.yes, Frequency.sometimes}:
+    #         out.append("Grapheme – Color")
+    #     if tc.music in {Frequency.yes, Frequency.sometimes}:
+    #         out.append("Music – Color")
+    #     if tc.lexical in {Frequency.yes, Frequency.sometimes}:
+    #         out.append("Lexical – Taste")
+    #     if tc.sequence in {Frequency.yes, Frequency.sometimes}:
+    #         out.append("Sequence – Space")
+    #     if tc.other and tc.other.strip():
+    #         out.append(f"Other: {tc.other.strip()}")
+    #     return out
 
-    def compute_eligibility_and_exit(self):
-        """
-        Apply client-side flow:
-          - If any health flags: exit 'BC'
-          - If definition = 'no': exit 'A'
-          - If pain_emotion = 'yes': exit 'D'
-          - If no types selected: exit 'NONE'
-          - Else eligible = True
-        """
-        # Health (step 1)
-        if self.health and (self.health.drug_use or self.health.neuro_condition or self.health.medical_treatment):
-            self.eligible = False
-            self.exit_code = "BC"
-            return
+    # def compute_eligibility_and_exit(self):
+    #     """
+    #     Apply client-side flow:
+    #       - If any health flags: exit 'BC'
+    #       - If definition = 'no': exit 'A'
+    #       - If pain_emotion = 'yes': exit 'D'
+    #       - If no types selected: exit 'NONE'
+    #       - Else eligible = True
+    #     """
+    #     # Health (step 1)
+    #     if self.health and (self.health.drug_use or self.health.neuro_condition or self.health.medical_treatment):
+    #         self.eligible = False
+    #         self.exit_code = "BC"
+    #         return
 
-        # Definition (step 2)
-        if self.definition and self.definition.answer == YesNoMaybe.no:
-            self.eligible = False
-            self.exit_code = "A"
-            return
+    #     # Definition (step 2)
+    #     if self.definition and self.definition.answer == YesNoMaybe.no:
+    #         self.eligible = False
+    #         self.exit_code = "A"
+    #         return
 
-        # Pain & Emotion (step 3)
-        if self.pain_emotion and self.pain_emotion.answer == YesNo.yes:
-            self.eligible = False
-            self.exit_code = "D"
-            return
+    #     # Pain & Emotion (step 3)
+    #     if self.pain_emotion and self.pain_emotion.answer == YesNo.yes:
+    #         self.eligible = False
+    #         self.exit_code = "D"
+    #         return
 
-        # Types (step 4)
-        types = self.compute_selected_types()
-        self.selected_types = types
-        if not types:
-            self.eligible = False
-            self.exit_code = "NONE"
-            return
+    #     # Types (step 4)
+    #     types = self.compute_selected_types()
+    #     self.selected_types = types
+    #     if not types:
+    #         self.eligible = False
+    #         self.exit_code = "NONE"
+    #         return
 
-        # Otherwise eligible
-        self.eligible = True
-        self.exit_code = None
+    #     # Otherwise eligible
+    #     self.eligible = True
+    #     self.exit_code = None
 
-    def compute_recommendations(self):
-        """
-        Derive recommended tests from selected_types.
-        Stores JSON and fills normalized table. If a Test exists by name, link it.
-        """
-        mapping = {
-            "Grapheme – Color": "Grapheme-Color",
-            "Music – Color": "Music-Color",
-            "Lexical – Taste": "Lexical-Gustatory",
-            "Sequence – Space": "Sequence-Space",
-        }
+    # def compute_recommendations(self):
+    #     """
+    #     Derive recommended tests from selected_types.
+    #     Stores JSON and fills normalized table. If a Test exists by name, link it.
+    #     """
+    #     mapping = {
+    #         "Grapheme – Color": "Grapheme-Color",
+    #         "Music – Color": "Music-Color",
+    #         "Lexical – Taste": "Lexical-Gustatory",
+    #         "Sequence – Space": "Sequence-Space",
+    #     }
 
-        results = []
-        # Clear existing rows if recomputing
-        self.recs.clear()
+    #     results = []
+    #     # Clear existing rows if recomputing
+    #     self.recs.clear()
 
-        for idx, label in enumerate(self.selected_types or []):
-            base_name = mapping.get(label, label)  # fallback
-            reason = f"Selected type: {label}"
-            test_row = Test.query.filter(Test.name.ilike(base_name)).first()
-            rec = ScreeningRecommendedTest(
-                position=idx + 1,
-                suggested_name=base_name,
-                reason=reason,
-                test_id=test_row.id if test_row else None,
-            )
-            self.recs.append(rec)
-            results.append({
-                "position": idx + 1,
-                "name": base_name,
-                "reason": reason,
-                "test_id": test_row.id if test_row else None
-            })
+    #     for idx, label in enumerate(self.selected_types or []):
+    #         base_name = mapping.get(label, label)  # fallback
+    #         reason = f"Selected type: {label}"
+    #         test_row = Test.query.filter(Test.name.ilike(base_name)).first()
+    #         rec = ScreeningRecommendedTest(
+    #             position=idx + 1,
+    #             suggested_name=base_name,
+    #             reason=reason,
+    #             test_id=test_row.id if test_row else None,
+    #         )
+    #         self.recs.append(rec)
+    #         results.append({
+    #             "position": idx + 1,
+    #             "name": base_name,
+    #                         "reason": reason,
+    #             "test_id": test_row.id if test_row else None
+    #         })
 
-        self.recommended_tests = results
+    #     self.recommended_tests = results
 
     def finalize(self):
         """Call when the session is done (or at any decision point)."""
-        self.compute_eligibility_and_exit()
+        # Import services here to avoid circular imports
+        from services import EligibilityService, RecommendationService, TypeSelectionService
+        
+        # Use services instead of direct method calls
+        EligibilityService.compute_eligibility_and_exit(self)
         if self.eligible:
-            self.compute_recommendations()
+            RecommendationService.compute_recommendations(self)
             self.status = "completed"
         else:
             self.status = "exited"

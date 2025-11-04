@@ -9,6 +9,16 @@
   {% if step == 0 %}SYNTEST — Screening{% elif step == 1 %}SYNTEST — Step 1 of 5{% elif step == 2 %}SYNTEST — Step 2 of 5{% elif step == 3 %}SYNTEST — Step 3 of 5{% elif step == 4 %}SYNTEST — Step 4 of 5{% else %}SYNTEST — Step 5 of 5{% endif %}
 {% endblock %}
 
+{% block extra_js %}
+  {# Include modular screening components in dependency order #}
+  <script src="{{ url_for('static', filename='screening-state.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-api.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-dom.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-router.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-steps.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
   <div class="container">
 
@@ -106,13 +116,13 @@
       </div>
 
       <div class="choice-grid">
-        <a href="{{ url_for('flow', step=3) }}" class="choice-card">
+        <a href="#" class="choice-card" data-choice="yes">
           <div class="choice-title">Yes</div>
           <div class="choice-sub">I experience consistent sensory connections</div>
         </a>
-        <a href="{{ url_for('flow', step=3) }}" class="choice-card">
+        <a href="#" class="choice-card" data-choice="maybe">
           <div class="choice-title">Maybe</div>
-          <div class="choice-sub">I’m not sure if my experiences qualify</div>
+          <div class="choice-sub">I'm not sure if my experiences qualify</div>
         </a>
       </div>
 
@@ -124,7 +134,7 @@
 
       <div class="page-actions">
         <a class="btn-secondary" href="{{ url_for('flow', step=1) }}">Back</a>
-        <a class="btn-dark" href="{{ url_for('flow', step=3) }}">Continue</a>
+        <a class="btn-dark" href="#" id="continue-definition">Continue</a>
       </div>
 
     </section>

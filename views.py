@@ -121,6 +121,7 @@ def save_step4():
 @bp.post("/finalize")
 def finalize_screening():
     s = _get_or_create_session()
+    # Uses services through finalize() method
     s.finalize()
     db.session.commit()
     return jsonify(
