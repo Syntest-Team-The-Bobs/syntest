@@ -566,3 +566,77 @@ class TestData(db.Model):
             "cct_pairwise": self.cct_pairwise,
             "cct_pass": self.cct_pass,
         }
+
+class SpeedCongruency(db.Model):
+    """
+    One row per speed-congruency trial.
+
+    Goal:
+      - Link each trial to a participant (string id, like ColorTrial.participant_id).
+      - Optionally link to a ColorStimulus row that represents the participant's
+        learned/associated color from the Color Test (so we can check 'matched').
+      - Record the cue/trigger shown in the speed test, the participant's choice,
+        whether it matched the expected association, and the reaction time.
+    """
+    __tablename__ = "speed_congruency"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Participant linkage (mirror ColorTrial)
+    participant_id = db.Column(db.String(64), index=True, nullable=True)
+
+    # Optional linkage to the stimulus that encodes the participant's learned/expected color.
+    # If you only know the expected RGB triplet, you can leave this NULL and just fill expected_*.
+    stimulus_id = db.Column(
+        db.Integer,
+        db.ForeignKey("color_stimuli.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    stimulus = db.relationship("ColorStimulus", lazy="joined")
+
+    # Trial/cue context
+    trial_index = db.Column(db.Integer, nullable=True)              # 1..N within a run
+    cue_word   = db.Column(db.String(128), nullable=True, index=True)  # e.g., "PRESENTATION"
+    cue_type   = db.Column(db.String(32), nullable=True)            # e.g., 'word', 'image', etc. (future-proof)
+
+    # Expected association (from Color Test)
+    expected_r = db.Column(db.Integer, nullable=True)
+    expected_g = db.Column(db.Integer, nullable=True)
+    expected_b = db.Column(db.Integer, nullable=True)
+
+    # User's response on the speed test
+    chosen_name = db.Column(db.String(32), nullable=True)           # 'red' | 'orange' | ...
+    chosen_r    = db.Column(db.Integer, nullable=True)
+    chosen_g    = db.Column(db.Integer, nullable=True)
+    chosen_b    = db.Column(db.Integer, nullable=True)
+
+    # Outcome + timing
+    matched     = db.Column(db.Boolean, nullable=True, index=True)  # did chosen color match expected association?
+    response_ms = db.Column(db.Integer, nullable=True)              # reaction time in ms
+
+    # Free-form context (device info, run id, version, etc.)
+    meta_json   = db.Column(db.JSON, nullable=True)
+
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "participant_id": self.participant_id,
+            "stimulus_id": self.stimulus_id,
+            "trial_index": self.trial_index,
+            "cue_word": self.cue_word,
+            "cue_type": self.cue_type,
+            "expected_r": self.expected_r,
+            "expected_g": self.expected_g,
+            "expected_b": self.expected_b,
+            "chosen_name": self.chosen_name,
+            "chosen_r": self.chosen_r,
+            "chosen_g": self.chosen_g,
+            "chosen_b": self.chosen_b,
+            "matched": self.matched,
+            "response_ms": self.response_ms,
+            "meta_json": self.meta_json or {},
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

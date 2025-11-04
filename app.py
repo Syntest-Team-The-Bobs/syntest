@@ -11,7 +11,7 @@ from datetime import datetime
 # -----------------------------
 from models import (
     db, Participant, Researcher, Test, TestResult, ScreeningResponse,
-    ColorStimulus, ColorTrial
+    ColorStimulus, ColorTrial, SpeedCongruency, TestData
 )
 
 # -----------------------------
@@ -334,6 +334,102 @@ def speed_congruency_instructions():
 @app.route("/speed-congruency")
 def speed_congruency_test():
     return render_template("speedcongruency.html")
+
+def _current_participant_id_string():
+    """
+    Map logged-in participant to the string id used by TestData.user_id.
+    Your session stores 'user_id' (Participant.id, int). TestData.user_id is a string.
+    """
+    uid = session.get('user_id')
+    role = session.get('user_role')
+    if not uid or role != 'participant':
+        return None
+    return str(uid)
+
+@app.get("/api/speed-congruency/next")
+def speed_congruency_next():
+    """
+    Returns one trial built from the most recent TestData with cct_pass == True
+    for the current participant. Supplies stimulus_id and expected RGB.
+    """
+    user_str = _current_participant_id_string()
+    if not user_str:
+        return jsonify(error="login as participant first"), 401
+
+    td = (TestData.query
+          .filter_by(user_id=user_str, cct_pass=True)
+          .order_by(TestData.created_at.desc())
+          .first())
+    if not td:
+        return jsonify(error="No passing TestData found for this participant"), 404
+
+    stim = None
+    if td.stimulus_id:
+        stim = ColorStimulus.query.get(td.stimulus_id)
+
+    expected = None
+    if stim:
+        expected = {"r": stim.r, "g": stim.g, "b": stim.b}
+
+    if not expected:
+        return jsonify(error="Stimulus missing or has no RGB"), 422
+
+    payload = {
+        "trial_index": 1,  # change if you run multiple trials
+        "stimulus_id": td.stimulus_id,
+        "expected": expected,
+        "meta": {
+            "testdata_id": td.id,
+            "created_at": td.created_at.isoformat() if td.created_at else None,
+        }
+    }
+    return jsonify(payload)
+
+@app.post("/api/speed-congruency/submit")
+def speed_congruency_submit():
+    """
+    Persists a single response into the SpeedCongruency table.
+    Computes 'matched' on the server from expected vs chosen RGB.
+    """
+    user_str = _current_participant_id_string()
+    if not user_str:
+        return jsonify(error="login as participant first"), 401
+
+    j = request.get_json(force=True) or {}
+    trial_index = j.get("trial_index")
+    stimulus_id = j.get("stimulus_id")
+
+    exp = j.get("expected") or {}
+    ch  = j.get("chosen") or {}
+    try:
+        exp_r, exp_g, exp_b = int(exp.get("r")), int(exp.get("g")), int(exp.get("b"))
+        ch_r, ch_g, ch_b    = int(ch.get("r")),  int(ch.get("g")),  int(ch.get("b"))
+    except Exception:
+        return jsonify(error="expected/chosen must include r,g,b ints"), 400
+
+    matched = (exp_r == ch_r and exp_g == ch_g and exp_b == ch_b)
+    rt_ms = j.get("response_ms")
+    try:
+        rt_ms = int(rt_ms) if rt_ms is not None else None
+    except Exception:
+        rt_ms = None
+
+    row = SpeedCongruency(
+        participant_id=user_str,
+        stimulus_id=stimulus_id,
+        trial_index=trial_index,
+        cue_word=None,       # you’re using a color chip as cue; leave None or set a label if you add words
+        cue_type="color",
+        expected_r=exp_r, expected_g=exp_g, expected_b=exp_b,
+        chosen_r=ch_r, chosen_g=ch_g, chosen_b=ch_b,
+        chosen_name=None,    # fill if you also label swatches by name
+        matched=matched,
+        response_ms=rt_ms,
+        meta_json={"source": "speed_congruency_ui_v1"}
+    )
+    db.session.add(row)
+    db.session.commit()
+    return jsonify(ok=True, id=row.id, matched=matched)
 # =====================================
 # RUN (dev)
 # =====================================
