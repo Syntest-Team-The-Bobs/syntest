@@ -18,7 +18,7 @@ from models import (
 # Screening API blueprint (expects views/api_screening.py to expose `bp`)
 # Adjust the import path if your layout differs.
 # -----------------------------
-from views import api_screening as screening_api
+import views as screening_api
 
 app = Flask(__name__)
 
@@ -323,6 +323,17 @@ def list_color_trials():
     rows = q.order_by(ColorTrial.created_at.asc()).all()
     return jsonify([r.to_dict() for r in rows])
 
+
+# =====================================
+# SPEED CONGRUENCY TEST API
+# =====================================
+@app.route("/speed-congruency/instructions")
+def speed_congruency_instructions():
+    return render_template("speedcongruencyinstruction.html")
+
+@app.route("/speed-congruency")
+def speed_congruency_test():
+    return render_template("speedcongruency.html")
 # =====================================
 # RUN (dev)
 # =====================================

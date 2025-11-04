@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Speed Congruency – Test{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='speedcongruency.css') }}">
+{% endblock %}
+
+{% block content %}
+  <!-- Trigger view (3s) -->
+  <main id="triggerView" class="screen trigger">
+    <!-- Place trigger.jpg in static/images/ -->
+    <img src="{{ url_for('static', filename='images/trigger.jpg') }}" alt="Trigger" class="bg-image"/>
+    <div class="overlay">
+      <h1 class="prompt">WHAT COLOR DO YOU ASSOCIATE WITH THE WORD</h1>
+      <div class="word-card"><div class="word">PRESENTATION</div></div>
+    </div>
+    <div class="countdown" aria-live="polite" aria-atomic="true">
+      <span id="countNum">3</span>
+    </div>
+  </main>
+
+  <!-- Response view -->
+  <main id="responseView" class="screen response" aria-hidden="true">
+    <!-- Place response.jpg in static/images/ -->
+    <img src="{{ url_for('static', filename='images/response.jpg') }}" alt="Response" class="bg-image"/>
+    <div class="overlay">
+      <h1 class="prompt">TIMER HAS ALREADY STARTED. CLICK THE COLOR YOU ASSOCIATE WITH THIS WORD</h1>
+      <div class="word-chip">PRESENTATION</div>
+
+      <div class="palette" role="group" aria-label="Choose a color">
+        <button class="swatch" data-color="red" aria-label="Red"></button>
+        <button class="swatch" data-color="orange" aria-label="Orange"></button>
+        <button class="swatch" data-color="blue" aria-label="Blue"></button>
+        <button class="swatch" data-color="purple" aria-label="Purple"></button>
+      </div>
+
+      <div class="rt-row" id="rtRow" hidden>
+        <span>Reaction time:</span>
+        <strong id="rtValue">—</strong>
+        <span>ms</span>
+      </div>
+    </div>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='speedcongruency.js') }}"></script>
+{% endblock %}

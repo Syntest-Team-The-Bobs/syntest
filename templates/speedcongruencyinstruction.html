@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Speed Congruency – Instructions{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='speedcongruencyinstruction.css') }}">
+{% endblock %}
+
+{% block content %}
+  <main class="content">
+    <section class="instructions" style="max-width:900px; margin:0 auto;">
+      <p class="line">
+        IN THIS TEST, YOU MUST MATCH THE CORRECT COLOR TO THE TRIGGER THAT APPEARS ON THE SCREEN.
+      </p>
+      <p class="line">
+        YOU WILL HAVE 3 SECONDS TO OBSERVE AND UNDERSTAND THE TRIGGER BEFORE THE TIMER STARTS.
+      </p>
+      <p class="line">
+        YOUR REACTION TIME WILL THEN BE RECORDED.
+      </p>
+      <div class="cta" style="margin-top:32px; text-align:center;">
+        <a href="{{ url_for('speed_congruency_test') }}" class="btn start-btn">Start Test</a>
+      </div>
+    </section>
+  </main>
+{% endblock %}
