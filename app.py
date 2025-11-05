@@ -18,7 +18,7 @@ from models import (
 # Screening API blueprint (expects views/api_screening.py to expose `bp`)
 # Adjust the import path if your layout differs.
 # -----------------------------
-from views import api_screening as screening_api
+import views as screening_api
 
 app = Flask(__name__)
 
@@ -152,7 +152,7 @@ def participant_dashboard():
     recommended_tests = Test.query.all()
 
     return render_template(
-        'participant_dashboard.html',
+        'dashboard.html',
         user=user,
         tests_completed=len(completed_tests),
         tests_pending=len(all_tests) - len(completed_tests),
@@ -433,6 +433,8 @@ def speed_congruency_submit():
 # =====================================
 # SPECIFIC COLOR TEST ROUTES (UI)
 # =====================================
+
+# TODO: rename these functions cause order of trigger-measured thing is confusing
 
 @app.route('/color/number')
 def number_color_test():

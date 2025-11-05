@@ -1,17 +1,126 @@
-{% extends "base.html" %}
-{% block title %}Home · Synesthesia Research{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synesthesia Research Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/login">Login</a>
+                <a href="/signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
 
-{% block content %}
-  <section class="card">
-    <div class="card-header">
-      <div class="card-title">Welcome to SynTest</div>
+    <div class="container">
+        <!-- Hero Section -->
+        <div style="text-align: center; padding: 80px 20px;">
+            <h1 style="font-size: 48px; margin-bottom: 20px;">Synesthesia Research Platform</h1>
+            <p style="font-size: 20px; max-width: 800px; margin: 0 auto 40px; color: #666;">
+                A comprehensive web-based platform for testing and researching synesthesia among participants in Spain.
+            </p>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <a href="/signup" class="btn" style="font-size: 18px; padding: 15px 40px;">Join as Participant</a>
+                <a href="/login" class="btn btn-secondary" style="font-size: 18px; padding: 15px 40px;">Researcher Login</a>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">About This Study</h2>
+            </div>
+            <div class="card-body">
+                <p>This platform is designed to identify and study synesthesia through a series of carefully designed assessments. Participants will complete screening questionnaires and specialized tests to determine if they experience synesthetic patterns.</p>
+                <p class="mt-20">All data collected is anonymized and used solely for research purposes, in compliance with ethical research standards.</p>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <h2 style="text-align: center; margin-bottom: 40px;">Platform Features</h2>
+        <div class="grid-3" style="margin-bottom: 60px;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Pre-Screening</h3>
+                </div>
+                <div class="card-body">
+                    <p>Complete an initial questionnaire to determine eligibility and receive personalized test recommendations based on your experiences.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Specialized Tests</h3>
+                </div>
+                <div class="card-body">
+                    <p>Take scientifically designed tests for Trigger-Color, Trigger-Gustatory, and Sequence-Space synesthesia types.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Personal Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <p>Track your progress, view test results, and access your personalized synesthesia profile through your secure dashboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Types Section -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">Types of Synesthesia Tests</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid-2" style="gap: 30px;">
+                    <div>
+                        <h3>Trigger-Color Synesthesia</h3>
+                        <p>Tests for associations between triggers (letters, numbers, sounds) and specific colors. Includes color consistency and speed congruency assessments.</p>
+                    </div>
+                    <div>
+                        <h3>Trigger-Gustatory Synesthesia</h3>
+                        <p>Evaluates experiences where certain triggers evoke specific taste sensations.</p>
+                    </div>
+                    <div>
+                        <h3>Sequence-Space Synesthesia</h3>
+                        <p>Assesses the visualization of sequences (numbers, days, months) in specific spatial arrangements.</p>
+                    </div>
+                    <div>
+                        <h3>Comprehensive Analysis</h3>
+                        <p>Results are analyzed for consistency and patterns to provide insights into your synesthetic experiences.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- For Researchers -->
+        <div class="card" style="margin-bottom: 40px;">
+            <div class="card-header">
+                <h2 class="card-title">For Researchers</h2>
+            </div>
+            <div class="card-body">
+                <p>Access aggregated participant data, export datasets, and analyze results through the researcher dashboard. All data is anonymized and complies with research ethics standards.</p>
+                <div class="mt-20">
+                    <a href="/login" class="btn">Researcher Access</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Notice -->
+        <div class="alert alert-info">
+            <strong>Privacy & Data Protection:</strong> Your participation is completely voluntary. All personal information is kept confidential and data is anonymized for research analysis. You can withdraw from the study at any time.
+        </div>
     </div>
-    <div class="card-body">
-      <p>This platform hosts screening and research tasks related to synesthesia.</p>
-      <p class="mt-20">
-        <a class="btn" href="{{ url_for('flow', step=0) }}">Start Screening</a>
-        <a class="btn btn-secondary" href="{{ url_for('login') }}">Login</a>
-      </p>
-    </div>
-  </section>
-{% endblock %}
+
+    <footer style="text-align: center; padding: 40px 20px; border-top: 2px solid #000; margin-top: 60px;">
+        <p>&copy; 2025 Synesthesia Research Platform. Conducted by Sophie Hausladen, Colby College.</p>
+        <p style="margin-top: 10px;">All data is anonymized and used for research purposes only.</p>
+    </footer>
+</body>
+</html>
