@@ -1,0 +1,28 @@
+// ============================================================
+// SYNTEST — LetterColorTest
+// Purpose: Concrete test that supplies A–Z stimuli to BaseColorTest
+// ============================================================
+
+import { BaseColorTest } from "./base_color_test.js";
+
+/**
+ * LetterColorTest
+ * Supplies uppercase A–Z as the stimulus set for the color test.
+ */
+export class LetterColorTest extends BaseColorTest {
+  /**
+   * Return the ordered list of labels shown to the participant.
+   * BaseColorTest handles shuffling and repetition per trial.
+   */
+  getStimuliSet() {
+    // Generate ["A", "B", ..., "Z"]
+    return Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+  }
+
+  /**
+   * Human-readable title surfaced in summaries/UI.
+   */
+  getTitle() {
+    return "LETTER COLOR TEST";
+  }
+}

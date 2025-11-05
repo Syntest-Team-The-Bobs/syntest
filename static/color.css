@@ -127,6 +127,7 @@ body.page-color {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .wheel-actions {
@@ -337,3 +338,38 @@ dialog.help li {
   text-align: right;
   margin-top: 15px;
 }
+
+/* ------------------ ADDITIONS: clearer descriptions ------------------ */
+
+/* Under-title lede paragraph used by pages that include it */
+.lede{
+  color:#555;
+  font-size:.95rem;
+  line-height:1.45;
+  margin: 8px 0 0 0;
+}
+
+/* Small captions that sit directly under the wheel and stimulus */
+.caption{
+  margin-top:8px;
+  font-size:.85rem;
+  color:#666;
+  text-align:center;
+  max-width: 240px;
+}
+
+/* Left-hand “How to” panel that can be placed before the wheel */
+.howto{
+  max-width:220px;
+  font-size:.95rem;
+  color:#333;
+}
+.howto h4{
+  margin:0 0 8px;
+  font-size:.9rem;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.howto ol{ margin:0; padding-left:18px; }
+.howto li{ margin:6px 0; }
+.howto .note{ margin-top:10px; font-size:.85rem; color:#666; }

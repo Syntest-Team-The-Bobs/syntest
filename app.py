@@ -324,6 +324,56 @@ def list_color_trials():
     return jsonify([r.to_dict() for r in rows])
 
 # =====================================
+# SPECIFIC COLOR TEST ROUTES (UI)
+# =====================================
+
+@app.route('/color/number')
+def number_color_test():
+    """Number–Color Synesthesia Test"""
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    return render_template('color_number_test.html')
+
+
+@app.route('/color/letter')
+def letter_color_test():
+    """Letter–Color Synesthesia Test"""
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    return render_template('color_letter_test.html')
+
+
+@app.route('/color/word')
+def word_color_test():
+    """Word–Color Synesthesia Test"""
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    return render_template('color_word_test.html')
+
+# =====================================
+# DASHBOARD PAGE ROUTES (UI)
+# =====================================
+
+@app.route('/dashboard')
+def dashboard():
+    """Redirect user to the correct dashboard based on their role."""
+    if 'user_id' not in session:
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+
+    role = session.get('user_role')
+    if role == 'participant':
+        return redirect(url_for('participant_dashboard'))
+    elif role == 'researcher':
+        return redirect(url_for('researcher_dashboard'))
+    else:
+        flash('Unknown role', 'error')
+        return redirect(url_for('login'))
+
+# =====================================
 # RUN (dev)
 # =====================================
 if __name__ == '__main__':

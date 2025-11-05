@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SYNTEST – Participant</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Dashboard-only CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3" />
+</head>
+
+<body class="page-dashboard">
+  <div class="app">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+      <div class="brand">SYNTEST</div>
+
+      <nav class="side-nav">
+        <!-- Pre-Screening (start at step 0) -->
+        <a class="nav-item" href="{{ url_for('flow', step=0) }}">Pre-Screening Test</a>
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+            <path d="M12 2a10 10 0 1 1-7.07 2.93A10 10 0 0 1 12 2zm1 5h-2v6h6v-2h-4V7z" fill="currentColor"/>
+          </svg>
+          <span>Pre-Screening Test</span>
+        </a>
+
+       <!-- Pre-Screening -->
+<a class="nav-item" href="{{ url_for('flow', step=0) }}">Pre-Screening Test</a>
+
+<!-- Color tests -->
+<a class="nav-item" href="{{ url_for('color_test_letter') }}">Letter Color Test</a>
+<a class="nav-item" href="{{ url_for('color_test_number') }}">Number Color Test</a>
+<a class="nav-item" href="{{ url_for('color_test_word') }}">Word Color Test</a>
+
+<!-- Flavor (make sure route exists, see #4) -->
+<a class="nav-item" href="{{ url_for('flavor') }}">Flavor Test</a>
+
+
+        <!-- Flavor Test -->
+        <a class="nav-item" href="{{ url_for('flavor') }}">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="19" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+          <span>Flavor Test</span>
+        </a>
+
+        <!-- Association -->
+        <a class="nav-item" href="{{ url_for('association') }}">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+            <rect x="3" y="6" width="4.5" height="12" fill="currentColor"/>
+            <rect x="9.75" y="6" width="4.5" height="12" fill="currentColor"/>
+            <rect x="16.5" y="6" width="4.5" height="12" fill="currentColor"/>
+          </svg>
+          <span>Association</span>
+        </a>
+
+        <!-- Analytics (placeholder) -->
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+            <path d="M4 15h4v6H4zM10 9h4v12h-4zM16 3h4v18h-4z" fill="currentColor"/>
+          </svg>
+          <span>Analytics</span>
+        </a>
+
+        <!-- Settings (placeholder) -->
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
+            <path d="M12 15a3 3 0 1 0 0-6m8.5 3a8.5 8.5 0 0 1-.1 1l2.1 1.7-2 3.5-2.6-1a8.5 8.5 0 0 1-1.7 1l-.4 2.7H10.2l-.4-2.7a8.5 8.5 0 0 1-1.7-1l-2.6 1-2-3.5 2.1-1.7a8.5 8.5 0 0 1 0-2L1.5 9.3l2-3.5 2.6 1a8.5 8.5 0 0 1 1.7-1l.4-2.7h4.6l.4 2.7a8.5 8.5 0 0 1 1.7 1l2.6-1 2 3.5-2.1 1.7c.1.3.1.7.1 1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="main">
+      <header class="topbar">
+        <a class="toplink" href="#">About This Study</a>
+        <button class="account-btn">Your Account</button>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">PARTICIPANT DETAIL</h2>
+
+        <div class="detail-row">
+          <!-- Participant card -->
+          <article class="card card-detail">
+            <div class="avatar" aria-hidden="true">👩🏼‍🦰</div>
+            <div class="detail-grid">
+              <div class="kv"><span class="k">Name:</span> <span class="v">{{ user.name if user else '—' }}</span></div>
+              <div class="kv"><span class="k">Age:</span> <span class="v">{{ user.age if user else '—' }}</span></div>
+              <div class="kv"><span class="k">Country:</span> <span class="v">{{ user.country if user else '—' }}</span></div>
+              <div class="kv"><span class="k">Date joined:</span> <span class="v">{{ user.created_at.strftime('%Y-%m-%d') if user else '—' }}</span></div>
+            </div>
+          </article>
+
+          <!-- Small stats -->
+          <article class="card stat">
+            <div class="stat-label">Tests Completed</div>
+            <div class="stat-value">{{ tests_completed }}</div>
+          </article>
+
+          <article class="card stat">
+            <div class="stat-label">Tests Pending</div>
+            <div class="stat-value">{{ tests_pending }}</div>
+          </article>
+
+          <article class="card stat">
+            <div class="stat-label">Completion</div>
+            <div class="stat-value stat-right">{{ completion_percentage }}%</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">PERFORMANCE</h2>
+        <div class="performance-row">
+          <div class="mini-chart peach"></div>
+          <div class="mini-chart rose"></div>
+          <div class="mini-chart sky"></div>
+        </div>
+      </section>
+
+      <section class="section notes">
+        <h2 class="section-title">RESEARCHER’S NOTES</h2>
+        <div class="card note-card">
+          <p class="note-text">Edge case!</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn ghost">Export</button>
+          <button class="btn ghost">View raw</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
