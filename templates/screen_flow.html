@@ -9,16 +9,6 @@
   {% if step == 0 %}SYNTEST — Screening{% elif step == 1 %}SYNTEST — Step 1 of 5{% elif step == 2 %}SYNTEST — Step 2 of 5{% elif step == 3 %}SYNTEST — Step 3 of 5{% elif step == 4 %}SYNTEST — Step 4 of 5{% else %}SYNTEST — Step 5 of 5{% endif %}
 {% endblock %}
 
-{% block extra_js %}
-  {# Include modular screening components in dependency order #}
-  <script src="{{ url_for('static', filename='screening-state.js') }}"></script>
-  <script src="{{ url_for('static', filename='screening-api.js') }}"></script>
-  <script src="{{ url_for('static', filename='screening-dom.js') }}"></script>
-  <script src="{{ url_for('static', filename='screening-router.js') }}"></script>
-  <script src="{{ url_for('static', filename='screening-steps.js') }}"></script>
-  <script src="{{ url_for('static', filename='screening.js') }}" defer></script>
-{% endblock %}
-
 {% block content %}
   <div class="container container-md">
 
@@ -325,4 +315,16 @@
   {% endif %}
 
   </div>
+
+{% block extra_js %}
+  {# Include modular screening components in dependency order #}
+  <script src="{{ url_for('static', filename='screening-state.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-api.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-dom.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-router.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening-steps.js') }}"></script>
+  <script src="{{ url_for('static', filename='screening.js') }}" defer></script>
+{% endblock %}
+
+
 {% endblock %}
