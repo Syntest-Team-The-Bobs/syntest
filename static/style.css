@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ---------- Base ---------- */
 :root {
   --bg: #f6f7fb;
@@ -652,4 +651,3 @@ html,body{height:100%}
   .page-dashboard .detail-row{grid-template-columns:1fr}
   .page-dashboard .performance-row{flex-wrap:wrap}
 }
->>>>>>> origin/main
