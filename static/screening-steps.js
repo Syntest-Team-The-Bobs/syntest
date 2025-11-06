@@ -7,7 +7,7 @@
   // Step 0: Consent gating
   function setupStep0(state) {
     const consent = document.getElementById("consent")
-                   || document.querySelector('.consent input[type="checkbox"]');
+                   || document.querySelector('#consent input[type="checkbox"]');
     const begin   = document.getElementById("begin-screening")
                    || document.querySelector('a.btn-primary, .btn-primary');
     if (!begin) return;
@@ -35,9 +35,9 @@
     if (!card) return;
 
     const keys   = ["drug", "neuro", "medical"];
-    const checks = window.ScreeningDOM.$$('.checkline input[type="checkbox"], .form-check-input[type="checkbox"]', card);
+    const checks = window.ScreeningDOM.$$('.checkbox-group input[type="checkbox"]', card);
 
-    const confirmBtn = window.ScreeningDOM.$(".card-actions .btn-dark, .d-flex .btn.btn-dark");
+    const confirmBtn = window.ScreeningDOM.$(".actions .btn-primary");
     
     // Function to update button text based on checkbox state
     function updateButtonText() {
@@ -82,9 +82,10 @@
   // Step 2: Definition — set Yes/Maybe/No; No routes to Exit A
   function setupStep2(state) {
     const yesCard   = window.ScreeningDOM.$(".choice-grid .choice-card[data-choice='yes']") || window.ScreeningDOM.$(".choice-grid .choice-card:nth-child(1)");
+        console.log(yesCard);
     const maybeCard = window.ScreeningDOM.$(".choice-grid .choice-card[data-choice='maybe']") || window.ScreeningDOM.$(".choice-grid .choice-card:nth-child(2)");
     const noBanner  = window.ScreeningDOM.$("a.choice-negative");
-    const continueBtn = window.ScreeningDOM.$(".page-actions .btn-dark, .d-flex .btn.btn-dark");
+    const continueBtn = window.ScreeningDOM.$("#continue-definition");
 
     // Function to update visual selection state
     function updateSelection() {
