@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ test_name|default("Test Intro") }} • SynTest</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tests.css') }}">
+</head>
+<body class="page-test-intro">
+  <main id="content" role="main">
+    <section aria-labelledby="intro-title" data-test-slug="{{ test_slug|default('cct') }}">
+      <h1 id="intro-title">{{ test_name|default("Color Consistency Test") }}</h1>
+      <p>
+        {{ subtitle|default("You’ll assign a color to each item, then press Next to save each choice.") }}
+      </p>
+      <button id="start-test"
+              data-next-href="{{ start_href|default(url_for('main.test_page', slug=test_slug|default('cct'))) }}">
+        {{ cta_start_label|default("Start") }}
+      </button>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='js/tests.js') }}" defer></script>
+</body>
+</html>
