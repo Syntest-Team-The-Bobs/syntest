@@ -16,7 +16,6 @@
     <a class="brand" href="/">SYNTEST</a>
     <nav class="nav">
       {% block nav_links %}
-        <a href="{{ url_for('index') }}" class="nav-link">Home</a>
         <a href="{{ url_for('flow', step=0) }}" class="nav-link">Screening</a>
 
         {% if session.get('user_role') %}
