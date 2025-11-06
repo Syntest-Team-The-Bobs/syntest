@@ -1,55 +1,6 @@
 {% extends "base.html" %}
 {% block title %}SYNTEST — Login{% endblock %}
 
-{% block extra_css %}
-<style>
-/* Page-specific styles for role selector */
-.role-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 20px 0;
-}
-
-.role-card {
-  padding: 20px;
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  background: var(--bg-primary);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  text-align: center;
-}
-
-.role-card:hover {
-  border-color: var(--color-black);
-  box-shadow: var(--shadow-md);
-}
-
-.role-card.active {
-  border-color: var(--color-black);
-  background: var(--bg-secondary);
-}
-
-.role-card h3 {
-  margin: 0 0 8px;
-  font-size: var(--font-size-lg);
-}
-
-.role-card p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-}
-
-@media (max-width: 640px) {
-  .role-selector {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
-{% endblock %}
-
 {% block content %}
   <div class="container container-sm container-centered">
     <h1 class="text-center mb-4">Login</h1>
