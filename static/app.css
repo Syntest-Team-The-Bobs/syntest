@@ -898,6 +898,13 @@ textarea:disabled {
   opacity: 0.9;
 }
 
+.selected {
+  border: 2px solid var(--color-black); 
+  box-shadow: var(--shadow-md); 
+  transform: scale(1.02); 
+  transition: all var(--transition-base);
+}
+
 /* ---------- Info Panels ---------- */
 
 .info-panel {
