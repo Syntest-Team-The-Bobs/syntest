@@ -1,41 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST — Sequence-Space Results</title>
-  <link rel="stylesheet" href="./static/sequence_space_results.css" />
-</head>
-<body>
-  <!-- Top Bar -->
-  <header class="topbar">
-    <div class="brand">SYNTEST</div>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Sequence Space Results{% endblock %}
 
-    <nav class="nav">
-      <a href="#" class="nav-link">About This Study</a>
-      <button class="btn btn-dark">Your Account</button>
-    </nav>
-  </header>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sequence_space.css') }}" />
+{% endblock %}
 
-  <main class="wrap">
-    <h1 class="page-title">Your Results For Sequence-Space Synesthesia</h1>
+{% block content %}
+<main class="container container-lg">
+  <h1 class="mt-4 mb-4">SEQUENCE SPACE RESULTS</h1>
 
-    <!-- Framed stage -->
-    <section class="stage" id="stage" aria-label="Results canvas">
-      <!-- full-size SVG for the triangle lines -->
-      <svg class="wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <line id="wire1" x1="0" y1="0" x2="0" y2="0" />
-        <line id="wire2" x1="0" y1="0" x2="0" y2="0" />
-        <line id="wire3" x1="0" y1="0" x2="0" y2="0" />
-      </svg>
-
-      <!-- Three points -->
-      <span class="dot dot-left"  data-key="A" aria-hidden="true"></span>
-      <span class="dot dot-right" data-key="B" aria-hidden="true"></span>
-      <span class="dot dot-bottom" data-key="C" aria-hidden="true"></span>
-    </section>
-  </main>
-
-  <!-- <script src="sequence_space_results.js"></script> -->
-</body>
-</html>
+  <div class="sequence-stage">
+    <svg class="sequence-wires" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <line x1="24" y1="44" x2="78" y2="44" stroke="#3a3a3a" stroke-width="0.35"/>
+      <line x1="24" y1="44" x2="57" y2="82" stroke="#3a3a3a" stroke-width="0.35"/>
+      <line x1="78" y1="44" x2="57" y2="82" stroke="#3a3a3a" stroke-width="0.35"/>
+    </svg>
+    <div class="sequence-dot dot-left"></div>
+    <div class="sequence-dot dot-right"></div>
+    <div class="sequence-dot dot-bottom"></div>
+  </div>
+</main>
+{% endblock %}

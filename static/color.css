@@ -1,121 +1,9 @@
 /* ===========================================================
-   SYNTEST — Color Test Stylesheet
-   Purpose:
-   Defines the full UI styling for the Color-to-Concept Test (CCT)
-   used by both researchers and participants.
-   Emphasis on clean layout, focusable interaction, and clear visual
-   feedback for color selection and stimuli presentation.
+   SYNTEST — Color Test Stylesheet (Test-specific only)
+   Only unique color-wheel and test-specific elements
    =========================================================== */
 
-/* ------------------ Global Layout ------------------ */
-body.page-color {
-  margin: 0;
-  font-family: "Inter", sans-serif;
-  background-color: #f5f6fa;
-  color: #111;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* ------------------ Topbar ------------------
-   Fixed top navigation bar with project branding and control buttons.
------------------------------------------------- */
-.topbar {
-  background: #fff;
-  border-bottom: 1px solid #e1e4eb;
-  padding: 12px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.topbar .brand {
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  font-size: 1.2rem;
-}
-
-.topbar .btn {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.topbar .btn:hover {
-  background: #eee;
-}
-
-/* ------------------ Main Container ------------------
-   Central shell that constrains and centers main content.
-------------------------------------------------------- */
-.shell {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex: 1;
-  padding: 40px 20px;
-}
-
-.content {
-  max-width: 1000px;
-  width: 100%;
-  background: #fff;
-  border-radius: 16px;
-  padding: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.hdr h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.sub {
-  color: #555;
-  font-size: 0.95rem;
-}
-
-/* ------------------ Section Blocks ------------------
-   Reusable layout blocks for grouping test elements.
------------------------------------------------------- */
-.block {
-  margin-top: 30px;
-}
-
-.block-title {
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-
-.status {
-  display: flex;
-  gap: 20px;
-  font-size: 0.9rem;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-/* ------------------ Work Area ------------------
-   Horizontal split between color wheel and swatch/preview area.
-------------------------------------------------- */
-.work-area {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 50px;
-  margin-top: 20px;
-}
-
-/* ------------------ Color Wheel ------------------
-   Canvas area where participants pick or match a color stimulus.
----------------------------------------------------- */
+/* Color wheel canvas */
 #wheel {
   border-radius: 8px;
   border: 2px solid #222;
@@ -130,15 +18,7 @@ body.page-color {
   position: relative;
 }
 
-.wheel-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-/* ------------------ Dot ------------------
-   Visual marker for user’s color selection on the wheel.
--------------------------------------------- */
+/* Dot marker on wheel */
 .dot {
   position: absolute;
   width: 14px;
@@ -151,54 +31,7 @@ body.page-color {
   transform: translate(-50%, -50%);
 }
 
-/* ------------------ Buttons ------------------
-   Shared button styles across UI, including navigation and actions.
------------------------------------------------- */
-.btn {
-  border: 1px solid #ccc;
-  background: #f7f7f7;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  font-weight: 600;
-  font-family: "Inter", sans-serif;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.btn:hover {
-  background: #eaeaea;
-}
-
-.btn:active {
-  transform: scale(0.98);
-}
-
-.btn-primary {
-  background: #000;
-  color: #fff;
-  border: 1px solid #000;
-}
-
-.btn-primary:hover {
-  background: #111;
-}
-
-.nav {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* ------------------ Swatch Preview ------------------
-   Displays participant’s selected color and HEX code.
------------------------------------------------------- */
-.swatch-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
+/* Color swatch preview */
 .swatch {
   width: 200px;
   height: 200px;
@@ -218,26 +51,8 @@ body.page-color {
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
-.tip {
-  font-size: 0.85rem;
-  color: #777;
-  text-align: center;
-  margin-top: 8px;
-}
-
-/* ------------------ Stimulus Box ------------------
-   Central box showing the test stimulus (word or color).
-   Changes dynamically between trials.
----------------------------------------------------- */
-.cct-grid {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  margin-top: 20px;
-}
-
-#stimulusBox {
+/* Stimulus box */
+.stimulus-box {
   width: 200px;
   height: 200px;
   border: 3px solid #111;
@@ -253,12 +68,6 @@ body.page-color {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Alternate background when stimulus is a word cue */
-#stimulusBox[data-type="word"] {
-  background: #fff8e1;
-}
-
-/* Stimulus content animation */
 #stimulusContent {
   font-size: 2.5rem;
   font-weight: 700;
@@ -271,9 +80,45 @@ body.page-color {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ------------------ Developer Slider ------------------
-   Debugging tool to cycle through trials manually.
---------------------------------------------------------- */
+/* Test grid layout */
+.cct-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.swatch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* How-to sidebar */
+.howto {
+  max-width: 220px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.howto h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.howto ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.howto li {
+  margin: 6px 0;
+}
+
+/* Trial slider (dev tool) */
 .trial-slider-container {
   display: flex;
   align-items: center;
@@ -294,30 +139,13 @@ body.page-color {
   accent-color: #000;
 }
 
-/* ------------------ Summary Section ------------------
-   Appears after test completion to show color matches or results.
--------------------------------------------------------- */
-.summary {
-  background: #f9fafb;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 30px;
-}
-
-.summary.hidden {
-  display: none;
-}
-
-/* ------------------ Dialog ------------------
-   Help/instruction modal used before or during the test.
------------------------------------------------ */
+/* Help dialog */
 dialog.help {
   border: none;
   border-radius: 10px;
   padding: 20px 30px;
   max-width: 400px;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
@@ -334,42 +162,20 @@ dialog.help li {
   margin-bottom: 6px;
 }
 
-.dlg-actions {
-  text-align: right;
-  margin-top: 15px;
-}
+/* Responsive */
+@media (max-width: 900px) {
+  .cct-grid {
+    flex-direction: column;
+    gap: 30px;
+  }
 
-/* ------------------ ADDITIONS: clearer descriptions ------------------ */
+  .howto {
+    max-width: 100%;
+    text-align: center;
+  }
 
-/* Under-title lede paragraph used by pages that include it */
-.lede{
-  color:#555;
-  font-size:.95rem;
-  line-height:1.45;
-  margin: 8px 0 0 0;
+  .howto ol {
+    display: inline-block;
+    text-align: left;
+  }
 }
-
-/* Small captions that sit directly under the wheel and stimulus */
-.caption{
-  margin-top:8px;
-  font-size:.85rem;
-  color:#666;
-  text-align:center;
-  max-width: 240px;
-}
-
-/* Left-hand “How to” panel that can be placed before the wheel */
-.howto{
-  max-width:220px;
-  font-size:.95rem;
-  color:#333;
-}
-.howto h4{
-  margin:0 0 8px;
-  font-size:.9rem;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-}
-.howto ol{ margin:0; padding-left:18px; }
-.howto li{ margin:6px 0; }
-.howto .note{ margin-top:10px; font-size:.85rem; color:#666; }

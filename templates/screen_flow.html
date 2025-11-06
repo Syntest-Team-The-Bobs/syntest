@@ -20,25 +20,24 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container">
+  <div class="container container-md">
 
-  {# -------------------- INTRO / PAGE 1 (step = 0) -------------------- #}
+  {# -------------------- INTRO (step = 0) -------------------- #}
   {% if step == 0 %}
     <section class="card">
       <h1 class="card-title">Take the questionnaire</h1>
 
       <p class="lead">
-        In this first screening, we’ll check basic eligibility and<br/>
-        your experiences.
+        In this first screening, we'll check basic eligibility and your experiences.
       </p>
 
       <!-- Add stable id="consent" so JS can bind reliably -->
-      <label class="consent">
+      <label class="checkbox-group">
         <input id="consent" type="checkbox" />
         <span>I consent to take part in this study.</span>
       </label>
 
-      <p class="fineprint">
+      <p class="text-muted mb-3">
         By checking this box, you acknowledge that you have read and understood the
         study information sheet, agree to participate voluntarily, and consent to the
         collection and use of your data for research purposes. You may withdraw at any
@@ -46,10 +45,10 @@
       </p>
 
       <!-- Add stable id="begin-screening" so JS can enable/disable this link -->
-      <a id="begin-screening" class="btn-primary" href="{{ url_for('flow', step=1) }}">Begin screening</a>
+      <a id="begin-screening" class="btn btn-primary btn-block" href="{{ url_for('flow', step=1) }}">Begin screening</a>
     </section>
 
-    <p class="footnote">You can stop at any time.</p>
+    <p class="text-muted text-center mt-3">You can stop at any time.</p>
   {% endif %}
 
   {# -------------------- STEP 1 (Health & Substances) -------------------- #}
@@ -59,23 +58,32 @@
       <div class="progress-track"><div class="progress-bar" style="width:20%"></div></div>
     </div>
 
-    <section class="card card-roomy">
-      <span class="chip">Health &amp; Substances</span>
-      <h2 class="h5">Confirm none apply to you:</h2>
+    <section class="card">
+      <span class="chip chip-primary">Health &amp; Substances</span>
+      <h2>Confirm none apply to you:</h2>
 
-      <label class="checkline"><input type="checkbox"><span>Use of recreational drugs including marijuana, LSD, or psychedelics</span></label>
-      <label class="checkline"><input type="checkbox"><span>Neurological condition or treatment affecting perception</span></label>
-      <label class="checkline"><input type="checkbox"><span>Medical treatment impacting perception (e.g., brain tumor) or hallucinogenic physiology</span></label>
+      <label class="checkbox-group">
+        <input type="checkbox">
+        <span>Use of recreational drugs including marijuana, LSD, or psychedelics</span>
+      </label>
+      <label class="checkbox-group">
+        <input type="checkbox">
+        <span>Neurological condition or treatment affecting perception</span>
+      </label>
+      <label class="checkbox-group">
+        <input type="checkbox">
+        <span>Medical treatment impacting perception (e.g., brain tumor) or hallucinogenic physiology</span>
+      </label>
 
-      <p class="muted-note">If any are checked, you're not eligible.</p>
+      <p class="text-muted">If any are checked, you're not eligible.</p>
 
-      <div class="card-actions">
-        <a class="btn-secondary" href="{{ url_for('flow', step=0) }}">Exit</a>
-        <a class="btn-dark" href="{{ url_for('flow', step=2) }}">I confirm none apply</a>
+      <div class="actions actions-between">
+        <a class="btn btn-secondary" href="{{ url_for('flow', step=0) }}">Exit</a>
+        <a class="btn btn-primary" href="{{ url_for('flow', step=2) }}">I confirm none apply</a>
       </div>
     </section>
 
-    <p class="footnote">Questions? <a class="footer-link" href="#">Contact support</a></p>
+    <p class="text-muted text-center mt-3">Questions? <a href="#">Contact support</a></p>
   {% endif %}
 
   {# -------------------- STEP 2 (Definition) -------------------- #}
@@ -85,20 +93,20 @@
       <div class="progress-track"><div class="progress-bar" style="width:40%"></div></div>
     </div>
 
-    <section class="card card-roomy">
-      <span class="chip chip--blue">Definition</span>
-      <h2 class="h5">What is synesthesia?</h2>
+    <section class="card">
+      <span class="chip chip-info">Definition</span>
+      <h2>What is synesthesia?</h2>
 
-      <p class="para">
+      <p>
         Synesthesia is a neurological condition where stimulation of <em>one</em> sense automatically
-        triggers a perception in another sense. It’s not a metaphor, a mood-based association,
+        triggers a perception in another sense. It's not a metaphor, a mood-based association,
         or a one-time experience—it's a consistent, involuntary sensory connection that occurs
         throughout a person's life.
       </p>
 
-      <div class="two-col">
+      <div class="grid-2">
         <div>
-          <div class="kicker">DO</div>
+          <div class="label-uppercase">DO</div>
           <ul class="arrow-list">
             <li><span class="arrow"></span> Letters → Colors</li>
             <li><span class="arrow"></span> Music → Colors</li>
@@ -106,7 +114,7 @@
           </ul>
         </div>
         <div>
-          <div class="kicker">DON’T</div>
+          <div class="label-uppercase">DON'T</div>
           <ul class="plain-list">
             <li>Mnemonics</li>
             <li>Guesses</li>
@@ -118,28 +126,27 @@
       <div class="choice-grid">
         <a href="#" class="choice-card" data-choice="yes">
           <div class="choice-title">Yes</div>
-          <div class="choice-sub">I experience consistent sensory connections</div>
+          <div class="choice-subtitle">I experience consistent sensory connections</div>
         </a>
         <a href="#" class="choice-card" data-choice="maybe">
           <div class="choice-title">Maybe</div>
-          <div class="choice-sub">I'm not sure if my experiences qualify</div>
+          <div class="choice-subtitle">I'm not sure if my experiences qualify</div>
         </a>
       </div>
 
       <!-- NO routes directly to Exit A (works even without JS) -->
       <a class="choice-negative" href="{{ url_for('exit_page', code='A') }}">
         <div class="choice-negative-title">No — exit per criterion A</div>
-        <div class="choice-negative-sub">I don’t experience these sensory connections</div>
+        <div class="choice-negative-subtitle">I don't experience these sensory connections</div>
       </a>
 
-      <div class="page-actions">
-        <a class="btn-secondary" href="{{ url_for('flow', step=1) }}">Back</a>
-        <a class="btn-dark" href="#" id="continue-definition">Continue</a>
+      <div class="actions actions-between">
+        <a class="btn btn-secondary" href="{{ url_for('flow', step=1) }}">Back</a>
+        <a class="btn btn-primary" href="#" id="continue-definition">Continue</a>
       </div>
-
     </section>
 
-    <p class="footnote">Questions? <a class="footer-link" href="#">Contact support</a></p>
+    <p class="text-muted text-center mt-3">Questions? <a href="#">Contact support</a></p>
   {% endif %}
 
   {# -------------------- STEP 3 (Pain & Emotion) -------------------- #}
@@ -149,11 +156,11 @@
       <div class="progress-track"><div class="progress-bar" style="width:60%"></div></div>
     </div>
 
-    <section class="card card-roomy">
-      <span class="chip chip--blue">Pain &amp; Emotion</span>
-      <h2 class="h5">Are your triggers pain or emotions?</h2>
+    <section class="card">
+      <span class="chip chip-info">Pain &amp; Emotion</span>
+      <h2>Are your triggers pain or emotions?</h2>
 
-      <p class="para">
+      <p>
         For ethical and replicability reasons, we must exclude synesthetic experiences that are primarily
         triggered by pain or strong emotions. We're looking for consistent, automatic associations with
         neutral stimuli.
@@ -163,7 +170,7 @@
         <ul class="info-rows">
           <li><span class="i bolt"></span><span class="info-label">Pain</span><span class="info-text">→ flashes of light or color</span></li>
           <li><span class="i heart"></span><span class="info-label">Emotion</span><span class="info-text">→ specific tastes or smells</span></li>
-          <li><span class="i dot"></span><span class="info-label">Valid example:</span><span class="info-text">The neutral word “Tuesday” consistently tastes sweet</span></li>
+          <li><span class="i dot"></span><span class="info-label">Valid example:</span><span class="info-text">The neutral word "Tuesday" consistently tastes sweet</span></li>
         </ul>
       </div>
 
@@ -172,25 +179,25 @@
           <input type="radio" name="pain_emotion" value="yes">
           <div class="select-body">
             <div class="select-title">Yes</div>
-            <div class="select-sub">My experiences are primarily triggered by pain or strong emotions (exit per criterion D)</div>
+            <div class="select-subtitle">My experiences are primarily triggered by pain or strong emotions (exit per criterion D)</div>
           </div>
         </label>
         <label class="select-card">
           <input type="radio" name="pain_emotion" value="no">
           <div class="select-body">
             <div class="select-title">No</div>
-            <div class="select-sub">My experiences occur with neutral stimuli</div>
+            <div class="select-subtitle">My experiences occur with neutral stimuli</div>
           </div>
         </label>
       </div>
 
-      <div class="page-actions">
-        <a class="btn-secondary" href="{{ url_for('flow', step=2) }}">Back</a>
-        <a class="btn-dark" href="{{ url_for('flow', step=4) }}">Continue</a>
+      <div class="actions actions-between">
+        <a class="btn btn-secondary" href="{{ url_for('flow', step=2) }}">Back</a>
+        <a class="btn btn-primary" href="{{ url_for('flow', step=4) }}">Continue</a>
       </div>
     </section>
 
-    <p class="footnote">Questions? <a class="footer-link" href="#">Contact support</a></p>
+    <p class="text-muted text-center mt-3">Questions? <a href="#">Contact support</a></p>
   {% endif %}
 
   {# -------------------- STEP 4 (Type Selection) -------------------- #}
@@ -200,15 +207,15 @@
       <div class="progress-track"><div class="progress-bar" style="width:80%"></div></div>
     </div>
 
-    <section class="card card-roomy">
-      <span class="chip chip--green">Type Selection</span>
-      <h2 class="h5">Select any types you experience</h2>
+    <section class="card">
+      <span class="chip chip-success">Type Selection</span>
+      <h2>Select any types you experience</h2>
 
       <ul class="type-rows">
         <li class="type-row">
           <div class="type-main">
             <div class="type-title">Grapheme • Color</div>
-            <div class="type-sub">Letters/numbers evoke specific colors (e.g., “A” is red).</div>
+            <div class="type-sub">Letters/numbers evoke specific colors (e.g., "A" is red).</div>
           </div>
           <div class="type-opts">
             <label class="opt"><input type="radio" name="grapheme" value="yes"><span>Yes</span></label>
@@ -255,15 +262,15 @@
       </ul>
 
       <input class="other-input" type="text" placeholder="Other synesthetic experiences (optional)">
-      <p class="muted-note">Only types with available tasks proceed; pain/emotion triggers excluded.</p>
+      <p class="text-muted">Only types with available tasks proceed; pain/emotion triggers excluded.</p>
 
-      <div class="page-actions">
-        <a class="btn-secondary" href="{{ url_for('flow', step=3) }}">Back</a>
-        <a class="btn-dark" href="{{ url_for('flow', step=5) }}">See Next Steps</a>
+      <div class="actions actions-between">
+        <a class="btn btn-secondary" href="{{ url_for('flow', step=3) }}">Back</a>
+        <a class="btn btn-primary" href="{{ url_for('flow', step=5) }}">See Next Steps</a>
       </div>
     </section>
 
-    <p class="footnote">Questions? <a class="footer-link" href="#">Contact support</a></p>
+    <p class="text-muted text-center mt-3">Questions? <a href="#">Contact support</a></p>
   {% endif %}
 
   {# -------------------- STEP 5 (Routing Summary) -------------------- #}
@@ -273,11 +280,11 @@
       <div class="progress-track"><div class="progress-bar" style="width:100%"></div></div>
     </div>
 
-    <section class="card card-roomy">
-      <span class="chip chip--blue">Routing</span>
-      <h2 class="h5">Your next step</h2>
+    <section class="card">
+      <span class="chip chip-info">Routing</span>
+      <h2>Your next step</h2>
 
-      <div class="tag-row">
+      <div class="tag-group">
         <span class="tag">Grapheme – Color</span>
         <span class="tag">Lexical – Taste</span>
       </div>
@@ -310,9 +317,9 @@
         </ul>
       </div>
 
-      <div class="page-actions">
-        <a class="btn-secondary" href="{{ url_for('flow', step=4) }}">Back</a>
-        <a class="btn-dark" href="#">Begin Assigned Task</a>
+      <div class="actions actions-between">
+        <a class="btn btn-secondary" href="{{ url_for('flow', step=4) }}">Back</a>
+        <a class="btn btn-primary" href="#">Begin Assigned Task</a>
       </div>
     </section>
   {% endif %}

@@ -5,20 +5,20 @@
 {% block title %}SYNTEST — Screening Exit{% endblock %}
 
 {% block content %}
-  <div class="container">
-    <section class="card card-roomy">
+  <div class="container container-md">
+    <section class="card">
         
-      <!-- Consistent blue pill -->
-      <span class="chip chip--blue">{{ chip_label or "Exit" }}</span>
+      <!-- Consistent chip styling -->
+      <span class="chip chip-info">{{ chip_label or "Exit" }}</span>
 
-      <h2 class="h5" style="margin-top:8px">{{ heading or "Not eligible" }}</h2>
+      <h2 class="h3">{{ heading or "Not eligible" }}</h2>
 
       {% if thanks_line %}
-        <p class="lead-strong">{{ thanks_line }}</p>
+        <p class="lead font-bold">{{ thanks_line }}</p>
       {% endif %}
 
       {% if lead %}
-        <p class="para" style="margin-top:6px">{{ lead }}</p>
+        <p style="margin-top:6px">{{ lead }}</p>
       {% endif %}
 
       {% if bullets %}
@@ -28,15 +28,15 @@
       {% endif %}
 
       {% if note %}
-        <div class="summary-note">
+        <div class="note-panel">
           <div class="note-title">Details</div>
-          <p class="para" style="margin:6px 0 0">{{ note }}</p>
+          <p style="margin:6px 0 0">{{ note }}</p>
         </div>
       {% endif %}
 
-      <div class="page-actions" style="margin-top:16px">
-        <a class="btn-secondary" href="{{ url_for('flow', step=0) }}">Return to start</a>
-        <a class="btn-dark" href="#">Close</a>
+      <div class="actions" style="margin-top:16px">
+        <a class="btn btn-primary" href="{{ url_for('flow', step=0) }}">Return to start</a>
+        <a class="btn btn-secondary" href="#">Close</a>
       </div>
 
       <p class="footnote" style="margin-top:12px">

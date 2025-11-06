@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Speed Congruency – Test{% endblock %}
+{% block title %}SYNTEST — Speed Congruency Test{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='speedcongruency.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='speedcongruency.css') }}" />
 <style>
   .chip-wrap { display:flex; justify-content:center; margin-top:20px; }
   .color-chip { width: 160px; height: 160px; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.2); }
@@ -11,36 +11,43 @@
 </style>
 {% endblock %}
 
+{% block header %}
+<!-- Override default header for full-screen test -->
+{% endblock %}
+
 {% block content %}
-  <!-- Trigger view (3s) -->
-  <main id="triggerView" class="screen trigger">
-    <img src="{{ url_for('static', filename='images/trigger.jpg') }}" alt="Trigger" class="bg-image"/>
-    <div class="overlay">
-      <h1 class="prompt">LOOK AT THE COLOR SHOWN</h1>
-      <div class="chip-wrap">
-        <div id="triggerChip" class="color-chip" aria-label="Trigger color"></div>
-      </div>
+<!-- Trigger view (3s) -->
+<main id="triggerView" class="screen trigger">
+  <img src="{{ url_for('static', filename='images/trigger.jpg') }}" alt="Trigger" class="bg-image"/>
+  <div class="overlay">
+    <h1 class="prompt">LOOK AT THE COLOR SHOWN</h1>
+    <div class="chip-wrap">
+      <div id="triggerChip" class="color-chip" aria-label="Trigger color"></div>
     </div>
-    <div class="countdown" aria-live="polite" aria-atomic="true"><span id="countNum">3</span></div>
-  </main>
+  </div>
+  <div class="countdown" aria-live="polite" aria-atomic="true"><span id="countNum">3</span></div>
+</main>
 
-  <!-- Response view -->
-  <main id="responseView" class="screen response" aria-hidden="true" style="display:none">
-    <img src="{{ url_for('static', filename='images/response.jpg') }}" alt="Response" class="bg-image"/>
-    <div class="overlay">
-      <h1 class="prompt">TIMER STARTED — CLICK THE MATCHING COLOR</h1>
-      <div id="palette" class="palette" role="group" aria-label="Choose a color"></div>
+<!-- Response view -->
+<main id="responseView" class="screen response" aria-hidden="true" style="display:none">
+  <img src="{{ url_for('static', filename='images/response.jpg') }}" alt="Response" class="bg-image"/>
+  <div class="overlay">
+    <h1 class="prompt">TIMER STARTED — CLICK THE MATCHING COLOR</h1>
+    <div id="palette" class="palette" role="group" aria-label="Choose a color"></div>
 
-      <div class="rt-row" id="rtRow" hidden>
-        <span>Reaction time:</span>
-        <strong id="rtValue">—</strong>
-        <span>ms</span>
-      </div>
+    <div class="rt-row" id="rtRow" hidden>
+      <span>Reaction time:</span>
+      <strong id="rtValue">—</strong>
+      <span>ms</span>
     </div>
-  </main>
+  </div>
+</main>
+{% endblock %}
+
+{% block footer %}
+<!-- Override footer for full-screen test -->
 {% endblock %}
 
 {% block extra_js %}
-{{ super() }}
 <script src="{{ url_for('static', filename='speedcongruency.js') }}"></script>
 {% endblock %}

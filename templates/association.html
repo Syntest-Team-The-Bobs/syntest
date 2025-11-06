@@ -1,45 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST – Color Association</title>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Association Test{% endblock %}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='association.css') }}" />
+{% endblock %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='association.css') }}?v=7">
-</head>
-<body class="page-association">
+{% block content %}
+<main class="panel">
+  <div class="container container-lg">
+    <div class="association-hero">
+      <p class="prompt text-center">
+        SELECT THE COLOR THAT BEST MATCHES THIS WORD
+      </p>
 
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="brand">SYNTEST</div>
-    <div class="top-right">
-      <a class="about" href="#">About This Study</a>
-      <button class="account-btn">Your Account</button>
+      <div class="actions actions-center mt-4 mb-5">
+        <a class="btn btn-primary btn-xl" href="#">BEGIN</a>
+      </div>
+
+      <!-- Clock badge -->
+      <div class="clock-badge">
+        <div class="clock-hand-short"></div>
+        <div class="clock-hand-long"></div>
+      </div>
+    </div>
+
+    <!-- Color tiles -->
+    <div class="color-tiles">
+      <button class="color-tile" style="background: #ff0000;" aria-label="Red"></button>
+      <button class="color-tile" style="background: #00ff00;" aria-label="Green"></button>
+      <button class="color-tile" style="background: #0000ff;" aria-label="Blue"></button>
+      <button class="color-tile" style="background: #ffff00;" aria-label="Yellow"></button>
     </div>
   </div>
-
-  <!-- Gray band panel -->
-  <main class="panel">
-    <div class="content">
-      <header class="hero">
-        <h1 class="prompt">WHAT COLOR DO YOU ASSOCIATE WITH THE WORD</h1>
-        <a class="cta" href="{{ url_for('participants') }}">PRESENTATION</a>
-        <div class="clock" aria-hidden="true"></div>
-      </header>
-
-      <!-- 4 tiles in a single row, centered -->
-      <section class="choices">
-        <button class="tile" style="--c:#E64234" aria-label="red"></button>
-        <button class="tile" style="--c:#E8854C" aria-label="orange"></button>
-        <button class="tile" style="--c:#4C70F2" aria-label="blue"></button>
-        <button class="tile" style="--c:#9B49EA" aria-label="purple"></button>
-      </section>
-    </div>
-  </main>
-
-</body>
-</html>
+</main>
+{% endblock %}

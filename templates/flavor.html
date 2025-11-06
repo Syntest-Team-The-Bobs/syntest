@@ -1,44 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST – Flavor Mapping</title>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Flavor Mapping{% endblock %}
 
-  <!-- Inter font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='flavor.css') }}" />
+{% endblock %}
 
-  <!-- Only this page’s CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='flavor.css') }}?v=4">
-</head>
-<body class="page-flavor">
-
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="brand">SYNTEST</div>
-    <div class="top-right">
-      <a class="about" href="#">About This Study</a>
-      <button class="account-btn">Your Account</button>
-    </div>
-  </div>
-
-  <!-- Panel -->
-  <main class="panel">
+{% block content %}
+<main class="panel">
+  <div class="container container-lg">
     <h1 class="prompt">
       CHOOSE THE FLAVOR THAT IS ASSOCIATED WITH THE FOLLOWING LETTERS/<br>
       NUMBERS/WORDS
     </h1>
 
-    <div class="home-wrap">
-      <a class="home-btn" href="{{ url_for('participants') }}">HOME</a>
+    <div class="actions actions-center mb-4">
+      <a class="btn btn-primary btn-xl" href="{{ url_for('participant_dashboard') }}">HOME</a>
     </div>
 
-    <section class="work-area">
+    <section class="flavor-layout">
       <!-- Wheel -->
-      <div class="wheel-wrap">
-        <div class="wheel">
+      <div class="wheel-container">
+        <div class="flavor-wheel">
           <svg viewBox="0 0 520 520" aria-hidden="true">
             <line x1="260" y1="20"  x2="260" y2="260" stroke="#111" stroke-width="2"/>
             <line x1="412" y1="88"  x2="260" y2="260" stroke="#111" stroke-width="2"/>
@@ -47,26 +29,53 @@
             <line x1="78"  y1="280" x2="260" y2="260" stroke="#111" stroke-width="2"/>
           </svg>
 
-          <span class="rim-label lbl-sour">SOUR</span>
-          <span class="rim-label lbl-sweet">SWEET</span>
-          <span class="rim-label lbl-salty">SALTY</span>
-          <span class="rim-label lbl-umami">UMAMI</span>
-          <span class="rim-label lbl-bitter">BITTER</span>
+          <span class="flavor-label flavor-sour">SOUR</span>
+          <span class="flavor-label flavor-sweet">SWEET</span>
+          <span class="flavor-label flavor-salty">SALTY</span>
+          <span class="flavor-label flavor-umami">UMAMI</span>
+          <span class="flavor-label flavor-bitter">BITTER</span>
 
-          <span class="dot"></span>
+          <span class="flavor-dot"></span>
         </div>
       </div>
 
       <!-- Controls -->
-      <ul class="control-list">
-        <li class="pill"><button class="btn-round">−</button><span class="title">SOUR</span><span class="pct">12%</span><button class="btn-round">+</button></li>
-        <li class="pill"><button class="btn-round">−</button><span class="title">SWEET</span><span class="pct">38%</span><button class="btn-round">+</button></li>
-        <li class="pill"><button class="btn-round">−</button><span class="title">UMAMI</span><span class="pct">5%</span><button class="btn-round">+</button></li>
-        <li class="pill"><button class="btn-round">−</button><span class="title">BITTER</span><span class="pct">5%</span><button class="btn-round">+</button></li>
-        <li class="pill"><button class="btn-round">−</button><span class="title">SALTY</span><span class="pct">40%</span><button class="btn-round">+</button></li>
-      </ul>
+      <div class="flavor-controls">
+        <ul class="list-unstyled">
+          <li class="flavor-pill">
+            <button class="btn-round">−</button>
+            <span class="flavor-title">SOUR</span>
+            <span class="flavor-pct">12%</span>
+            <button class="btn-round">+</button>
+          </li>
+          <li class="flavor-pill">
+            <button class="btn-round">−</button>
+            <span class="flavor-title">SWEET</span>
+            <span class="flavor-pct">38%</span>
+            <button class="btn-round">+</button>
+          </li>
+          <li class="flavor-pill">
+            <button class="btn-round">−</button>
+            <span class="flavor-title">UMAMI</span>
+            <span class="flavor-pct">5%</span>
+            <button class="btn-round">+</button>
+          </li>
+          <li class="flavor-pill">
+            <button class="btn-round">−</button>
+            <span class="flavor-title">BITTER</span>
+            <span class="flavor-pct">5%</span>
+            <button class="btn-round">+</button>
+          </li>
+          <li class="flavor-pill">
+            <button class="btn-round">−</button>
+            <span class="flavor-title">SALTY</span>
+            <span class="flavor-pct">40%</span>
+            <button class="btn-round">+</button>
+          </li>
+        </ul>
+      </div>
     </section>
-  </main>
-
-</body>
-</html>
+  </div>
+</main>
+{% endblock %}
+```

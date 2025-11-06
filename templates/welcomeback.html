@@ -4,40 +4,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SYNTEST — Welcome back</title>
-  <link rel="stylesheet" href="./static/welcomeback.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
 </head>
 <body>
-  <!-- Top Bar -->
-  <header class="topbar">
+  <div class="topbar">
     <div class="brand">SYNTEST</div>
-
     <nav class="nav">
       <a href="#" class="nav-link">About This Study</a>
-      <button class="btn btn-dark">Your Account</button>
+      <button class="btn btn-primary btn-sm">Your Account</button>
     </nav>
-  </header>
+  </div>
 
-  <!-- Centered column (title + card) -->
-  <main class="wrap">
-    <div class="col">
-      <h1 class="page-title">Welcome back!</h1>
+  <div class="container container-sm container-centered">
+    <h1 class="text-center mb-4">Welcome back!</h1>
 
-      <form class="card" id="loginForm" novalidate>
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="Value" />
-        </div>
+    <form class="card" id="loginForm" novalidate>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="Enter your email" />
+      </div>
 
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="Value" />
-        </div>
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Enter your password" />
+      </div>
 
-        <button class="btn btn-dark btn-block" id="loginBtn" type="submit">Log In</button>
-      </form>
-    </div>
-  </main>
-
-  <!-- <script src="welcomeback.js"></script> -->
+      <button class="btn btn-primary btn-block" id="loginBtn" type="submit">Log In</button>
+    </form>
+  </div>
 </body>
 </html>

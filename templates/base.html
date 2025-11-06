@@ -6,43 +6,39 @@
   <title>{% block title %}Synesthesia Research Platform{% endblock %}</title>
 
   <!-- Load team CSS (either filename) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 
   {% block extra_css %}{% endblock %}
 </head>
 <body>
   {% block header %}
-  <div class="header">
-    <div class="header-content">
-      <div class="logo">Synesthesia Research</div>
-      <div class="nav-links">
-        {% block nav_links %}
-          <a href="{{ url_for('index') }}">Home</a>
-          <a href="{{ url_for('flow', step=0) }}">Screening</a>
+  <div class="topbar">
+    <div class="brand">SYNTEST</div>
+    <nav class="nav">
+      {% block nav_links %}
+        <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('flow', step=0) }}" class="nav-link">Screening</a>
 
-          {# Prefer session (your app.py uses session); fall back to flask_login if present #}
-          {% if session.get('user_role') %}
-            {% if session.get('user_role') == 'participant' %}
-              <a href="{{ url_for('participant_dashboard') }}">Dashboard</a>
-            {% elif session.get('user_role') == 'researcher' %}
-              <a href="{{ url_for('researcher_dashboard') }}">Dashboard</a>
-            {% endif %}
-            <a href="{{ url_for('logout') }}">Logout</a>
-          {% elif current_user is defined and current_user.is_authenticated %}
-            {% if current_user.role == 'participant' %}
-              <a href="{{ url_for('participant_dashboard') }}">Dashboard</a>
-            {% elif current_user.role == 'researcher' %}
-              <a href="{{ url_for('researcher_dashboard') }}">Dashboard</a>
-            {% endif %}
-            <a href="{{ url_for('logout') }}">Logout</a>
-          {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('signup') }}">Sign Up</a>
-          {% endif %}
-        {% endblock %}
-      </div>
-    </div>
+        {% if session.get('user_role') %}
+          {% if session.get('user_role') == 'participant' %}
+            <a href="{{ url_for('participant_dashboard') }}" class="nav-link">Dashboard</a>
+          {% elif session.get('user_role') == 'researcher' %}
+            <a href="{{ url_for('researcher_dashboard') }}" class="nav-link">Dashboard</a>
+          {% endif %} 
+          <a href="{{ url_for('logout') }}" class="btn btn-primary btn-sm">Logout</a>
+        {% elif current_user is defined and current_user.is_authenticated %}
+          {% if current_user.role == 'participant' %}
+            <a href="{{ url_for('participant_dashboard') }}" class="nav-link">Dashboard</a>
+          {% elif current_user.role == 'researcher' %}
+            <a href="{{ url_for('researcher_dashboard') }}" class="nav-link">Dashboard</a>
+          {% endif %} 
+          <a href="{{ url_for('logout') }}" class="btn btn-primary btn-sm">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+          <a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Sign Up</a>
+        {% endif %}
+      {% endblock %}
+    </nav>
   </div>
   {% endblock %}
 
@@ -61,7 +57,7 @@
   </main>
 
   {% block footer %}
-  <footer style="text-align:center; padding:40px 20px; border-top:2px solid #000; margin-top:60px;">
+  <footer>
     <p>&copy; 2025 Synesthesia Research Platform. All data is anonymized and used for research purposes only.</p>
   </footer>
   {% endblock %}

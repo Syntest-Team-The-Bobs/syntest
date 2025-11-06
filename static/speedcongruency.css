@@ -1,71 +1,172 @@
-/* Speed Congruency layout based on provided mockups */
-:root{
-  --bg:#f3f3f3;
-  --white:#fff;
-  --text:#111;
-  --border:#dcdcdc;
-  --card-shadow: 0 2px 12px rgba(0,0,0,.05);
-}
-
-*{box-sizing:border-box;}
-html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:var(--text);background:#fafafa;}
-
-/* Header */
-.topbar{
-  position:sticky;top:0;z-index:5;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:22px 24px;background:var(--white);border-bottom:1px solid #ececec;
-}
-.brand{font-weight:800;letter-spacing:.02em;font-size:24px;}
-.nav{display:flex;gap:20px;align-items:center;}
-.link{text-decoration:none;color:var(--text);}
-.btn{padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600;}
-.account-btn{background:var(--text);color:#fff;}
+/* ====== Speed Congruency Test Specific Styles ====== */
 
 /* Screens */
-.screen{position:relative;min-height:calc(100vh - 72px);background:#f6f6f6;overflow:hidden;}
-.bg-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.06;pointer-events:none;}
-.overlay{position:relative;max-width:980px;margin:0 auto;padding:64px 20px;text-align:center;}
-
-.prompt{margin-top:16px;font-size:28px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;}
-.word-card{margin:44px auto 0;max-width:760px;background:var(--white);border-radius:16px;box-shadow:var(--card-shadow);border:1px solid var(--border);padding:72px 24px;}
-.word{font-size:48px;font-weight:800;letter-spacing:.02em;}
-/* countdown circle */
-.countdown{
-  position:absolute;right:36px;top:120px;width:150px;height:150px;border-radius:50%;
-  border:2px solid #222;background:#fff;display:flex;align-items:center;justify-content:center;
+.speed-screen {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background: #f6f6f6;
+  overflow: hidden;
+  padding: 64px 20px;
 }
-.countdown span{font-size:64px;font-weight:800;}
 
-/* Response view variations */
-.response .word-chip{
-  margin:22px auto 40px;
-  display:inline-block;background:#fff;border:1px solid var(--border);
-  padding:18px 28px;border-radius:12px;font-weight:800;letter-spacing:.02em;
+/* Word display */
+.word-display {
+  margin: 44px auto 0;
+  max-width: 760px;
 }
-.palette{display:flex;gap:64px;justify-content:center;margin-top:28px;flex-wrap:wrap;}
-.swatch{
-  width:200px;height:160px;border:3px solid #1a1a1a;border-radius:4px;background:#eee;cursor:pointer;
-  box-shadow:0 1px 3px rgba(0,0,0,.1);
+
+.word-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dcdcdc;
+  padding: 72px 24px;
 }
-.swatch[data-color="red"]{background:#e6483d;}
-.swatch[data-color="orange"]{background:#ea874d;}
-.swatch[data-color="blue"]{background:#4a7ff5;}
-.swatch[data-color="purple"]{background:#b55bf0;}
 
-.rt-row{margin-top:28px;font-size:18px;display:flex;gap:8px;justify-content:center;align-items:center;}
+.word-text {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
 
-/* Right top analog clock icon */
-.clock{position:absolute;right:36px;top:120px;}
-.clock-face{width:150px;height:150px;border-radius:50%;border:3px solid #222;background:#fff;position:relative;}
-.hand{position:absolute;left:50%;top:50%;transform-origin:0 0;background:#222;}
-.hand-hour{width:40px;height:4px;transform:rotate(-45deg);}
-.hand-minute{width:60px;height:3px;transform:rotate(20deg);}
+/* Countdown circle */
+.countdown-circle {
+  position: absolute;
+  right: 36px;
+  top: 120px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid #222;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-@media (max-width:900px){
-  .palette{gap:28px;}
-  .swatch{width:150px;height:120px;}
-  .countdown,.clock{right:16px;top:120px;}
-  .countdown,.clock .clock-face{width:120px;height:120px;}
-  .countdown span{font-size:48px;}
+.countdown-num {
+  font-size: 64px;
+  font-weight: 800;
+}
+
+/* Response screen elements */
+.word-chip {
+  margin: 22px auto 40px;
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  padding: 18px 28px;
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.color-palette {
+  display: flex;
+  gap: 64px;
+  justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 200px;
+  height: 160px;
+  border: 3px solid #1a1a1a;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.color-swatch:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-swatch:active {
+  transform: translateY(0);
+}
+
+.rt-display {
+  margin-top: 28px;
+  font-size: 18px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Clock icon */
+.clock-icon {
+  position: absolute;
+  right: 36px;
+  top: 120px;
+}
+
+.clock-face {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 3px solid #222;
+  background: #fff;
+  position: relative;
+}
+
+.clock-hand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: 0 0;
+  background: #222;
+}
+
+.hand-hour {
+  width: 40px;
+  height: 4px;
+  transform: rotate(-45deg);
+}
+
+.hand-minute {
+  width: 60px;
+  height: 3px;
+  transform: rotate(20deg);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .color-palette {
+    gap: 28px;
+  }
+
+  .color-swatch {
+    width: 150px;
+    height: 120px;
+  }
+
+  .countdown-circle,
+  .clock-icon {
+    right: 16px;
+    top: 120px;
+  }
+
+  .countdown-circle,
+  .clock-face {
+    width: 120px;
+    height: 120px;
+  }
+
+  .countdown-num {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .word-card {
+    padding: 48px 20px;
+  }
+
+  .word-text {
+    font-size: 36px;
+  }
 }

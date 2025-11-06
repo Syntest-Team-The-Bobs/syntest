@@ -1,48 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST — Sequence Space Test</title>
-  <link rel="stylesheet" href="./static/sequence_space_test.css" />
-</head>
-<body>
-  <!-- Top Bar -->
-  <header class="topbar">
-    <div class="brand">SYNTEST</div>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Sequence Space Test{% endblock %}
 
-    <nav class="nav">
-      <a href="#" class="nav-link">About This Study</a>
-      <button class="btn btn-dark">Your Account</button>
-    </nav>
-  </header>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sequence_space.css') }}" />
+{% endblock %}
 
-  <!-- Hero -->
-  <main class="hero">
-    <h2 class="hero-title">
-      LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD
-      TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA ALIQUA.
-    </h2>
+{% block content %}
+<main class="container container-lg">
+  <div class="text-center mb-5">
+    <h1 class="mt-4">SEQUENCE SPACE TEST</h1>
+    <p class="lead">
+      Arrange the sequence in the space provided. Click play when ready.
+    </p>
+  </div>
 
-    <!-- Play button -->
-    <button class="play" aria-label="Play video">
-      <!-- SVG: black roundel with white triangle -->
-      <svg viewBox="0 0 72 72" width="56" height="56" aria-hidden="true">
-        <circle cx="36" cy="36" r="28" fill="#111111" />
-        <polygon points="30,24 30,48 50,36" fill="#ffffff" />
-        <!-- subtle outer ring to match the mock -->
-        <circle cx="36" cy="36" r="31.5" fill="none" stroke="#111111" stroke-width="3" />
+  <div class="actions actions-center mb-4">
+    <button class="play-btn" aria-label="Play">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="58" fill="none" stroke="#111" stroke-width="4"/>
+        <polygon points="50,35 50,85 85,60" fill="#111"/>
       </svg>
     </button>
+  </div>
 
-    <!-- Framed stage with three dots -->
-    <section class="stage" role="img" aria-label="Framed canvas with three points">
-      <span class="dot dot-a" aria-hidden="true"></span>
-      <span class="dot dot-b" aria-hidden="true"></span>
-      <span class="dot dot-c" aria-hidden="true"></span>
-    </section>
-  </main>
-
-  <!-- <script src="sequence_space_test.js"></script> -->
-</body>
-</html>
+  <div class="sequence-stage">
+    <svg class="sequence-wires" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <!-- Lines will be drawn by JS -->
+    </svg>
+    <div class="sequence-dot dot-a"></div>
+    <div class="sequence-dot dot-b"></div>
+    <div class="sequence-dot dot-c"></div>
+  </div>
+</main>
+{% endblock %}

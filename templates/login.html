@@ -1,73 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Synesthesia Research Platform</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">Synesthesia Research</div>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Login{% endblock %}
 
-    <div class="auth-container">
-        <h1>Login</h1>
+{% block extra_css %}
+<style>
+/* Page-specific styles for role selector */
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.role-card {
+  padding: 20px;
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: center;
+}
+
+.role-card:hover {
+  border-color: var(--color-black);
+  box-shadow: var(--shadow-md);
+}
+
+.role-card.active {
+  border-color: var(--color-black);
+  background: var(--bg-secondary);
+}
+
+.role-card h3 {
+  margin: 0 0 8px;
+  font-size: var(--font-size-lg);
+}
+
+.role-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 640px) {
+  .role-selector {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="container container-sm container-centered">
+    <h1 class="text-center mb-4">Login</h1>
+    
+    {% if error %}
+    <div class="alert alert-error">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="role-selector">
+        <div class="role-card active" id="participant-role" onclick="selectRole('participant')">
+          <h3>Participant</h3>
+          <p>Take synesthesia tests</p>
+        </div>
+        <div class="role-card" id="researcher-role" onclick="selectRole('researcher')">
+          <h3>Researcher</h3>
+          <p>Access research data</p>
+        </div>
+      </div>
+
+      <form method="POST" action="/login" id="login-form">
+        <input type="hidden" name="role" id="role-input" value="participant">
         
-        {% if error %}
-        <div class="alert alert-error">
-            {{ error }}
-        </div>
-        {% endif %}
-
-        <div class="role-selector">
-            <div class="role-card active" id="participant-role" onclick="selectRole('participant')">
-                <h3>Participant</h3>
-                <p>Take synesthesia tests</p>
-            </div>
-            <div class="role-card" id="researcher-role" onclick="selectRole('researcher')">
-                <h3>Researcher</h3>
-                <p>Access research data</p>
-            </div>
+        <div class="form-field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required>
         </div>
 
-        <form method="POST" action="/login" id="login-form">
-            <input type="hidden" name="role" id="role-input" value="participant">
-            
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="btn btn-full">Login</button>
-        </form>
-
-        <div class="text-center mt-20">
-            <p>Don't have an account? <a href="/signup" class="link">Sign up here</a></p>
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
         </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </form>
+
+      <div class="text-center" style="margin-top: 20px;">
+        <p class="text-muted">Don't have an account? <a href="/signup" class="footer-link">Sign up here</a></p>
+      </div>
     </div>
+  </div>
 
-    <script>
-        function selectRole(role) {
-            // Update visual selection
-            document.getElementById('participant-role').classList.remove('active');
-            document.getElementById('researcher-role').classList.remove('active');
-            document.getElementById(role + '-role').classList.add('active');
-            
-            // Update hidden form input
-            document.getElementById('role-input').value = role;
-        }
-    </script>
-</body>
-</html>
+  <script>
+    function selectRole(role) {
+      // Update visual selection
+      document.getElementById('participant-role').classList.remove('active');
+      document.getElementById('researcher-role').classList.remove('active');
+      document.getElementById(role + '-role').classList.add('active');
+      
+      // Update hidden form input
+      document.getElementById('role-input').value = role;
+    }
+  </script>
+{% endblock %}

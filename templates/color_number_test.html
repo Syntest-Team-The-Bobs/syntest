@@ -1,141 +1,136 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST – Number Color Test</title>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Number Color Test{% endblock %}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='color.css') }}?v=13" />
-</head>
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='color.css') }}" />
+{% endblock %}
 
-<body class="page-color">
-  <noscript>
-    <div style="background:#222;color:#fff;padding:10px 16px;text-align:center">
-      JavaScript is required to run the color tests. Please enable it and reload.
-    </div>
-  </noscript>
-
-  <div class="topbar">
-    <div class="brand">SYNTEST</div>
-    <div class="top-right">
-      <button class="btn" id="helpBtn" type="button" aria-haspopup="dialog">Help</button>
-    </div>
+{% block header %}
+<div class="topbar">
+  <div class="brand">SYNTEST</div>
+  <div class="nav">
+    <button class="btn btn-secondary btn-sm" id="helpBtn" type="button">Help</button>
   </div>
+</div>
+{% endblock %}
 
-  <main class="shell" role="main">
-    <div class="content">
-      <header class="hdr">
-        <h1>NUMBER COLOR TEST: CONSISTENCY &amp; SPEED</h1>
-        <p class="lede">
-          You’ll assign a color to each <b>number</b>. <b>Click and hold</b> the mouse on the wheel and <b>drag</b> to preview and adjust a color.
-          To record a choice, <b>click to lock</b> it — the small circle turns <b>red</b> when locked — and click again to unlock if you need to change it.
-          Press <b>Next</b> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
-        </p>
-      </header>
+{% block content %}
+<noscript>
+  <div class="alert alert-error text-center">
+    JavaScript is required to run the color tests. Please enable it and reload.
+  </div>
+</noscript>
 
-      <section class="block" aria-labelledby="cct-heading">
-        <h2 id="cct-heading" class="block-title">CONSISTENCY TEST</h2>
+<main class="shell">
+  <div class="content">
+    <header class="mb-4">
+      <h1>NUMBER COLOR TEST</h1>
+      <p class="lead">
+        You'll assign a color to each <b>number</b>. <b>Click and hold</b> on the wheel and <b>drag</b> to adjust.
+        <b>Click to lock</b> — the dot turns <b>red</b>. Press <b>Next</b> to save.
+      </p>
+    </header>
 
-        <div class="status" aria-live="polite">
-          <div>Item: <span id="stimulusLabel">—</span></div>
-          <div>Trial <span id="trialNum">1</span> / <span id="trialTotal">3</span></div>
-          <div>Progress <span id="progress">0/0</span></div>
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Consistency Test</h2>
+      </div>
+
+      <div class="status">
+        <div>Item: <span id="stimulusLabel">—</span></div>
+        <div>Trial <span id="trialNum">1</span> / <span id="trialTotal">3</span></div>
+        <div>Progress <span id="progress">0/0</span></div>
+      </div>
+
+      <div class="cct-grid">
+        <aside class="howto">
+          <h4>How to complete</h4>
+          <ol class="list-spaced">
+            <li>Read the number</li>
+            <li><b>Click and hold</b> to adjust</li>
+            <li>Click to <b>lock</b> (dot turns red)</li>
+            <li>Press <b>Next</b></li>
+          </ol>
+        </aside>
+
+        <div class="wheel-wrap">
+          <div style="position: relative">
+            <canvas id="wheel" width="360" height="360"></canvas>
+            <span class="dot" id="dot"></span>
+          </div>
+          <p class="caption">Click and hold, then drag. Click to lock.</p>
         </div>
 
-        <div id="cctContainer" class="cct-grid">
-          <!-- LEFT: concise how-to -->
-          <aside class="howto" aria-label="How to complete the test">
-            <h4>How to complete the test</h4>
-            <ol>
-              <li>Read the number on the right.</li>
-              <li><b>Click and hold</b> on the wheel, then <b>drag</b> to preview and adjust.</li>
-              <li>Release or single-click to <b>lock</b> the color — the small circle turns <b>red</b> when locked. Click again to unlock.</li>
-              <li>Press <b>Next</b> to save.</li>
-            </ol>
-          </aside>
+        <div class="swatch-wrap">
+          <div id="stimulusBox" class="stimulus-box">
+            <div id="stimulusContent">—</div>
+          </div>
+          <p class="caption">Current number</p>
 
-          <!-- MIDDLE: color wheel + caption -->
-          <div class="wheel-wrap">
-            <div style="position: relative">
-              <canvas
-                id="wheel"
-                width="360"
-                height="360"
-                aria-label="Color selection area"
-              ></canvas>
-              <span class="dot" id="dot" aria-hidden="true"></span>
-            </div>
-            <p class="caption">Click and hold, then drag to adjust. Click to <b>lock</b> (circle turns <b>red</b>); click again to unlock.</p>
+          <div class="swatch" id="swatch" style="margin-top:12px;">
+            <div class="hex" id="hex">———</div>
           </div>
 
-          <!-- RIGHT: stimulus + preview + next -->
-          <div class="swatch-wrap" aria-live="polite">
-            <div id="stimulusBox" class="stimulus-box" aria-label="Stimulus">
-              <div id="stimulusContent">—</div>
-            </div>
-            <p class="caption" aria-hidden="true">This is the current number to color-match.</p>
-
-            <div class="swatch" id="swatch" aria-label="Selected color preview" style="margin-top:12px;">
-              <div class="hex" id="hex">———</div>
-            </div>
-
-            <div class="nav">
-              <button id="btnNext" class="btn btn-primary" type="button" disabled>Next →</button>
-            </div>
+          <div class="actions actions-center mt-3">
+            <button id="btnNext" class="btn btn-primary" disabled>Next →</button>
           </div>
         </div>
+      </div>
 
-        <div class="trial-slider-container" aria-hidden="true">
-          <label for="trialSlider"><b>Trial:</b></label>
-          <input type="range" id="trialSlider" min="1" max="3" value="1" step="1" />
-        </div>
-      </section>
+      <div class="trial-slider-container">
+        <label for="trialSlider"><b>Trial:</b></label>
+        <input type="range" id="trialSlider" min="1" max="3" value="1" step="1" />
+      </div>
+    </section>
 
-      <section id="cctSummary" class="summary hidden"></section>
-    </div>
-  </main>
+    <section id="cctSummary" class="summary hidden"></section>
+  </div>
+</main>
 
-  <!-- Help dialog -->
-  <dialog id="helpDialog" class="help" aria-labelledby="helpTitle">
-    <h3 id="helpTitle">Quick Help</h3>
-    <ul>
-      <li>Read the number on the right.</li>
-      <li><b>Click and hold</b> on the wheel, then <b>drag</b> to adjust.</li>
-      <li>Click to <b>lock</b> your choice — the small circle turns <b>red</b>. Click again to unlock.</li>
-      <li>Press <b>Next</b> to save each choice.</li>
-    </ul>
-    <div class="dlg-actions">
-      <button id="helpClose" class="btn btn-primary" type="button">OK</button>
-    </div>
-  </dialog>
+<dialog id="helpDialog" class="help">
+  <h3 id="helpTitle">Quick Help</h3>
+  <ul class="list-spaced">
+    <li>Read the number on the right.</li>
+    <li><b>Click and hold</b> on the wheel, then <b>drag</b> to adjust.</li>
+    <li>Click to <b>lock</b> your choice — the dot turns <b>red</b>.</li>
+    <li>Press <b>Next</b> to save each choice.</li>
+  </ul>
+  <div class="actions actions-end mt-3">
+    <button id="helpClose" class="btn btn-primary">OK</button>
+  </div>
+</dialog>
+{% endblock %}
 
-  <script type="module">
-    import { NumberColorTest } from "{{ url_for('static', filename='color/number_color_test.js') }}";
+{% block footer %}
+<!-- Override footer for full-screen test -->
+{% endblock %}
 
-    const $ = id => document.getElementById(id);
-    const ui = {
-      wheel: $('wheel'),
-      dot: $('dot'),
-      swatch: $('swatch'),
-      hex: $('hex'),
-      stimulusContent: $('stimulusContent'),
-      stimulusLabel: $('stimulusLabel'),
-      trialNum: $('trialNum'),
-      trialTotal: $('trialTotal'),
-      progress: $('progress'),
-      btnNext: $('btnNext'),
-      // btnNone intentionally omitted; “No color” disabled
-      trialSlider: $('trialSlider'),
-      cctSummary: $('cctSummary'),
-      helpBtn: $('helpBtn'),
-      helpDialog: $('helpDialog'),
-      helpClose: $('helpClose'),
-    };
+{% block extra_js %}
+<script type="module">
+  import { NumberColorTest } from "{{ url_for('static', filename='color/number_color_test.js') }}";
 
-    new NumberColorTest(ui, { trialsPerLabel: 3, wheelSize: 360, cutoffDistance: 135, allowNoColor: false });
-  </script>
-</body>
-</html>
+  const $ = id => document.getElementById(id);
+  const ui = {
+    wheel: $('wheel'),
+    dot: $('dot'),
+    swatch: $('swatch'),
+    hex: $('hex'),
+    stimulusContent: $('stimulusContent'),
+    stimulusLabel: $('stimulusLabel'),
+    trialNum: $('trialNum'),
+    trialTotal: $('trialTotal'),
+    progress: $('progress'),
+    btnNext: $('btnNext'),
+    trialSlider: $('trialSlider'),
+    cctSummary: $('cctSummary'),
+    helpBtn: $('helpBtn'),
+    helpDialog: $('helpDialog'),
+    helpClose: $('helpClose'),
+  };
+
+  new NumberColorTest(ui, { trialsPerLabel: 3, wheelSize: 360, cutoffDistance: 135, allowNoColor: false });
+</script>
+{% endblock %}

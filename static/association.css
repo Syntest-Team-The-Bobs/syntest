@@ -1,112 +1,99 @@
-/* ===== Page scope ===== */
-*{box-sizing:border-box}
-html,body{height:100%}
+/* ====== Association Test Specific Styles ====== */
 
-.page-association{
-  margin:0;
-  background:#fff;
-  color:#111;
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
-  -webkit-font-smoothing:antialiased;
-  line-height:1.35;
+/* Hero area */
+.association-hero {
+  position: relative;
+  text-align: center;
+  margin-top: 2px;
 }
 
-/* Top bar (matches other pages) */
-.page-association .topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 24px;
-  background:#fff;
-  border-bottom:1px solid #ececec;
-}
-.page-association .brand{font-weight:800; font-size:22px; letter-spacing:.2px}
-.page-association .top-right{display:flex; align-items:center; gap:16px}
-.page-association .about{color:#000; text-decoration:none; font-weight:600}
-.page-association .account-btn{
-  background:#0b0b0b; color:#fff; border:none; cursor:pointer;
-  padding:10px 14px; border-radius:10px; font-weight:800;
-  box-shadow:0 10px 18px rgba(0,0,0,.08), 0 2px 0 rgba(0,0,0,.04);
+/* Clock badge */
+.clock-badge {
+  position: absolute;
+  right: 22px;
+  top: -2px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 3px solid #111;
+  background: #fff;
+  position: relative;
 }
 
-/* Panel band and fixed width to match comp */
-.page-association .panel{
-  background:#f3f3f3;
-  padding:28px 0 64px;                 /* extra bottom to match figma */
-}
-.page-association .content{
-  width:980px;                          /* same working width as other pages */
-  margin:0 auto;
-  padding:0 24px;
-}
-
-/* Header / prompt */
-.page-association .hero{
-  position:relative;
-  text-align:center;
-  margin-top:2px;
-}
-.page-association .prompt{
-  margin:0 0 16px;
-  font-size:18px;                       /* Figma size */
-  font-weight:700;
-  letter-spacing:.2px;
-  color:#222;
+.clock-hand-short,
+.clock-hand-long {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: bottom center;
+  background: #111;
 }
 
-/* Center button — larger to match Figma */
-.page-association .cta{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:264px;                           /* was smaller */
-  height:64px;                           /* taller */
-  background:#fff; color:#000; text-decoration:none;
-  border-radius:12px; font-weight:800; font-size:18px;
-  box-shadow:0 14px 22px rgba(0,0,0,.08), 0 2px 0 rgba(0,0,0,.04);
+.clock-hand-short {
+  width: 3px;
+  height: 22px;
+  transform: translate(-50%, -100%) rotate(8deg);
 }
 
-/* Clock badge (top-right of gray band area) */
-.page-association .clock{
-  position:absolute; right:22px; top:-2px;   /* nudged to match screenshot */
-  width:66px; height:66px; border-radius:50%;
-  border:3px solid #111; background:#fff;
+.clock-hand-long {
+  width: 3px;
+  height: 14px;
+  transform: translate(-50%, -100%) rotate(-42deg);
 }
-.page-association .clock::before,
-.page-association .clock::after{
-  content:""; position:absolute; left:50%; top:50%;
-  transform-origin:bottom center; background:#111;
-}
-.page-association .clock::before{width:3px; height:22px; transform:translate(-50%,-100%) rotate(8deg)}
-.page-association .clock::after {width:3px; height:14px; transform:translate(-50%,-100%) rotate(-42deg)}
 
-/* 4 tiles row */
-.page-association .choices{
-  display:grid;
-  grid-template-columns: repeat(4, 160px);  /* exact tile width */
-  gap:40px;                                 /* spacing between tiles */
-  justify-content:center;                   /* keep the row centered */
-  margin:36px auto 0;                       /* distance from button */
+/* Color tiles */
+.color-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 160px);
+  gap: 40px;
+  justify-content: center;
+  margin: 36px auto 0;
 }
-.page-association .tile{
-  width:160px; height:160px;
-  background:var(--c);
-  border:3px solid #111;
-  border-radius:2px;
-  box-shadow:none;
-  padding:0; cursor:pointer;
+
+.color-tile {
+  width: 160px;
+  height: 160px;
+  border: 3px solid #111;
+  border-radius: 2px;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.color-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-tile:active {
+  transform: translateY(0);
 }
 
 /* Responsive */
-@media (max-width: 1040px){
-  .page-association .content{width:auto}
-}
-@media (max-width: 860px){
-  .page-association .choices{
+@media (max-width: 860px) {
+  .color-tiles {
     grid-template-columns: repeat(2, 160px);
-    gap:28px 36px;
+    gap: 28px 36px;
   }
 }
-@media (max-width: 460px){
-  .page-association .cta{width:240px; height:58px; font-size:17px}
-  .page-association .choices{
+
+@media (max-width: 460px) {
+  .color-tiles {
     grid-template-columns: 160px;
-    gap:22px;
+    gap: 22px;
+  }
+
+  .clock-badge {
+    width: 56px;
+    height: 56px;
+  }
+
+  .clock-hand-short {
+    height: 18px;
+  }
+
+  .clock-hand-long {
+    height: 12px;
   }
 }

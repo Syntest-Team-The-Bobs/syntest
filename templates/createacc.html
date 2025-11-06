@@ -1,62 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SYNTEST — Create an account</title>
-  <link rel="stylesheet" href="./static/createacc.css" />
-</head>
-<body>
-  <!-- Top Bar -->
-  <header class="topbar">
-    <div class="brand">SYNTEST</div>
+{% extends "base.html" %}
+{% block title %}SYNTEST — Create an Account{% endblock %}
 
-    <nav class="nav">
-      <a href="#" class="nav-link">About This Study</a>
-      <button class="btn btn-dark">Your Account</button>
-    </nav>
-  </header>
-
-  <!-- Centered column (title + card) -->
-  <main class="wrap">
-    <h1 class="page-title">Create an account</h1>
+{% block content %}
+  <div class="container container-sm container-centered">
+    <h1 class="text-center mb-4">Create an account</h1>
 
     <form class="card" id="registerForm" novalidate>
-      <div class="field">
+      <div class="form-field">
         <label for="first">First Name</label>
-        <input id="first" name="first" type="text" placeholder="Value" />
+        <input id="first" name="first" type="text" placeholder="Enter first name" />
       </div>
 
-      <div class="field">
+      <div class="form-field">
         <label for="last">Last Name</label>
-        <input id="last" name="last" type="text" placeholder="Value" />
+        <input id="last" name="last" type="text" placeholder="Enter last name" />
       </div>
 
-      <div class="field">
+      <div class="form-field">
         <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="Value" />
+        <input id="email" name="email" type="email" placeholder="Enter email" />
       </div>
 
-      <div class="field">
+      <div class="form-field">
         <label for="password">Password</label>
-        <input id="password" name="password" type="password" placeholder="Value" />
+        <input id="password" name="password" type="password" placeholder="Create password" />
       </div>
 
-      <div class="consent">
-        <label class="check">
-          <input id="agree" type="checkbox" checked />
-          <span>I consent to the terms and conditions.</span>
-        </label>
-        <p class="muted">
-          By checking this box, you agree with this study’s terms and conditions and
-          also owe us your firstborn.
-        </p>
-      </div>
+      <label class="checkbox-group">
+        <input id="agree" type="checkbox" checked />
+        <span>
+          <strong>I consent to the terms and conditions.</strong>
+          <p class="text-muted" style="margin-top: 4px;">
+            By checking this box, you agree with this study's terms and conditions.
+          </p>
+        </span>
+      </label>
 
-      <button class="btn btn-dark btn-block" id="submitBtn" type="submit">Register</button>
+      <button class="btn btn-primary btn-block" id="submitBtn" type="submit">Register</button>
     </form>
-  </main>
-
-  <!-- <script src="createacc.js"></script> -->
-</body>
-</html>
+  </div>
+{% endblock %}
