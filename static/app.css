@@ -1184,6 +1184,24 @@ textarea:disabled {
   }
 }
 
+/* ---------- Test ----------- */
+
+/* Help dialog */
+.help {
+  position: fixed;
+  padding: var(--spacing-5xl);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+help ul {
+  padding-left: var(--spacing-sm);
+}
+
+help li {
+  margin-bottom: var(--spacing-md);
+}
 
 /* ---------- Tables ---------- */
 
@@ -1453,10 +1471,6 @@ footer {
 
   .panel {
     padding: var(--spacing-2xl) var(--spacing-xl);
-  }
-
-  .card {
-    padding: var(--spacing-lg);
   }
 
   .auth-container {

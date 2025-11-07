@@ -143,32 +143,6 @@
   accent-color: #000;
 }
 
-/* Help dialog */
-dialog.help {
-  border: none;
-  padding: 20px 30px;
-  max-width: 400px;
-  font-family: inherit;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-dialog.help h3 {
-  margin-top: 0;
-  font-size: 1.2rem;
-}
-
-dialog.help ul {
-  padding-left: 20px;
-}
-
-dialog.help li {
-  margin-bottom: 6px;
-}
-
 /* Responsive */
 @media (max-width: 900px) {
   .cct-grid {
