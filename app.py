@@ -49,9 +49,9 @@ def ensure_speed_congruency_dummy():
         print("[seed] Could not import models for seeding:", e)
         return
 
-    DEMO_EMAIL = "demo@syntest.local"
+    DEMO_EMAIL = "msaldi@colby.edu"
     DEMO_PASSWORD = "demo123"
-    DEMO_NAME = "Demo Participant"
+    DEMO_NAME = "Maser Al Nadi"
 
     # 1) Participant
     participant = Participant.query.filter_by(email=DEMO_EMAIL).first()
