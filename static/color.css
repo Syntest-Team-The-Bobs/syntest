@@ -186,3 +186,36 @@ dialog.help li {
     text-align: left;
   }
 }
+
+/* Make stimulus-box work as a button for sound test */
+button.stimulus-box {
+  all: unset;
+  box-sizing: border-box;
+  width: 200px;
+  height: 200px;
+  border: 3px solid #111;
+  background: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  user-select: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button.stimulus-box:hover {
+  background: #f0f0f0;
+}
+
+button.stimulus-box:active {
+  background: #e8e8e8;
+}
+
+button.stimulus-box:focus {
+  outline: 2px solid #6aa8ff;
+  outline-offset: 2px;
+}
