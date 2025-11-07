@@ -186,3 +186,113 @@ dialog.help li {
     text-align: left;
   }
 }
+
+/* ===========================================================
+   Color Intro Styles
+   =========================================================== */
+
+.color-intro-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 18rem 2em 2rem 2rem;
+  animation: fadeIn 0.4s ease-in;
+  width: 100%;
+}
+
+.color-intro-content {
+  max-width: 1000px;
+  width: 90%;
+  text-align: center;
+  background: #ffffff;
+  padding: 2.5rem 4rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 10;
+  margin: 0 auto;
+}
+
+.color-intro-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.color-intro-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  color: #4b5563;
+  max-width: 750px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.color-intro-instructions {
+  display: none;
+}
+
+.color-intro-time {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 1.25rem 0 1.75rem 0;
+}
+
+.color-intro-start-btn {
+  padding: 0.875rem 3rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  background-color: #0f766e;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
+}
+
+.color-intro-start-btn:hover {
+  background-color: #0d9488;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4);
+}
+
+.color-intro-start-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.3);
+}
+
+/* Hide the stimulus box border during intro */
+.stimulus-box {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Responsive intro */
+@media (max-width: 768px) {
+  .color-intro-container {
+    padding-top: 2rem;
+  }
+
+  .color-intro-content {
+    padding: 2.5rem 2rem;
+    max-width: 100%;
+  }
+
+  .color-intro-title {
+    font-size: 1.75rem;
+  }
+
+  .color-intro-description {
+    font-size: 1rem;
+  }
+
+  .color-intro-start-btn {
+    padding: 0.75rem 2.5rem;
+    font-size: 1.05rem;
+  }
+}
