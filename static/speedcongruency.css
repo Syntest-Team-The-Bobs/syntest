@@ -160,3 +160,23 @@
     font-size: 48px;
   }
 }
+
+.color-chip {
+  background: rgb(200, 50, 50); /* default fallback color so it’s never white */
+  position: relative;
+  z-index: 2; /* ensures it’s above the bg image */
+}
+.bg-image { z-index: 0; }
+
+.word-stimulus {
+  display: inline-block;
+  font-size: 64px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 40px 80px;
+  background: #fff;
+  border: 3px solid #222;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+}

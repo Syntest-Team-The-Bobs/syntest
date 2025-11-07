@@ -11,26 +11,22 @@
 </style>
 {% endblock %}
 
-{% block header %}
-<!-- Override default header for full-screen test -->
-{% endblock %}
+{% block header %}{% endblock %}
 
 {% block content %}
-<!-- Trigger view (3s) -->
 <main id="triggerView" class="screen trigger">
-  <img src="{{ url_for('static', filename='images/trigger.jpg') }}" alt="Trigger" class="bg-image"/>
+  <!-- <img src="{{ url_for('static', filename='images/trigger.jpg') }}" alt="Trigger" class="bg-image"/> -->
   <div class="overlay">
-    <h1 class="prompt">LOOK AT THE COLOR SHOWN</h1>
+    <h1 class="prompt">LOOK AT THE WORD SHOWN</h1>
     <div class="chip-wrap">
-      <div id="triggerChip" class="color-chip" aria-label="Trigger color"></div>
-    </div>
+  <div id="triggerWord" class="word-stimulus" aria-label="Trigger word">CHRISTMAS</div>
+</div>
   </div>
   <div class="countdown" aria-live="polite" aria-atomic="true"><span id="countNum">3</span></div>
 </main>
 
-<!-- Response view -->
 <main id="responseView" class="screen response" aria-hidden="true" style="display:none">
-  <img src="{{ url_for('static', filename='images/response.jpg') }}" alt="Response" class="bg-image"/>
+  <!-- <img src="{{ url_for('static', filename='images/response.jpg') }}" alt="Response" class="bg-image"/> -->
   <div class="overlay">
     <h1 class="prompt">TIMER STARTED — CLICK THE MATCHING COLOR</h1>
     <div id="palette" class="palette" role="group" aria-label="Choose a color"></div>
@@ -44,9 +40,7 @@
 </main>
 {% endblock %}
 
-{% block footer %}
-<!-- Override footer for full-screen test -->
-{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='speedcongruency.js') }}"></script>

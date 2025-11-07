@@ -29,13 +29,97 @@ app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///syntest.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+# =====================================
+# TOBE DELETED AFTER PRESENTATION
+# =====================================
+
+def ensure_speed_congruency_dummy():
+    """
+    Idempotent seeding: ensures there is
+      - a participant we can log in as
+      - a ColorStimulus to supply expected {r,g,b}
+      - a TestData row with cct_pass=True referencing that stimulus
+    so /api/speed-congruency/next can return a valid trial.
+    """
+    try:
+        # Adjust imports if your models live elsewhere
+        from models import db, Participant, ColorStimulus, TestData
+    except Exception as e:
+        print("[seed] Could not import models for seeding:", e)
+        return
+
+    DEMO_EMAIL = "demo@syntest.local"
+    DEMO_PASSWORD = "demo123"
+    DEMO_NAME = "Demo Participant"
+
+    # 1) Participant
+    participant = Participant.query.filter_by(email=DEMO_EMAIL).first()
+    if not participant:
+        participant = Participant(
+            name=DEMO_NAME,
+            email=DEMO_EMAIL,
+            password_hash=generate_password_hash(DEMO_PASSWORD),
+            country="US",
+            status="active",
+        )
+        db.session.add(participant)
+        db.session.flush()
+
+    # 2) ColorStimulus (choose a stable RGB)
+    stim = ColorStimulus.query.filter_by(r=200, g=50, b=50).first()
+    if not stim:
+        # If your model requires certain fields like `description`, `family`, etc., set them here.
+        stim = ColorStimulus(
+            description="Demo Red",
+            family="color",
+            r=200, g=50, b=50,
+            # include any other non-nullable fields your model enforces:
+            # trigger_type="word",
+        )
+        db.session.add(stim)
+        db.session.flush()
+
+    # 3) TestData (the key is cct_pass=True and a valid stimulus_id)
+    user_id_str = str(participant.id)  # many routes expect string user_id
+    td = (TestData.query
+          .filter_by(user_id=user_id_str, stimulus_id=stim.id, cct_pass=True)
+          .order_by(TestData.created_at.desc())
+          .first())
+    if not td:
+        td = TestData(
+            user_id=user_id_str,
+            test_id=None,
+            owner_researcher_id=None,
+            session_id=None,
+            stimulus_id=stim.id,
+            test_type="CCT",
+            stimulus_type="color",
+            family="color",
+            locale="en",
+            created_at=datetime.utcnow(),
+            cct_pass=True,
+        )
+        db.session.add(td)
+
+    db.session.commit()
+    print("[seed] Speed Congruency demo ready.")
+    print("       Login as:")
+    print("         Email:    demo@syntest.local")
+    print("         Password: demo123")
+
+
+
 # Initialize database
 db.init_app(app)
 with app.app_context():
     db.create_all()
+    ensure_speed_congruency_dummy()
 
 # Register screening API blueprint (modular /api/... endpoints)
 app.register_blueprint(screening_api.bp)
+
+
 
 # =====================================
 # LANDING PAGE
@@ -363,21 +447,34 @@ def speed_congruency_next():
     if not td:
         return jsonify(error="No passing TestData found for this participant"), 404
 
-    stim = None
-    if td.stimulus_id:
-        stim = ColorStimulus.query.get(td.stimulus_id)
+    stim = ColorStimulus.query.get(td.stimulus_id) if td.stimulus_id else None
 
+    def _safe255(v):
+        try:
+            v = int(v)
+            return max(0, min(255, v))
+        except Exception:
+            return None
+
+    # Build expected from stimulus if present
     expected = None
-    if stim:
-        expected = {"r": stim.r, "g": stim.g, "b": stim.b}
+    if stim is not None:
+        r = _safe255(getattr(stim, "r", None))
+        g = _safe255(getattr(stim, "g", None))
+        b = _safe255(getattr(stim, "b", None))
+        if None not in (r, g, b):
+            expected = {"r": r, "g": g, "b": b}
 
+    # Fallback (ensures the UI always has a visible color)
     if not expected:
-        return jsonify(error="Stimulus missing or has no RGB"), 422
+        # strong red fallback
+        expected = {"r": 200, "g": 50, "b": 50}
 
     payload = {
-        "trial_index": 1,  # change if you run multiple trials
+        "trial_index": 1,
         "stimulus_id": td.stimulus_id,
         "expected": expected,
+        "cue_word": "CHRISTMAS",  # 👈 new field
         "meta": {
             "testdata_id": td.id,
             "created_at": td.created_at.isoformat() if td.created_at else None,
@@ -430,6 +527,7 @@ def speed_congruency_submit():
     db.session.add(row)
     db.session.commit()
     return jsonify(ok=True, id=row.id, matched=matched)
+
 # =====================================
 # SPECIFIC COLOR TEST ROUTES (UI)
 # =====================================

@@ -1,3 +1,4 @@
+console.log('speedcongruency.js loaded');
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rgbEq = (a, b) => a && b && a.r === b.r && a.g === b.g && a.b === b.b;
@@ -20,7 +21,7 @@ function randomRGB(minDistance = 50, avoid = []) {
 // ---------- DOM refs ----------
 const triggerView  = document.getElementById('triggerView');
 const responseView = document.getElementById('responseView');
-const triggerChip  = document.getElementById('triggerChip');
+const triggerWord  = document.getElementById('triggerWord');   // ← use the word element
 const countNum     = document.getElementById('countNum');
 const paletteEl    = document.getElementById('palette');
 const rtRow        = document.getElementById('rtRow');
@@ -42,11 +43,26 @@ async function loadTrial() {
     return;
   }
   const data = await res.json();
-  expected   = data.expected;
+  console.log('SC next payload:', data);
+
+  // --- Defensive: coerce and fallback ---
+  const to255 = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    return Math.max(0, Math.min(255, Math.round(n)));
+  };
+  const e = data.expected || {};
+  const r = to255(e.r), g = to255(e.g), b = to255(e.b);
+  expected = (r !== null && g !== null && b !== null) ? { r, g, b } : { r: 200, g: 50, b: 50 };
+
   stimulusId = data.stimulus_id || null;
   trialIndex = data.trial_index || 1;
 
-  triggerChip.style.backgroundColor = rgbStyle(expected);
+  // Show the trigger word instead of painting a color chip
+  if (triggerWord) {
+    triggerWord.textContent = data.cue_word || 'CHRISTMAS';
+  }
+
   startCountdown(3, showResponse);
 }
 
@@ -122,7 +138,6 @@ function onChoice(e) {
       response_ms: rtMs
     })
   }).then(r => r.json()).then(j => {
-    // optional: toast/advance to next trial
     console.log('Saved:', j);
   }).catch(err => console.error('submit failed', err));
 }
