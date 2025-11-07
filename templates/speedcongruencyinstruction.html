@@ -2,18 +2,16 @@
 {% block title %}SYNTEST — Speed Congruency Instructions{% endblock %}
 
 {% block content %}
-<main class="container container-lg">
-  <div class="container-centered text-center">
-    <div style="max-width: 980px;">
-      <div class="mb-5">
-        <p class="prompt mb-4">YOU WILL SEE A WORD</p>
-        <p class="prompt mb-4">CHOOSE THE COLOR THAT MATCHES THE WORD</p>
-        <p class="prompt">RESPOND AS QUICKLY AS POSSIBLE</p>
-      </div>
-      <div class="actions actions-center mt-5">
-        <a href="{{ url_for('speed_congruency_test') }}" class="btn btn-primary btn-lg">START TEST</a>
-      </div>
-    </div>
-  </div>
-</main>
+  <div class="card help" id="helpDialog" aria-labelledby="Testinstructions">
+    <h2 class="card-title" id="helpTitle">Speed Congruency Test</h2>
+    <p class="lead"> Instructions </p>
+    <ul>
+      <li>You will see a word</li>
+      <li><b>Choose</b> the color that matches the word</li>
+      <li>Response as <b>quickly</b> as possible</li>
+      <li>Press <b>Next</b> to save each choice.</li>
+    </ul>
+    <div class="actions actions-center">
+      <a href={{ url_for('speed_congruency_test')}} id="helpClose" class="btn btn-primary" type="button">Begin test</a> 
+    </div></div>
 {% endblock %}
