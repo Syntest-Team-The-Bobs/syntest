@@ -462,6 +462,14 @@ def word_color_test():
         return redirect(url_for('login'))
     return render_template('color_word_test.html')
 
+@app.route('/color/sound')
+def sound_color_test():
+    """Sound–Color Synesthesia Test"""
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    return render_template('color_sound_test.html')
+
 # =====================================
 # DASHBOARD PAGE ROUTES (UI)
 # =====================================
