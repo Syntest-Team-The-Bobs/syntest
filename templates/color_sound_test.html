@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SYNTEST – Sound Color Test</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=13" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='color.css') }}?v=13" />
+</head>
+
+<body class="page-color">
+  <noscript>
+    <div style="background:#222;color:#fff;padding:10px 16px;text-align:center">
+      JavaScript is required to run the color tests. Please enable it and reload.
+    </div>
+  </noscript>
+
+  <div class="topbar">
+    <a href="/" class="brand">SYNTEST</a>
+    <div class="top-right">
+      <button class="btn" id="helpBtn" type="button" aria-haspopup="dialog">Help</button>
+    </div>
+  </div>
+
+  <main class="shell" role="main">
+    <div class="content">
+      <header class="hdr">
+        <h1>SOUND COLOR TEST: CONSISTENCY &amp; SPEED</h1>
+        <p class="lede">
+          You'll assign a color to each <b>tone</b>. <b>Click and hold</b> the mouse on the wheel and <b>drag</b> to preview and adjust a color.
+          To record a choice, <b>click to lock</b> it — the small circle turns <b>red</b> when locked — and click again to unlock if you need to change it.
+          Press <b>Next</b> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
+        </p>
+      </header>
+
+      <section class="block" aria-labelledby="cct-heading">
+        <h2 id="cct-heading" class="block-title">CONSISTENCY TEST</h2>
+
+        <div class="status" aria-live="polite">
+          <div>Item: <span id="stimulusLabel">—</span></div>
+          <div>Trial <span id="trialNum">1</span> / <span id="trialTotal">3</span></div>
+          <div>Progress <span id="progress">0/0</span></div>
+        </div>
+
+        <div id="cctContainer" class="cct-grid">
+          <!-- LEFT: concise how-to -->
+          <aside class="howto" aria-label="How to complete the test">
+            <h4>How to complete the test</h4>
+            <ol>
+              <li>Click the box on the right to play the tone.</li>
+              <li><b>Click and hold</b> on the wheel, then <b>drag</b> to preview and adjust.</li>
+              <li>Release or single-click to <b>lock</b> the color — the small circle turns <b>red</b> when locked. Click again to unlock.</li>
+              <li>Press <b>Next</b> to save.</li>
+            </ol>
+          </aside>
+
+          <!-- MIDDLE: color wheel + caption -->
+          <div class="wheel-wrap">
+            <div style="position: relative">
+              <canvas
+                id="wheel"
+                width="360"
+                height="360"
+                aria-label="Color selection area"
+              ></canvas>
+              <span class="dot" id="dot" aria-hidden="true"></span>
+            </div>
+            <p class="caption">Click and hold, then drag to adjust. Click to <b>lock</b> (circle turns <b>red</b>); click again to unlock.</p>
+          </div>
+
+          <!-- RIGHT: stimulus + preview + next -->
+          <div class="swatch-wrap" aria-live="polite">
+            <button id="playTone" class="stimulus-box" type="button" aria-label="Click to play tone" style="cursor:pointer;">
+              <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true" style="margin-bottom:12px;color:#495057;">
+                <path d="M8 5v14l11-7z" fill="currentColor"></path>
+              </svg>
+              <div id="stimulusContent">—</div>
+            </button>
+            <p class="caption" aria-hidden="true">Click to play the tone to color-match.</p>
+
+            <div class="swatch" id="swatch" aria-label="Selected color preview" style="margin-top:12px;">
+              <div class="hex" id="hex">———</div>
+            </div>
+
+            <div class="nav">
+              <button id="btnNext" class="btn btn-primary" type="button" disabled>Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="trial-slider-container" aria-hidden="true">
+          <label for="trialSlider"><b>Trial:</b></label>
+          <input type="range" id="trialSlider" min="1" max="3" value="1" step="1" />
+        </div>
+      </section>
+
+      <section id="cctSummary" class="summary hidden"></section>
+    </div>
+  </main>
+
+  <!-- Help dialog -->
+  <dialog id="helpDialog" class="help" aria-labelledby="helpTitle">
+    <h3 id="helpTitle">Quick Help</h3>
+    <ul>
+      <li>Click the box on the right to play the tone. (Spacebar also replays.)</li>
+      <li><b>Click and hold</b> on the wheel, then <b>drag</b> to adjust.</li>
+      <li>Click to <b>lock</b> your choice — the small circle turns <b>red</b>. Click again to unlock.</li>
+      <li>Press <b>Next</b> to save each choice.</li>
+    </ul>
+    <div class="dlg-actions">
+      <button id="helpClose" class="btn btn-primary" type="button">OK</button>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import { SoundColorTest } from "{{ url_for('static', filename='color/sound_color_test.js') }}?v=2";
+
+    const $ = id => document.getElementById(id);
+    const ui = {
+      wheel: $('wheel'),
+      dot: $('dot'),
+      swatch: $('swatch'),
+      hex: $('hex'),
+      stimulusContent: $('stimulusContent'),
+      stimulusLabel: $('stimulusLabel'),
+      trialNum: $('trialNum'),
+      trialTotal: $('trialTotal'),
+      progress: $('progress'),
+      btnNext: $('btnNext'),
+      trialSlider: $('trialSlider'),
+      cctSummary: $('cctSummary'),
+      helpBtn: $('helpBtn'),
+      helpDialog: $('helpDialog'),
+      helpClose: $('helpClose'),
+      playTone: $('playTone'),
+    };
+
+    new SoundColorTest(ui, {
+      trialsPerLabel: 3,
+      wheelSize: 360,
+      cutoffDistance: 135
+    });
+  </script>
+</body>
+</html>

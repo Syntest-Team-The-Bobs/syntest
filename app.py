@@ -28,6 +28,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///syntest.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SCREENING_SECURITY_TOKEN'] = 'syntest-preview'
 
 # Initialize database
 db.init_app(app)
@@ -195,6 +196,14 @@ def association():
 def flow(step):
     step = max(0, min(step, 5))  # adjust the upper bound as you add steps
     return render_template('screen_flow.html', step=step)
+
+
+@app.route('/screening/security')
+def screening_security_console():
+    token = request.args.get('dev')
+    if token != app.config['SCREENING_SECURITY_TOKEN']:
+        abort(404)
+    return render_template('security_console.html')
 
 EXIT_CONTENT = {
     "A": {
@@ -461,6 +470,14 @@ def word_color_test():
         flash('Please login to access this page', 'error')
         return redirect(url_for('login'))
     return render_template('color_word_test.html')
+
+@app.route('/color/sound')
+def sound_color_test():
+    """Sound–Color Synesthesia Test"""
+    if 'user_id' not in session or session.get('user_role') != 'participant':
+        flash('Please login to access this page', 'error')
+        return redirect(url_for('login'))
+    return render_template('color_sound_test.html')
 
 # =====================================
 # DASHBOARD PAGE ROUTES (UI)

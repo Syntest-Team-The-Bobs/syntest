@@ -1,0 +1,31 @@
+<section id="security-hub" class="card security-card" data-severity="low" aria-live="polite">
+  <div class="security-card__header">
+    <div>
+      <p class="security-card__eyebrow">Confidential Screening Telemetry</p>
+      <h1 class="card-title">Security Analyst Console</h1>
+      <p class="security-card__subtitle">Live heuristics for the current participant session. Share screenshots only with the security team.</p>
+    </div>
+    <div class="security-card__status">
+      <span class="security-badge" id="talisman-shield">Evaluating talisman…</span>
+      <span class="security-location"><span aria-hidden="true">🔒</span><span class="security-location__label">Restricted view</span></span>
+    </div>
+  </div>
+  <div class="security-grid">
+    <section class="security-panel" data-role="talisman">
+      <header class="security-panel__header"><span class="security-panel__eyebrow">Surface Controls</span><h2>Talisman Hardening</h2></header>
+      <p id="talisman-summary" class="security-muted">Baseline checks running…</p>
+      <ul id="talisman-metrics" class="security-metrics" aria-live="polite"></ul>
+    </section>
+    <section class="security-panel" data-role="audit">
+      <header class="security-panel__header"><span class="security-panel__eyebrow">Stream Events</span><h2>AI Audit Feed</h2></header>
+      <div id="ai-score" class="security-ai-score" role="status">Awaiting activity…</div>
+      <div id="audit-log" class="security-log"><p class="security-log__empty">Interact with the screening steps to populate audit entries.</p></div>
+    </section>
+    <section class="security-panel" data-role="masking">
+      <header class="security-panel__header"><span class="security-panel__eyebrow">Sensitive Inputs</span><h2>Data Masking</h2></header>
+      <p class="security-muted">Sensitive free-text is masked instantly. Use the reveal control for a timed view.</p>
+      <div id="mask-preview" class="mask-preview" aria-live="polite">No sensitive data captured yet.</div>
+      <div class="mask-actions"><button type="button" class="btn btn-secondary btn-sm" id="mask-toggle">Reveal masked value (3s)</button><span class="mask-timer" hidden>Re-locking in <span id="mask-countdown">3</span>s</span></div>
+    </section>
+  </div>
+</section>

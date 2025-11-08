@@ -5,12 +5,18 @@
 
 {% extends "base.html" %}
 
+{% block extra_css %}
+  {{ super() }}
+{% endblock %}
+
 {% block title %}
   {% if step == 0 %}SYNTEST — Screening{% elif step == 1 %}SYNTEST — Step 1 of 5{% elif step == 2 %}SYNTEST — Step 2 of 5{% elif step == 3 %}SYNTEST — Step 3 of 5{% elif step == 4 %}SYNTEST — Step 4 of 5{% else %}SYNTEST — Step 5 of 5{% endif %}
 {% endblock %}
 
 {% block content %}
   <div class="container container-md">
+
+  {# security console intentionally rendered on dedicated view #}
 
   {# -------------------- INTRO (step = 0) -------------------- #}
   {% if step == 0 %}
@@ -23,7 +29,7 @@
 
       <!-- Add stable id="consent" so JS can bind reliably -->
       <label class="checkbox-group">
-        <input id="consent" type="checkbox" />
+        <input id="consent" type="checkbox" data-audit-label="Consent agreement" />
         <span>I consent to take part in this study.</span>
       </label>
 
@@ -53,15 +59,15 @@
       <h2>Confirm none apply to you:</h2>
 
       <label class="checkbox-group">
-        <input type="checkbox">
+        <input type="checkbox" data-audit-label="Substance exclusion — recreational drugs">
         <span>Use of recreational drugs including marijuana, LSD, or psychedelics</span>
       </label>
       <label class="checkbox-group">
-        <input type="checkbox">
+        <input type="checkbox" data-audit-label="Substance exclusion — neurological condition">
         <span>Neurological condition or treatment affecting perception</span>
       </label>
       <label class="checkbox-group">
-        <input type="checkbox">
+        <input type="checkbox" data-audit-label="Substance exclusion — medical treatment">
         <span>Medical treatment impacting perception (e.g., brain tumor) or hallucinogenic physiology</span>
       </label>
 
@@ -114,11 +120,11 @@
       </div>
 
       <div class="choice-grid">
-        <a href="#" class="choice-card" data-choice="yes">
+        <a href="#" class="choice-card" data-choice="yes" data-audit-label="Definition choice — yes">
           <div class="choice-title">Yes</div>
           <div class="choice-subtitle">I experience consistent sensory connections</div>
         </a>
-        <a href="#" class="choice-card" data-choice="maybe">
+        <a href="#" class="choice-card" data-choice="maybe" data-audit-label="Definition choice — maybe">
           <div class="choice-title">Maybe</div>
           <div class="choice-subtitle">I'm not sure if my experiences qualify</div>
         </a>
@@ -166,14 +172,14 @@
 
       <div class="select-list">
         <label class="select-card">
-          <input type="radio" name="pain_emotion" value="yes">
+          <input type="radio" name="pain_emotion" value="yes" data-audit-label="Pain/emotion trigger — yes">
           <div class="select-body">
             <div class="select-title">Yes</div>
             <div class="select-subtitle">My experiences are primarily triggered by pain or strong emotions (exit per criterion D)</div>
           </div>
         </label>
         <label class="select-card">
-          <input type="radio" name="pain_emotion" value="no">
+          <input type="radio" name="pain_emotion" value="no" data-audit-label="Pain/emotion trigger — no">
           <div class="select-body">
             <div class="select-title">No</div>
             <div class="select-subtitle">My experiences occur with neutral stimuli</div>
@@ -208,9 +214,9 @@
             <div class="type-sub">Letters/numbers evoke specific colors (e.g., "A" is red).</div>
           </div>
           <div class="type-opts">
-            <label class="opt"><input type="radio" name="grapheme" value="yes"><span>Yes</span></label>
-            <label class="opt"><input type="radio" name="grapheme" value="sometimes"><span>Sometimes</span></label>
-            <label class="opt"><input type="radio" name="grapheme" value="no"><span>No</span></label>
+            <label class="opt"><input type="radio" name="grapheme" value="yes" data-audit-label="Grapheme-color — yes"><span>Yes</span></label>
+            <label class="opt"><input type="radio" name="grapheme" value="sometimes" data-audit-label="Grapheme-color — sometimes"><span>Sometimes</span></label>
+            <label class="opt"><input type="radio" name="grapheme" value="no" data-audit-label="Grapheme-color — no"><span>No</span></label>
           </div>
         </li>
 
@@ -220,9 +226,9 @@
             <div class="type-sub">Single notes or dyads evoke colors (70 tones testable).</div>
           </div>
           <div class="type-opts">
-            <label class="opt"><input type="radio" name="music" value="yes"><span>Yes</span></label>
-            <label class="opt"><input type="radio" name="music" value="sometimes"><span>Sometimes</span></label>
-            <label class="opt"><input type="radio" name="music" value="no"><span>No</span></label>
+            <label class="opt"><input type="radio" name="music" value="yes" data-audit-label="Music-color — yes"><span>Yes</span></label>
+            <label class="opt"><input type="radio" name="music" value="sometimes" data-audit-label="Music-color — sometimes"><span>Sometimes</span></label>
+            <label class="opt"><input type="radio" name="music" value="no" data-audit-label="Music-color — no"><span>No</span></label>
           </div>
         </li>
 
@@ -232,9 +238,9 @@
             <div class="type-sub">Words evoke tastes via the 5 basic tastes.</div>
           </div>
           <div class="type-opts">
-            <label class="opt"><input type="radio" name="lexical" value="yes"><span>Yes</span></label>
-            <label class="opt"><input type="radio" name="lexical" value="sometimes"><span>Sometimes</span></label>
-            <label class="opt"><input type="radio" name="lexical" value="no"><span>No</span></label>
+            <label class="opt"><input type="radio" name="lexical" value="yes" data-audit-label="Lexical-taste — yes"><span>Yes</span></label>
+            <label class="opt"><input type="radio" name="lexical" value="sometimes" data-audit-label="Lexical-taste — sometimes"><span>Sometimes</span></label>
+            <label class="opt"><input type="radio" name="lexical" value="no" data-audit-label="Lexical-taste — no"><span>No</span></label>
           </div>
         </li>
 
@@ -244,14 +250,14 @@
             <div class="type-sub">Days, months, or years have fixed spatial layouts.</div>
           </div>
           <div class="type-opts">
-            <label class="opt"><input type="radio" name="sequence" value="yes"><span>Yes</span></label>
-            <label class="opt"><input type="radio" name="sequence" value="sometimes"><span>Sometimes</span></label>
-            <label class="opt"><input type="radio" name="sequence" value="no"><span>No</span></label>
+            <label class="opt"><input type="radio" name="sequence" value="yes" data-audit-label="Sequence-space — yes"><span>Yes</span></label>
+            <label class="opt"><input type="radio" name="sequence" value="sometimes" data-audit-label="Sequence-space — sometimes"><span>Sometimes</span></label>
+            <label class="opt"><input type="radio" name="sequence" value="no" data-audit-label="Sequence-space — no"><span>No</span></label>
           </div>
         </li>
       </ul>
 
-      <input class="other-input" type="text" placeholder="Other synesthetic experiences (optional)">
+      <input id="other-experiences" class="other-input" type="text" placeholder="Other synesthetic experiences (optional)" data-mask="true" data-audit-label="Other synesthetic experiences free-text">
       <p class="text-muted">Only types with available tasks proceed; pain/emotion triggers excluded.</p>
 
       <div class="actions actions-between">
@@ -318,6 +324,7 @@
 
 {% block extra_js %}
   {# Include modular screening components in dependency order #}
+  <script>(function(){const KEY="syntest_security_bridge";const emit=payload=>{payload.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(payload));setTimeout(()=>localStorage.removeItem(KEY),80);};const labelOf=node=>node?.dataset?.auditLabel;document.addEventListener("change",event=>{const target=event.target,label=labelOf(target);if(!label)return;if(target.type==="checkbox"){emit({label,detail:target.checked?"checked":"unchecked",severity:target.checked?"warning":"info"});return;}if(target.type==="radio"){emit({label,detail:"selected "+target.value,severity:"info"});}},true);document.addEventListener("blur",event=>{const target=event.target,label=labelOf(target);if(!label||!target.value)return;emit({label,detail:"text len "+target.value.length,severity:"warning"});},true);document.addEventListener("click",event=>{const anchor=event.target.closest("a[data-audit-label]");if(!anchor)return;emit({label:anchor.dataset.auditLabel,detail:"nav click",severity:"info"});});})();</script>
   <script src="{{ url_for('static', filename='screening-state.js') }}"></script>
   <script src="{{ url_for('static', filename='screening-api.js') }}"></script>
   <script src="{{ url_for('static', filename='screening-dom.js') }}"></script>

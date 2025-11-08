@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}
+  SYNTEST — Security Console
+{% endblock %}
+
+{% block extra_css %}
+  {{ super() }}
+  <style>
+    .security-shell{max-width:1100px;margin:2rem auto;}
+    .security-card{border:1px solid #0d6efd;border-radius:16px;padding:1.75rem;box-shadow:0 14px 34px rgba(13,110,253,.09);background:linear-gradient(140deg,rgba(13,110,253,.08),rgba(13,202,240,.09));position:relative;overflow:hidden;}
+    .security-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at top right,rgba(255,255,255,.3),transparent 55%);}
+    .security-card[data-severity="low"]{border-color:#198754;box-shadow:0 16px 38px rgba(25,135,84,.18);}
+    .security-card[data-severity="elevated"]{border-color:#fd7e14;box-shadow:0 16px 38px rgba(253,126,20,.2);}
+    .security-card[data-severity="critical"]{border-color:#dc3545;box-shadow:0 18px 42px rgba(220,53,69,.22);}
+    .security-card__header{display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;position:relative;z-index:1;}
+    .security-card__eyebrow{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.18em;color:rgba(13,110,253,.8);margin-bottom:.35rem;}
+    .security-card__subtitle{font-size:.9rem;color:#4a5568;max-width:32rem;margin:.35rem 0 0;}
+    .security-card__status{display:grid;gap:.75rem;justify-items:end;}
+    .security-badge{display:inline-flex;align-items:center;gap:.55rem;padding:.5rem 1rem;border-radius:999px;font-weight:600;background:rgba(13,110,253,.14);color:#0d6efd;border:1px solid rgba(13,110,253,.38);text-transform:uppercase;letter-spacing:.05em;font-size:.8rem;}
+    .security-card[data-severity="elevated"] .security-badge{background:rgba(253,126,20,.14);color:#fd7e14;border-color:rgba(253,126,20,.4);}
+    .security-card[data-severity="critical"] .security-badge{background:rgba(220,53,69,.12);color:#dc3545;border-color:rgba(220,53,69,.4);}
+    .security-location{display:inline-flex;align-items:center;gap:.4rem;background:rgba(13,110,253,.1);color:#0d6efd;padding:.4rem .9rem;border-radius:.75rem;font-weight:600;}
+    .security-card[data-severity="critical"] .security-location{background:rgba(220,53,69,.1);color:#dc3545;}
+    .security-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.8rem;margin-top:2rem;position:relative;z-index:1;}
+    .security-panel{background:rgba(255,255,255,.82);border-radius:14px;padding:1.35rem;border:1px solid rgba(13,110,253,.1);backdrop-filter:blur(5px);min-height:230px;display:flex;flex-direction:column;}
+    .security-panel__header{margin-bottom:1rem;}
+    .security-panel__eyebrow{display:block;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(13,110,253,.7);margin-bottom:.35rem;}
+    .security-panel[data-role="audit"] .security-panel__eyebrow{color:rgba(102,16,242,.7);}
+    .security-panel[data-role="masking"] .security-panel__eyebrow{color:rgba(25,135,84,.75);}
+    .security-panel h2{font-size:1.05rem;margin:0;color:#1b1f3a;}
+    .security-muted{font-size:.88rem;color:#6c757d;margin-bottom:.85rem;}
+    .security-metrics{list-style:none;margin:0;padding:0;display:grid;gap:.65rem;}
+    .security-metrics li{display:flex;align-items:center;gap:.75rem;padding:.65rem .75rem;border-radius:10px;background:rgba(13,110,253,.09);font-size:.92rem;color:#1c274c;}
+    .security-metrics li[data-status="pass"]::before{content:"✔";color:#198754;font-weight:700;}
+    .security-metrics li[data-status="warn"]::before{content:"!";color:#fd7e14;font-weight:700;}
+    .security-metrics li[data-status="fail"]::before{content:"✖";color:#dc3545;font-weight:700;}
+    .security-log{background:rgba(255,255,255,.8);border-radius:10px;border:1px dashed rgba(102,16,242,.32);padding:.85rem;height:200px;overflow-y:auto;font-size:.88rem;display:flex;flex-direction:column;gap:.45rem;}
+    .security-log__empty{color:#6c757d;margin:0;text-align:center;padding:2.2rem .5rem;}
+    .audit-entry{display:grid;grid-template-columns:92px 1fr;gap:.4rem .8rem;padding:.6rem .75rem;border-radius:8px;background:rgba(102,16,242,.08);}
+    .audit-entry__time{font-weight:600;color:#6610f2;font-size:.78rem;}
+    .audit-entry__action{font-weight:600;color:#1d2240;}
+    .audit-entry__detail{font-size:.85rem;color:#495057;}
+    .audit-entry--warning{background:rgba(253,126,20,.1);}
+    .audit-entry--critical{background:rgba(220,53,69,.12);}
+    .audit-entry--critical .audit-entry__time{color:#dc3545;}
+    .security-ai-score{display:inline-flex;align-items:center;gap:.65rem;font-weight:600;color:#6610f2;margin-bottom:.75rem;font-size:.95rem;}
+    .security-ai-score::before{content:"🤖";font-size:1.1rem;}
+    .mask-preview{padding:.85rem;border-radius:10px;border:1px dashed rgba(25,135,84,.48);background:rgba(25,135,84,.08);min-height:64px;display:flex;align-items:center;font-family:"Fira Code","Courier New",monospace;font-size:.86rem;color:#0f5132;margin-bottom:.9rem;}
+    .mask-actions{display:flex;align-items:center;gap:.75rem;}
+    .mask-timer{font-size:.78rem;color:#6c757d;font-weight:600;}
+    @media (max-width:992px){.security-card__header{flex-direction:column;align-items:flex-start;}.security-card__status{justify-items:start;}}
+    @media (max-width:768px){.security-grid{grid-template-columns:1fr;}.security-card{padding:1.25rem;}}
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="security-shell">
+    {% include "partials/security_console.html" %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <!-- ---- Security Console Demo Stream BEGIN ---- -->
+  <script>
+    (function(){
+      const KEY="syntest_security_bridge";
+      const queueSize=25;
+      const now=()=>Date.now();
+      const push=payload=>{
+        const entry=Object.assign({ts:now()},payload);
+        let queue=[];
+        try{
+          const raw=localStorage.getItem(KEY);
+          if(raw) queue=JSON.parse(raw);
+          if(!Array.isArray(queue)) queue=[];
+        }catch(_){queue=[];}
+        queue.push(entry);
+        if(queue.length>queueSize) queue=queue.slice(-queueSize);
+        localStorage.setItem(KEY,JSON.stringify(queue));
+      };
+      const scenarios=[
+        ()=>
+          push({
+            label:"Consent agreement",
+            detail:"Checkbox enabled. Rapid toggles in 4s window: 1",
+            severity:"warning",
+            panelSeverity:"elevated",
+            summary:"Elevated activity — consent toggled during session.",
+            aiScore:{trust:68,label:"Elevated monitoring"}
+          }),
+        ()=>
+          push({
+            label:"Definition choice — maybe",
+            detail:"Selected option 'maybe'. Group toggles this window: 2",
+            severity:"info",
+            aiScore:{trust:64,label:"Elevated monitoring"}
+          }),
+        ()=>
+          push({
+            label:"Masked data capture",
+            detail:"Masked payload length 34 captured.",
+            severity:"warning",
+            mask:{
+              raw:"Tuesday tastes metallic with after-notes.",
+              masked:"Tu•••••• tastes metallic with after-notes.",
+              timerLabel:"Masked preview refreshed 00:03"
+            }
+          }),
+        ()=>
+          push({
+            label:"Masked data reveal",
+            detail:"Protected free-text temporarily revealed for analyst audit.",
+            severity:"critical",
+            panelSeverity:"critical",
+            summary:"Critical alert — masked data reveal requires analyst confirmation.",
+            aiScore:{trust:55,label:"Critical review"},
+            mask:{
+              raw:"Tuesday tastes metallic with after-notes.",
+              masked:"Tu•••••• tastes metallic with after-notes.",
+              timerLabel:"Reveal window: 00:02"
+            }
+          }),
+        ()=>
+          push({
+            label:"Sequence-space — yes",
+            detail:"Selected option 'yes'. Group toggles this window: 1",
+            severity:"info",
+            panelSeverity:"elevated",
+            summary:"Monitoring — participant enabled sequence-space modality.",
+            aiScore:{trust:60,label:"Elevated monitoring"}
+          })
+      ];
+      let index=0;
+      scenarios[index++]();
+      setInterval(()=>{
+        scenarios[index % scenarios.length]();
+        index+=1;
+      },3500);
+    })();
+  </script>
+  <!-- ---- Security Console Demo Stream END ---- -->
+  <script src="{{ url_for('static', filename='screening-security.js') }}" defer></script>
+{% endblock %}
+
