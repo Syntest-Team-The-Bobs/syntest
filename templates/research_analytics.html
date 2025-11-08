@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Synesthesia Research</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/researcher/dashboard">Dashboard</a>
+                <a href="/researcher/participants">Participants</a>
+                <a href="/researcher/data">Data Export</a>
+                <a href="/researcher/analytics">Analytics</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Analytics & Visualizations</h1>
+                    <p>Interactive data analysis for synesthesia research</p>
+                </div>
+                <div>
+                    <button onclick="exportAllCharts()" class="btn">Export All Charts</button>
+                </div>
+            </div>
+
+            <!-- Time Period Filter -->
+            <div class="card mb-20">
+                <div class="card-header">
+                    <h2 class="card-title">Time Period Filter</h2>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="/researcher/analytics" class="filter-controls">
+                        <div class="form-group">
+                            <label for="period">Time Period</label>
+                            <select id="period" name="period" onchange="this.form.submit()">
+                                <option value="7" {% if period == 7 %}selected{% endif %}>Last 7 Days</option>
+                                <option value="30" {% if period == 30 %}selected{% endif %}>Last 30 Days</option>
+                                <option value="90" {% if period == 90 %}selected{% endif %}>Last 90 Days</option>
+                                <option value="365" {% if period == 365 %}selected{% endif %}>Last Year</option>
+                                <option value="all" {% if period == 'all' %}selected{% endif %}>All Time</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Key Metrics Row -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_participants }}</div>
+                    <div class="stat-label">Total Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ completion_rate }}%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ avg_consistency }}%</div>
+                    <div class="stat-label">Avg Consistency Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ synesthete_percentage }}%</div>
+                    <div class="stat-label">Synesthete Prevalence</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Synesthesia Distribution -->
+            <div class="grid-2 mb-20">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Synesthesia Type Distribution</h2>
+                        <button onclick="downloadChart('synesthesiaTypeChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="synesthesiaTypeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Test Completion Status</h2>
+                        <button onclick="downloadChart('completionStatusChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="completionStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2: Timeline & Consistency -->
+            <div class="grid-2 mb-20">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Participant Enrollment Over Time</h2>
+                        <button onclick="downloadChart('enrollmentChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="enrollmentChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Consistency Score Distribution</h2>
+                        <button onclick="downloadChart('consistencyChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="consistencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Chart: Test Completion Timeline -->
+            <div class="card mb-20">
+                <div class="card-header">
+                    <h2 class="card-title">Test Completion Timeline</h2>
+                    <button onclick="downloadChart('timelineChart')" class="btn btn-secondary">Download</button>
+                </div>
+                <div class="card-body">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 3: Demographics -->
+            <div class="grid-2 mb-20">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Age Distribution</h2>
+                        <button onclick="downloadChart('ageChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ageChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Geographic Distribution</h2>
+                        <button onclick="downloadChart('geoChart')" class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="geoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correlation Heatmap -->
+            <div class="card mb-20">
+                <div class="card-header">
+                    <h2 class="card-title">Synesthesia Type Co-occurrence Matrix</h2>
+                    <p style="font-size: 14px; color: #666; margin-top: 5px;">Shows how often participants have multiple types of synesthesia</p>
+                </div>
+                <div class="card-body">
+                    <canvas id="heatmapChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Summary Statistics Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Detailed Statistics</h2>
+                </div>
+                <div class="card-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Participants</td>
+                                <td>{{ total_participants }}</td>
+                                <td>All registered participants</td>
+                            </tr>
+                            <tr>
+                                <td>Active Participants</td>
+                                <td>{{ active_participants }}</td>
+                                <td>Participants with ongoing tests</td>
+                            </tr>
+                            <tr>
+                                <td>Completed Tests</td>
+                                <td>{{ completed_tests }}</td>
+                                <td>Total number of completed assessments</td>
+                            </tr>
+                            <tr>
+                                <td>Average Tests per Participant</td>
+                                <td>{{ avg_tests_per_participant }}</td>
+                                <td>Mean number of tests completed</td>
+                            </tr>
+                            <tr>
+                                <td>Synesthetes Identified</td>
+                                <td>{{ synesthetes_identified }}</td>
+                                <td>Participants with confirmed synesthesia</td>
+                            </tr>
+                            <tr>
+                                <td>Average Consistency Score</td>
+                                <td>{{ avg_consistency }}%</td>
+                                <td>Mean consistency across all tests</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js default configuration
+        Chart.defaults.font.family = 'Arial, sans-serif';
+        Chart.defaults.color = '#000000';
+
+        // Data from Flask
+        const chartData = {{ chart_data | tojson }};
+
+        // 1. Synesthesia Type Distribution (Pie Chart)
+        const synesthesiaCtx = document.getElementById('synesthesiaTypeChart').getContext('2d');
+        new Chart(synesthesiaCtx, {
+            type: 'pie',
+            data: {
+                labels: chartData.synesthesia_types.labels,
+                datasets: [{
+                    data: chartData.synesthesia_types.data,
+                    backgroundColor: [
+                        '#00ffff',  // cyan
+                        '#ff00ff',  // magenta
+                        '#ffff00',  // yellow
+                        '#000000',  // black
+                        '#cccccc'   // grey
+                    ],
+                    borderColor: '#000000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    },
+                    title: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 2. Test Completion Status (Doughnut Chart)
+        const completionCtx = document.getElementById('completionStatusChart').getContext('2d');
+        new Chart(completionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Not Started'],
+                datasets: [{
+                    data: chartData.completion_status,
+                    backgroundColor: ['#000000', '#666666', '#cccccc'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Participant Enrollment Over Time (Line Chart)
+        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+        new Chart(enrollmentCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.enrollment_timeline.labels,
+                datasets: [{
+                    label: 'New Participants',
+                    data: chartData.enrollment_timeline.data,
+                    borderColor: '#000000',
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 4. Consistency Score Distribution (Histogram/Bar Chart)
+        const consistencyCtx = document.getElementById('consistencyChart').getContext('2d');
+        new Chart(consistencyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+                datasets: [{
+                    label: 'Number of Participants',
+                    data: chartData.consistency_distribution,
+                    backgroundColor: '#00ffff',
+                    borderColor: '#000000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 5. Test Completion Timeline (Multi-line Chart)
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.test_timeline.labels,
+                datasets: chartData.test_timeline.datasets.map((dataset, index) => ({
+                    label: dataset.label,
+                    data: dataset.data,
+                    borderColor: ['#00ffff', '#ff00ff', '#ffff00'][index],
+                    backgroundColor: ['rgba(0, 255, 255, 0.1)', 'rgba(255, 0, 255, 0.1)', 'rgba(255, 255, 0, 0.1)'][index],
+                    tension: 0.3,
+                    fill: false,
+                    borderWidth: 2
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 6. Age Distribution (Bar Chart)
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.age_distribution.labels,
+                datasets: [{
+                    label: 'Number of Participants',
+                    data: chartData.age_distribution.data,
+                    backgroundColor: '#ff00ff',
+                    borderColor: '#000000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 7. Geographic Distribution (Horizontal Bar Chart)
+        const geoCtx = document.getElementById('geoChart').getContext('2d');
+        new Chart(geoCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.geo_distribution.labels,
+                datasets: [{
+                    label: 'Number of Participants',
+                    data: chartData.geo_distribution.data,
+                    backgroundColor: '#ffff00',
+                    borderColor: '#000000',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 8. Co-occurrence Heatmap (Matrix Chart using Bar Chart)
+        const heatmapCtx = document.getElementById('heatmapChart').getContext('2d');
+        new Chart(heatmapCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.cooccurrence.labels,
+                datasets: chartData.cooccurrence.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Download individual chart as PNG
+        function downloadChart(chartId) {
+            const canvas = document.getElementById(chartId);
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = chartId + '.png';
+            link.href = url;
+            link.click();
+        }
+
+        // Export all charts
+        function exportAllCharts() {
+            const chartIds = [
+                'synesthesiaTypeChart',
+                'completionStatusChart',
+                'enrollmentChart',
+                'consistencyChart',
+                'timelineChart',
+                'ageChart',
+                'geoChart',
+                'heatmapChart'
+            ];
+            
+            chartIds.forEach(id => {
+                setTimeout(() => downloadChart(id), 200);
+            });
+            
+            alert('All charts are being downloaded!');
+        }
+    </script>
+</body>
+</html>

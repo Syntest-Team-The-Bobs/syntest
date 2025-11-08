@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Researcher Dashboard - Synesthesia Research</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Synesthesia Research</div>
+            <div class="nav-links">
+                <a href="/researcher/dashboard">Dashboard</a>
+                <a href="/researcher/participants">Participants</a>
+                <a href="/researcher/data">Data Export</a>
+                <a href="/researcher/analytics">Analytics</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Researcher Dashboard</h1>
+                    <p>Welcome, {{ user.name }}</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.name[0].upper() }}</div>
+                    <div>
+                        <p><strong>{{ user.name }}</strong></p>
+                        <p><small>{{ user.institution }}</small></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Overview Statistics -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_participants }}</div>
+                    <div class="stat-label">Total Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_participants }}</div>
+                    <div class="stat-label">Active Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ completed_tests }}</div>
+                    <div class="stat-label">Completed Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ synesthetes_identified }}</div>
+                    <div class="stat-label">Synesthetes Identified</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid-3">
+                        <a href="/researcher/analytics" class="btn" style="background-color: #00ffff; color: #000;">📊 View Analytics</a>
+                        <a href="/researcher/data/export" class="btn">Export All Data</a>
+                        <a href="/researcher/reports/generate" class="btn">Generate Report</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Filtering and Search -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Filter Participant Data</h2>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="/researcher/participants" class="filter-section">
+                        <div class="filter-controls">
+                            <div class="form-group">
+                                <label for="synesthesia-type">Synesthesia Type</label>
+                                <select id="synesthesia-type" name="synesthesia_type">
+                                    <option value="">All Types</option>
+                                    <option value="trigger-color">Trigger-Color</option>
+                                    <option value="trigger-gustatory">Trigger-Gustatory</option>
+                                    <option value="sequence-space">Sequence-Space</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="test-status">Test Status</label>
+                                <select id="test-status" name="test_status">
+                                    <option value="">All Status</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="not-started">Not Started</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date-from">Date From</label>
+                                <input type="date" id="date-from" name="date_from">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date-to">Date To</label>
+                                <input type="date" id="date-to" name="date_to">
+                            </div>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <button type="submit" class="btn">Apply Filters</button>
+                            <a href="/researcher/dashboard" class="btn btn-secondary">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Participant Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Participant Activity</h2>
+                    <a href="/researcher/participants" class="link">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Participant ID</th>
+                                <th>Test Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activity %}
+                            <tr>
+                                <td>{{ activity.participant_id }}</td>
+                                <td>{{ activity.test_name }}</td>
+                                <td>
+                                    <span class="test-status {% if activity.status == 'completed' %}status-completed{% else %}status-pending{% endif %}">
+                                        {{ activity.status }}
+                                    </span>
+                                </td>
+                                <td>{{ activity.date }}</td>
+                                <td>
+                                    <a href="/researcher/participant/{{ activity.participant_id }}" class="link">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No recent activity to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Synesthesia Type Distribution -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Synesthesia Type Distribution</h2>
+                </div>
+                <div class="card-body">
+                    {% if synesthesia_distribution %}
+                    <div class="grid-3">
+                        {% for type, count in synesthesia_distribution.items() %}
+                        <div class="stat-card">
+                            <div class="stat-number">{{ count }}</div>
+                            <div class="stat-label">{{ type }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>No data available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Data Export Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Export Data</h2>
+                </div>
+                <div class="card-body">
+                    <p>Export anonymized participant data for analysis in your preferred format.</p>
+                    <div class="grid-3 mt-20">
+                        <form method="POST" action="/researcher/data/export">
+                            <input type="hidden" name="format" value="csv">
+                            <button type="submit" class="btn btn-full">Export as CSV</button>
+                        </form>
+                        <form method="POST" action="/researcher/data/export">
+                            <input type="hidden" name="format" value="json">
+                            <button type="submit" class="btn btn-full">Export as JSON</button>
+                        </form>
+                        <form method="POST" action="/researcher/data/export">
+                            <input type="hidden" name="format" value="excel">
+                            <button type="submit" class="btn btn-full">Export as Excel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="alert alert-info">
+                <strong>Data Privacy Notice:</strong> All exported data is anonymized and complies with research ethics requirements. Participant identifiable information is never included in exports.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

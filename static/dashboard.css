@@ -1,0 +1,225 @@
+/* --------------------------
+   Researcher Dashboard Styles
+--------------------------- */
+
+/* Global body and container */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f4f5f7;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+  
+  .container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  /* Header */
+  .header {
+    background-color: #1f2937;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header .logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .header .nav-links a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 500;
+  }
+  
+  .header .nav-links a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Dashboard header */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-header h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .user-avatar {
+    background-color: #3b82f6;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Stats cards */
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  /* Cards */
+  .card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .card-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #1f2937;
+  }
+  
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    background-color: #3b82f6;
+    color: #fff;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn:hover {
+    background-color: #2563eb;
+  }
+  
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #111827;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #d1d5db;
+  }
+  
+  /* Grid layouts for buttons */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  /* Data table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+  
+  .data-table th {
+    font-weight: 600;
+    background-color: #f9fafb;
+  }
+  
+  .test-status {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .status-completed {
+    background-color: #16a34a;
+    color: #fff;
+  }
+  
+  .status-pending {
+    background-color: #f59e0b;
+    color: #fff;
+  }
+  
+  /* Alerts */
+  .alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1.5rem;
+  }
+  
+  .alert-info {
+    background-color: #dbeafe;
+    color: #1e3a8a;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  
+    .stats-container {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+  }
+  
