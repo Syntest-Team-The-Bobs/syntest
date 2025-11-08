@@ -26,4 +26,19 @@ export class WordColorTest extends BaseColorTest {
   getTitle() {
     return "WORD COLOR TEST";
   }
+
+  /** Configuration for intro screen shown before test begins. */
+  getIntroConfig() {
+    return {
+      title: 'Word-Color Synesthesia Test',
+      description: 'In this test, you will see words one at a time. For each word, select the color you most strongly associate with it.',
+      instructions: [
+        'Each word will appear 3 times to test consistency',
+        'Try to select the same color each time for each word',
+        'Click "No Color" if you don\'t associate a color with that word',
+        'Take your time - there is no time limit per word'
+      ],
+      estimatedTime: '4-6 minutes'
+    };
+  }
 }

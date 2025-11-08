@@ -10,6 +10,7 @@
 //
 //
 import { WheelRenderer, shuffle } from "./color_shared.js";
+import { ColorIntro } from "./color_intro_page.js";
 
 /** @typedef {Object} UIRefs
  * @property {HTMLCanvasElement} [wheel]
@@ -122,6 +123,10 @@ export class BaseColorTest {
     this.clock = deps.clock || (() => performance.now());
     this.rendererFactory = deps.rendererFactory || ((c, d, cb) => new WheelRenderer(c, d, cb));
 
+    // ---- Intro system
+    this.intro = new ColorIntro(this.ui.stimulusContent);
+    this.testStarted = false;
+
     // ---- State we maintain
     this.trials = [];
     this.index = 0;         // which step in the deck we are on (0..total-1)
@@ -140,13 +145,170 @@ export class BaseColorTest {
 
     // ---- Wire UI and show the first screen
     this._wireCommonUI();
-    this._loadStep();
+    this._showIntroOrStart();
   }
 
   // ====== ABSTRACTS (subclasses provide these) ======
   getStimuliSet() { throw new Error("getStimuliSet() must be implemented by subclass."); }
   getTitle()      { return "COLOR TEST"; }
+  getIntroConfig() { return null; } 
 
+  _showIntroOrStart() {
+    const introConfig = this.getIntroConfig();
+    
+    if (introConfig) {
+      // Hide ALL test UI during intro
+      this._hideTestUI();
+      
+      this.intro.show({
+        ...introConfig,
+        onStart: () => this._startTest()
+      });
+    } else {
+      this._startTest();
+    }
+  }
+
+  _hideTestUI() {
+    const ui = this.ui;
+    
+    // Hide all test UI elements
+    if (ui.wheel) ui.wheel.style.display = 'none';
+    if (ui.dot) ui.dot.style.display = 'none';
+    if (ui.swatch) ui.swatch.style.display = 'none';
+    if (ui.hex) ui.hex.style.display = 'none';
+    if (ui.btnNext) ui.btnNext.style.display = 'none';
+    if (ui.btnNone) ui.btnNone.style.display = 'none';
+    if (ui.stimulusLabel) ui.stimulusLabel.style.display = 'none';
+    if (ui.trialNum) ui.trialNum.style.display = 'none';
+    if (ui.trialTotal) ui.trialTotal.style.display = 'none';
+    if (ui.progress) ui.progress.style.display = 'none';
+    if (ui.trialSlider) ui.trialSlider.style.display = 'none';
+    if (ui.helpBtn) ui.helpBtn.style.display = 'none';
+    
+    // Hide page content by class/id
+    const pageTitle = document.querySelector('h1');
+    if (pageTitle) pageTitle.style.display = 'none';
+    
+    const testInstructions = document.querySelector('.howto');
+    if (testInstructions) testInstructions.style.display = 'none';
+    
+    const consistencyTest = document.querySelector('h2');
+    if (consistencyTest) consistencyTest.style.display = 'none';
+    
+    const wheelWrap = document.querySelector('.wheel-wrap');
+    if (wheelWrap) wheelWrap.style.display = 'none';
+    
+    // DON'T hide swatch-wrap entirely, just hide its children except stimulusBox
+    const swatchWrap = document.querySelector('.swatch-wrap');
+    if (swatchWrap) {
+      Array.from(swatchWrap.children).forEach(child => {
+        if (child.id !== 'stimulusBox') {
+          child.style.display = 'none';
+        }
+      });
+    }
+    
+    const status = document.querySelector('.status');
+    if (status) status.style.display = 'none';
+    
+    // Hide cct-grid but keep it in flow so stimulusContent renders
+    const cctGrid = document.querySelector('.cct-grid');
+    if (cctGrid) {
+      cctGrid.style.display = 'flex';
+      cctGrid.style.justifyContent = 'center';
+      cctGrid.style.alignItems = 'center';
+    }
+    
+    const trialSliderContainer = document.querySelector('.trial-slider-container');
+    if (trialSliderContainer) trialSliderContainer.style.display = 'none';
+    
+    const lede = document.querySelector('.lede');
+    if (lede) lede.style.display = 'none';
+    
+    const header = document.querySelector('.hdr');
+    if (header) header.style.display = 'none';
+    
+    // Don't hide the block entirely - just make it centered for intro
+    const block = document.querySelector('.block');
+    if (block) {
+      block.style.textAlign = 'center';
+    }
+  }
+
+  _showTestUI() {
+    const ui = this.ui;
+    
+    // Show all test UI elements
+    if (ui.wheel) ui.wheel.style.display = '';
+    if (ui.dot) ui.dot.style.display = '';
+    if (ui.swatch) ui.swatch.style.display = '';
+    if (ui.hex) ui.hex.style.display = '';
+    if (ui.btnNext) ui.btnNext.style.display = '';
+    if (ui.btnNone) ui.btnNone.style.display = '';
+    if (ui.stimulusLabel) ui.stimulusLabel.style.display = '';
+    if (ui.trialNum) ui.trialNum.style.display = '';
+    if (ui.trialTotal) ui.trialTotal.style.display = '';
+    if (ui.progress) ui.progress.style.display = '';
+    if (ui.trialSlider) ui.trialSlider.style.display = '';
+    if (ui.helpBtn) ui.helpBtn.style.display = '';
+    
+    // Show page content
+    const pageTitle = document.querySelector('h1');
+    if (pageTitle) pageTitle.style.display = '';
+    
+    const testInstructions = document.querySelector('.howto');
+    if (testInstructions) testInstructions.style.display = '';
+    
+    const consistencyTest = document.querySelector('h2');
+    if (consistencyTest) consistencyTest.style.display = '';
+    
+    const wheelWrap = document.querySelector('.wheel-wrap');
+    if (wheelWrap) wheelWrap.style.display = '';
+    
+    // Show all children of swatch-wrap
+    const swatchWrap = document.querySelector('.swatch-wrap');
+    if (swatchWrap) {
+      Array.from(swatchWrap.children).forEach(child => {
+        child.style.display = '';
+      });
+    }
+    
+    const status = document.querySelector('.status');
+    if (status) status.style.display = '';
+    
+    // Restore cct-grid to normal display
+    const cctGrid = document.querySelector('.cct-grid');
+    if (cctGrid) {
+      cctGrid.style.display = '';
+      cctGrid.style.justifyContent = '';
+      cctGrid.style.alignItems = '';
+    }
+    
+    const trialSliderContainer = document.querySelector('.trial-slider-container');
+    if (trialSliderContainer) trialSliderContainer.style.display = '';
+    
+    const lede = document.querySelector('.lede');
+    if (lede) lede.style.display = '';
+    
+    const header = document.querySelector('.hdr');
+    if (header) header.style.display = '';
+    
+    // Restore block styling
+    const block = document.querySelector('.block');
+    if (block) {
+      block.style.textAlign = '';
+    }
+  }
+
+  _startTest() {
+    this.testStarted = true;
+    
+    // Show test UI
+    this._showTestUI();
+    
+    this._loadStep();
+  }
   // ====== UI Wiring (buttons, keys, and dev slider) ======
   _wireCommonUI() {
     const ui = this.ui;
@@ -172,7 +334,7 @@ export class BaseColorTest {
     }
 
     // Toggle "No color" (button + 'N' key). This lets participants say:
-    // “I don’t have a color for this item.”
+    // "I don't have a color for this item."
     const toggleNone = () => {
       this.current.none = !this.current.none;
       if (this.current.none) {

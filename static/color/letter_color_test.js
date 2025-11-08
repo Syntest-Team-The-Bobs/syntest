@@ -25,4 +25,18 @@ export class LetterColorTest extends BaseColorTest {
   getTitle() {
     return "LETTER COLOR TEST";
   }
+
+  getIntroConfig() {
+    return {
+      title: 'Letter-Color Synesthesia Test',
+      description: 'In this test, you will see letters one at a time. For each letter, select the color you most strongly associate with it.',
+      instructions: [
+        'Each letter will appear 3 times to test consistency',
+        'Try to select the same color each time for each letter',
+        'Click "No Color" if you don\'t associate a color with that letter',
+        'Take your time - there is no time limit per letter'
+      ],
+      estimatedTime: '5-10 minutes'
+    };
+  }
 }

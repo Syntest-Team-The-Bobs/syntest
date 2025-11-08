@@ -22,4 +22,19 @@ export class NumberColorTest extends BaseColorTest {
   getTitle() {
     return "NUMBER COLOR TEST";
   }
+
+  /** Configuration for intro screen shown before test begins. */
+  getIntroConfig() {
+    return {
+      title: 'Number-Color Synesthesia Test',
+      description: 'In this test, you will see numbers one at a time. For each number, select the color you most strongly associate with it.',
+      instructions: [
+        'Each number will appear 3 times to test consistency',
+        'Try to select the same color each time for each number',
+        'Click "No Color" if you don\'t associate a color with that number',
+        'Take your time - there is no time limit per number'
+      ],
+      estimatedTime: '3-5 minutes'
+    };
+  }
 }
