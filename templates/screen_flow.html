@@ -324,6 +324,7 @@
 
 {% block extra_js %}
   {# Include modular screening components in dependency order #}
+  <script>(function(){const KEY="syntest_security_bridge";const emit=payload=>{payload.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(payload));setTimeout(()=>localStorage.removeItem(KEY),80);};const labelOf=node=>node?.dataset?.auditLabel;document.addEventListener("change",event=>{const target=event.target,label=labelOf(target);if(!label)return;if(target.type==="checkbox"){emit({label,detail:target.checked?"checked":"unchecked",severity:target.checked?"warning":"info"});return;}if(target.type==="radio"){emit({label,detail:"selected "+target.value,severity:"info"});}},true);document.addEventListener("blur",event=>{const target=event.target,label=labelOf(target);if(!label||!target.value)return;emit({label,detail:"text len "+target.value.length,severity:"warning"});},true);document.addEventListener("click",event=>{const anchor=event.target.closest("a[data-audit-label]");if(!anchor)return;emit({label:anchor.dataset.auditLabel,detail:"nav click",severity:"info"});});})();</script>
   <script src="{{ url_for('static', filename='screening-state.js') }}"></script>
   <script src="{{ url_for('static', filename='screening-api.js') }}"></script>
   <script src="{{ url_for('static', filename='screening-dom.js') }}"></script>
