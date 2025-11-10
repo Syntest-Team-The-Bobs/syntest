@@ -1,19 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Layout({ children }) {
-  const { user, logout, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+    await logout()
+    navigate('/')
+  }
 
   return (
-    <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header className="topbar">
         <div className="topbar-content">
           <Link to="/" className="brand">
@@ -25,20 +23,17 @@ export default function Layout({ children }) {
             </Link>
             {isAuthenticated ? (
               <>
-                {user?.role === "participant" && (
+                {user?.role === 'participant' && (
                   <Link to="/participant/dashboard" className="nav-link">
                     Dashboard
                   </Link>
                 )}
-                {user?.role === "researcher" && (
+                {user?.role === 'researcher' && (
                   <Link to="/researcher/dashboard" className="nav-link">
                     Dashboard
                   </Link>
                 )}
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-primary btn-sm"
-                >
+                <button onClick={handleLogout} className="btn btn-primary btn-sm">
                   Logout
                 </button>
               </>
@@ -61,11 +56,10 @@ export default function Layout({ children }) {
       </main>
 
       <footer>
-        <p>
-          &copy; 2025 Synesthesia Research Platform. All data is anonymized and
-          used for research purposes only.
-        </p>
+        <p>&copy; 2025 Synesthesia Research Platform. All data is anonymized and used for research purposes only.</p>
       </footer>
     </div>
-  );
+  )
 }
+
+
