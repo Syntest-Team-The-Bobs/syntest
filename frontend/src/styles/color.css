@@ -1,0 +1,187 @@
+/* Color Test Stylesheet (Test-specific only) */
+
+/* Color wheel canvas */
+#wheel {
+  border: 2px solid #222;
+  cursor: crosshair;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wheel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Dot marker on wheel */
+.dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #000;
+  pointer-events: none;
+  display: none;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+
+/* Color swatch preview */
+.swatch {
+  width: 200px;
+  height: 200px;
+  border: 4px solid #111;
+  background: #e3e6ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.hex {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Stimulus box */
+.stimulus-box {
+  width: 200px;
+  height: 200px;
+  border: 3px solid #111;
+  background: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #333;
+  user-select: none;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+#stimulusContent {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Test grid layout */
+.cct-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.swatch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* How-to sidebar */
+.howto {
+  max-width: 220px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.howto h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.howto ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.howto li {
+  margin: 6px 0;
+}
+
+/* Trial slider (dev tool) */
+.trial-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 25px 0 10px 0;
+  gap: 10px;
+}
+
+.trial-slider-container label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+#trialSlider {
+  width: 220px;
+  cursor: pointer;
+  accent-color: #000;
+}
+
+/* Help dialog */
+dialog.help {
+  border: none;
+  padding: 20px 30px;
+  max-width: 400px;
+  font-family: inherit;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+dialog.help h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+dialog.help ul {
+  padding-left: 20px;
+}
+
+dialog.help li {
+  margin-bottom: 6px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cct-grid {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .howto {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .howto ol {
+    display: inline-block;
+    text-align: left;
+  }
+}
+
+
