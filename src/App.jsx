@@ -7,11 +7,11 @@ import ParticipantDashboard from './pages/ParticipantDashboard'
 import ResearcherDashboard from './pages/ResearcherDashboard'
 import ScreeningFlow from './pages/ScreeningFlow'
 import ScreeningExit from './pages/ScreeningExit'
-import ColorNumberTest from './pages/ColorNumberTest'
-import ColorLetterTest from './pages/ColorLetterTest'
-import ColorWordTest from './pages/ColorWordTest'
-import SpeedCongruencyInstructions from './pages/SpeedCongruencyInstructions'
-import SpeedCongruencyTest from './pages/SpeedCongruencyTest'
+import ColorNumberTest from './pages/trigger_color/ColorNumberTest'
+import ColorLetterTest from './pages/trigger_color/ColorLetterTest'
+import ColorWordTest from './pages/trigger_color/ColorWordTest'
+import SpeedCongruencyInstructions from './pages/trigger_color/SpeedCongruencyInstructions'
+import SpeedCongruencyTest from './pages/trigger_color/SpeedCongruencyTest'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import './styles/app.css'
@@ -46,7 +46,7 @@ function App() {
         />
 
         <Route
-          path="/color/number"
+          path="/tests/color/number"
           element={
             <ProtectedRoute role="participant">
               <ColorNumberTest />
@@ -54,7 +54,7 @@ function App() {
           }
         />
         <Route
-          path="/color/letter"
+          path="/tests/color/letter"
           element={
             <ProtectedRoute role="participant">
               <ColorLetterTest />
@@ -62,7 +62,7 @@ function App() {
           }
         />
         <Route
-          path="/color/word"
+          path="/tests/color/word"
           element={
             <ProtectedRoute role="participant">
               <ColorWordTest />
@@ -71,7 +71,7 @@ function App() {
         />
 
         <Route
-          path="/speed-congruency"
+          path="/tests/color/speed-congruency"
           element={
             <ProtectedRoute role="participant">
               <SpeedCongruencyTest />

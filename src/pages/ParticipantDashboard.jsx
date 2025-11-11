@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { dashboardService } from '../services/dashboard'
+import Sidebar from '../components/layout/Sidebar';
 import '../styles/dashboard.css'
 
 export default function ParticipantDashboard() {
@@ -20,6 +21,19 @@ export default function ParticipantDashboard() {
     fetchData()
   }, [])
 
+  const sidebarLinks = [
+    { path: '/screening/0', label: 'Pre-Screening Test' },
+    { path: '/tests/color/letter', label: 'Letter Color Test' },
+    { path: '/tests/color/number', label: 'Number Color Test' },
+    { path: '/tests/color/word', label: 'Word Color Test' },
+    { path: '/tests/color/sound', label: 'Sound Color Test' },
+    { path: '/tests/color/speed-congruency', label: 'Speed Congruency' },
+    // { path: '/tests/flavor', label: 'Flavor Test' },
+    // { path: '/tests/association', label: 'Association' },
+    // { path: '/analytics', label: 'Analytics' },
+    { path: '/settings', label: 'Settings' },
+  ];
+
   if (loading) {
     return <div className="container">Loading...</div>
   }
@@ -30,11 +44,7 @@ export default function ParticipantDashboard() {
 
   return (
     <div className="dashboard-grid">
-      <aside className="dashboard-sidebar">
-        <div className="avatar">{data.user.name.charAt(0).toUpperCase()}</div>
-        <h2>{data.user.name}</h2>
-        <p className="text-muted">{data.user.email}</p>
-      </aside>
+      <Sidebar links={sidebarLinks} />
 
       <main style={{ padding: 'var(--spacing-3xl)' }}>
         <div className="dashboard-header">
