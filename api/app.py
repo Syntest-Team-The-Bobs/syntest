@@ -14,7 +14,8 @@ from models import db, Participant, Researcher, Test, TestResult, ScreeningRespo
 # -----------------------------
 # Screening API blueprint (expects views/api_screening.py to expose `bp`)
 # -----------------------------
-import screening
+from screening import bp as screening
+from dashboard import bp as dashboard
 
 # Set instance path for Flask (where database will be stored)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -47,7 +48,8 @@ with app.app_context():
     db.create_all()
 
 # Register blueprint
-app.register_blueprint(screening.bp)
+app.register_blueprint(screening)
+app.register_blueprint(dashboard)
 
 # =====================================
 # AUTHENTICATION ENDPOINTS
@@ -183,42 +185,6 @@ def api_get_current_user():
         })
     except Exception as e:
         print(f"Exception in api_get_current_user: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Server error: {str(e)}'}), 500
-
-@app.route('/api/participant/dashboard', methods=['GET'])
-def get_dashboard_data():
-    try:
-        # Fetch current user data directly
-        if 'user_id' not in session:
-            return jsonify({'error': 'Not authenticated'}), 401
-
-        user_id = session['user_id']
-        role = session.get('user_role')
-
-        user = Participant.query.get(user_id) if role == 'participant' else Researcher.query.get(user_id)
-
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-
-        user_data = {
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'role': role
-        }
-
-        # Prepare dashboard data
-        data = {
-            "user": user_data,
-            "tests_completed": 3,
-            "tests_pending": 2,
-            "completion_percentage": 60
-        }
-        return jsonify(data)
-    except Exception as e:
-        print(f"Error in get_dashboard_data: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Server error: {str(e)}'}), 500
