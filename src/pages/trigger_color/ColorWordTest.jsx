@@ -1,29 +1,42 @@
-import { useNavigate } from 'react-router-dom';
-import TriggerColorLayout from '../../components/trigger_color/TriggerColorLayout';
-import '../../styles/app.css';
+import React from 'react';
+import BaseColorTest from '../../components/trigger_color/BaseColor';
+import { buildWordDecks } from '../../services/useDeck';
 
-const WORD_STIMULI = [
-  'apple', 'ocean', 'sunset', 'forest', 'cloud',
-  'fire', 'ice', 'grass', 'sky', 'night'
-];
+/**
+ * Word-Color Synesthesia Test Configuration
+ * Defines test content and instructions for word-color associations
+ */
+const WORD_CONFIG = {
+  title: 'Word-Color Synesthesia Test',
+  description: 'In this test, you will see words one at a time. For each word, select the color you most strongly associate with it.',
+  instructions: [
+    'Each word will appear 3 times to test consistency',
+    'Try to select the same color each time for each word',
+    'Click and hold on the color wheel to select your color',
+    'Take your time - there is no time limit per word'
+  ],
+  estimatedTime: '4-6 minutes'
+};
 
+/**
+ * ColorWordTest - Page component for word-color synesthesia test
+ * 
+ * Responsibilities:
+ * - Configures test with word-specific settings
+ * - Delegates all test logic to BaseColorTest
+ * - Provides word stimuli via buildWordDecks service
+ */
 export default function ColorWordTest() {
-  const navigate = useNavigate();
-
-  const handleComplete = (responses) => {
-    console.log('Word color test responses:', responses);
-    // TODO: Send to API
-    // navigate('/participant/dashboard');
-  };
+  // Build word stimulus deck
+  const { stimuli, practiceStimuli } = buildWordDecks();
 
   return (
-    <TriggerColorLayout
-      title="WORD COLOR TEST: CONSISTENCY & SPEED"
-      description="You'll assign a color to each word. Click and hold the mouse on the wheel and drag to preview and adjust a color. To record a choice, click to lock it — the small circle turns red when locked — and click again to unlock if you need to change it. Press Next to save each choice. For best results, use a laptop/desktop and turn off blue-light filters."
-      stimulusType="word"
-      stimuli={WORD_STIMULI}
-      trialsPerStimulus={3}
-      onComplete={handleComplete}
+    <BaseColorTest
+      testType="word"
+      stimuli={stimuli}
+      practiceStimuli={practiceStimuli}
+      title="WORD COLOR TEST"
+      introConfig={WORD_CONFIG}
     />
   );
 }

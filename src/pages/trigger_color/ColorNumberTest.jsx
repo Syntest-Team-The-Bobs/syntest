@@ -1,25 +1,38 @@
-import { useNavigate } from 'react-router-dom';
-import TriggerColorLayout from '../../components/trigger_color/TriggerColorLayout';
-import '../../styles/app.css';
+import React from 'react';
+import BaseColorTest from '../../components/trigger_color/BaseColor';
+import { buildNumberDecks } from '../../services/useDeck';
 
-const NUMBER_STIMULI = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+/**
+ * Number-Color Synesthesia Test Configuration
+ * Defines test content and instructions for number-color associations
+ */
+const NUMBER_CONFIG = {
+  title: 'Number-Color Synesthesia Test',
+  description: 'In this test, you will see numbers one at a time. For each number, select the color you most strongly associate with it.',
+  instructions: [
+    'Each number will appear 3 times to test consistency',
+    'Try to select the same color each time for each number',
+    'Click and hold on the color wheel to select your color',
+    'Take your time - there is no time limit per number'
+  ],
+  estimatedTime: '3-5 minutes'
+};
 
+/**
+ * ColorNumberTest - Page component for number-color synesthesia test
+ * 
+ */
 export default function ColorNumberTest() {
-  const navigate = useNavigate();
-
-  const handleComplete = (responses) => {
-    console.log('Number color test responses:', responses);
-    // TODO: Send to API
-  };
+  // Build number stimulus deck (0-9)
+  const { stimuli, practiceStimuli } = buildNumberDecks();
 
   return (
-    <TriggerColorLayout
-      title="NUMBER COLOR TEST: CONSISTENCY & SPEED"
-      description="You'll assign a color to each number. Click and hold the mouse on the wheel and drag to preview and adjust a color. To record a choice, click to lock it — the small circle turns red when locked — and click again to unlock if you need to change it. Press Next to save each choice."
-      stimulusType="number"
-      stimuli={NUMBER_STIMULI}
-      trialsPerStimulus={3}
-      onComplete={handleComplete}
+    <BaseColorTest
+      testType="number"
+      stimuli={stimuli}
+      practiceStimuli={practiceStimuli}
+      title="NUMBER COLOR TEST"
+      introConfig={NUMBER_CONFIG}
     />
   );
 }

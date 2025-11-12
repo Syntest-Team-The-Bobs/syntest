@@ -1,28 +1,42 @@
-import { useNavigate } from 'react-router-dom';
-import TriggerColorLayout from '../../components/trigger_color/TriggerColorLayout';
-import '../../styles/app.css';
+import React from 'react';
+import BaseColorTest from '../../components/trigger_color/BaseColor';
+import { buildLetterDecks } from '../../services/useDeck';
 
-const LETTER_STIMULI = [
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
-];
+/**
+ * Letter-Color Synesthesia Test Configuration
+ * Defines test content and instructions for letter-color associations
+ */
+const LETTER_CONFIG = {
+  title: 'Letter-Color Synesthesia Test',
+  description: 'In this test, you will see letters one at a time. For each letter, select the color you most strongly associate with it.',
+  instructions: [
+    'Each letter will appear 3 times to test consistency',
+    'Try to select the same color each time for each letter',
+    'Click and hold on the color wheel to select your color',
+    'Take your time - there is no time limit per letter'
+  ],
+  estimatedTime: '3-5 minutes'
+};
 
+/**
+ * ColorLetterTest - Page component for letter-color synesthesia test
+ * 
+ * Responsibilities:
+ * - Configures test with letter-specific settings
+ * - Delegates all test logic to BaseColorTest
+ * - Provides letter stimuli via buildLetterDecks service
+ */
 export default function ColorLetterTest() {
-  const navigate = useNavigate();
-
-  const handleComplete = (responses) => {
-    console.log('Letter color test responses:', responses);
-    // TODO: Send to API
-  };
+  // Build letter stimulus deck (A-Z)
+  const { stimuli, practiceStimuli } = buildLetterDecks();
 
   return (
-    <TriggerColorLayout
-      title="LETTER COLOR TEST: CONSISTENCY & SPEED"
-      description="You'll assign a color to each letter. Click and hold the mouse on the wheel and drag to preview and adjust a color. To record a choice, click to lock it — the small circle turns red when locked — and click again to unlock if you need to change it. Press Next to save each choice."
-      stimulusType="letter"
-      stimuli={LETTER_STIMULI}
-      trialsPerStimulus={3}
-      onComplete={handleComplete}
+    <BaseColorTest
+      testType="letter"
+      stimuli={stimuli}
+      practiceStimuli={practiceStimuli}
+      title="LETTER COLOR TEST"
+      introConfig={LETTER_CONFIG}
     />
   );
 }
