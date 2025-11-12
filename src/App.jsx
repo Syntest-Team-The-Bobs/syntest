@@ -45,30 +45,11 @@ function App() {
           }
         />
 
-        <Route
-          path="/tests/color/number"
-          element={
-            <ProtectedRoute role="participant">
-              <ColorNumberTest />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tests/color/letter"
-          element={
-            <ProtectedRoute role="participant">
-              <ColorLetterTest />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tests/color/word"
-          element={
-            <ProtectedRoute role="participant">
-              <ColorWordTest />
-            </ProtectedRoute>
-          }
-        />
+        {/* Color tests - NO LOGIN REQUIRED FOR NOW (For Testing)*/}
+        <Route path="/color/number" element={<ColorNumberTest />} />
+        <Route path="/color/letter" element={<ColorLetterTest />} />
+        <Route path="/color/word" element={<ColorWordTest />} />
+        <Route path="/speed-congruency/instructions" element={<SpeedCongruencyInstructions />} />
 
         <Route
           path="/tests/color/speed-congruency"
@@ -84,5 +65,3 @@ function App() {
 }
 
 export default App
-
-
