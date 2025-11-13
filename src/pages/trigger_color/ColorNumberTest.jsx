@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseColorTest from '../../components/trigger_color/BaseColor';
-import { buildNumberDecks } from '../../services/useDeck';
+import { buildNumberDecks } from '../../hooks/useDeck';
 
 /**
  * Number-Color Synesthesia Test Configuration

@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseColorTest from '../../components/trigger_color/BaseColor';
-import { buildLetterDecks } from '../../services/useDeck';
+import { buildLetterDecks } from '../../hooks/useDeck';
 
 /**
  * Letter-Color Synesthesia Test Configuration
