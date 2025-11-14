@@ -26,6 +26,7 @@ const WORD_CONFIG = {
  * - Delegates all test logic to BaseColorTest
  * - Provides word stimuli via buildWordDecks service
  */
+
 export default function ColorWordTest() {
   // Build word stimulus deck
   const { stimuli, practiceStimuli } = buildWordDecks();
