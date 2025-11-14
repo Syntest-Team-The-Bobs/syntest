@@ -10,6 +10,7 @@ import ScreeningExit from './pages/ScreeningExit'
 import ColorNumberTest from './pages/trigger_color/ColorNumberTest'
 import ColorLetterTest from './pages/trigger_color/ColorLetterTest'
 import ColorWordTest from './pages/trigger_color/ColorWordTest'
+import ColorMusicTest from './pages/trigger_color/ColorMusicTest';
 import SpeedCongruencyInstructions from './pages/trigger_color/SpeedCongruencyInstructions'
 import SpeedCongruencyTest from './pages/trigger_color/SpeedCongruencyTest'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -49,6 +50,7 @@ function App() {
         <Route path="/color/number" element={<ColorNumberTest />} />
         <Route path="/color/letter" element={<ColorLetterTest />} />
         <Route path="/color/word" element={<ColorWordTest />} />
+        <Route path="/color/music" element={<ColorMusicTest />} />
         <Route path="/speed-congruency/instructions" element={<SpeedCongruencyInstructions />} />
 
         <Route
