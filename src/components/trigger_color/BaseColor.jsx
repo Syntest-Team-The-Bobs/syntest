@@ -16,6 +16,14 @@ import { colorService } from "../../services/color";
  * - Delegates state management to useColorTest hook
  * - Delegates UI rendering to presentational components
  */
+
+// Helper function outside component
+const playSound = (stimulus) => {
+  // TODO: Implement Web Audio API or use audio files
+  // For now, just log
+  console.log('Playing sound:', stimulus);
+};
+
 export default function BaseColorTest({ testType, stimuli, practiceStimuli, title, introConfig }) {
   const navigate = useNavigate();
   
@@ -57,7 +65,7 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
    */
   const getFontSize = () => {
     if (!current) return "7rem";
-    const length = current.stimulus.length;
+    const length = current.stimulus?.length || 0;
     if (testType === 'word') {
       if (length <= 3) return "5rem";
       if (length <= 5) return "4rem";
@@ -109,6 +117,8 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
       onToggleLock={toggleLock}
       onNext={handleNext}
       getFontSize={getFontSize}
+      // Add audio controls for music test
+      onPlaySound={testType === 'music' ? () => playSound(current.stimulus) : null}
     />
   );
 }
