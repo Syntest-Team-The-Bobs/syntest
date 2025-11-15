@@ -1,0 +1,199 @@
+/* ========================================
+   TEST CARD COMPONENT STYLES
+   ======================================== */
+
+/* ========================================
+   BASE CARD STYLING
+   ======================================== */
+
+/* Main test card container */
+.test-card {
+  background: white;
+  border: 2px solid #e5e7eb; /* Light gray border */
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover effect - only for unlocked cards */
+.test-card:not(.locked):hover {
+  border-color: #3b82f6; /* Blue border on hover */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); /* Blue shadow */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Locked state styling */
+.test-card.locked {
+  background: #f9fafb; /* Light gray background */
+  opacity: 0.6; /* Dimmed appearance */
+}
+
+/* Completed state styling */
+.test-card.completed {
+  border-color: #10b981; /* Green border */
+  background: #f0fdf4; /* Light green background */
+}
+
+/* ========================================
+   CARD HEADER
+   ======================================== */
+
+/* Header container with title and icon */
+.test-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+/* Card title */
+.test-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827; /* Dark gray */
+  margin: 0;
+  flex: 1; /* Take up available space */
+}
+
+/* ========================================
+   STATUS ICONS
+   ======================================== */
+
+/* Lock icon for locked tests */
+.lock-icon {
+  color: #9ca3af; /* Gray */
+  flex-shrink: 0; /* Don't shrink */
+  margin-left: 8px;
+}
+
+/* Checkmark icon for completed tests */
+.completed-icon {
+  color: #10b981; /* Green */
+  flex-shrink: 0; /* Don't shrink */
+  margin-left: 8px;
+}
+
+/* ========================================
+   CARD CONTENT
+   ======================================== */
+
+/* Test description text */
+.test-card-description {
+  color: #6b7280; /* Medium gray */
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+/* ========================================
+   CARD FOOTER
+   ======================================== */
+
+/* Footer container for status badge */
+.test-card-footer {
+  display: flex;
+  justify-content: flex-end; /* Align badge to right */
+  align-items: center;
+}
+
+/* ========================================
+   STATUS BADGES
+   ======================================== */
+
+/* Base status badge styling */
+.test-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Locked status badge (gray) */
+.locked-status {
+  background: #f3f4f6; /* Light gray background */
+  color: #6b7280; /* Gray text */
+}
+
+/* Completed status badge (green) */
+.completed-status {
+  background: #d1fae5; /* Light green background */
+  color: #065f46; /* Dark green text */
+}
+
+/* Available status badge (blue) */
+.available-status {
+  background: #dbeafe; /* Light blue background */
+  color: #1e40af; /* Dark blue text */
+}
+
+/* ========================================
+   GRID LAYOUT (moved from dashboard.css)
+   ======================================== */
+
+/* Grid container for test cards */
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* ========================================
+   SECTION STYLING (for context)
+   ======================================== */
+
+/* Section container */
+.section {
+  margin-top: 40px;
+}
+
+/* Section title */
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+/* ========================================
+   SCREENING NOTICE (for context)
+   ======================================== */
+
+/* Warning banner for incomplete screening */
+.screening-notice {
+  background: #fef3c7; /* Light yellow */
+  border: 2px solid #fbbf24; /* Yellow border */
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+/* Notice heading */
+.screening-notice h3 {
+  margin: 0 0 8px 0;
+  color: #92400e; /* Dark yellow */
+  font-size: 18px;
+}
+
+/* Notice text */
+.screening-notice p {
+  margin: 0;
+  color: #78350f; /* Dark yellow */
+  font-size: 14px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  /* Single column layout on mobile */
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+}
