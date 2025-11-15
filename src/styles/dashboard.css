@@ -1,17 +1,23 @@
-/* Dashboard-specific styles */
+/* ========================================
+   DASHBOARD LAYOUT
+   ======================================== */
+
+/* Main dashboard grid container */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(15%, 265px) 1fr;
+  grid-template-columns: minmax(15%, 265px) 1fr; /* Sidebar + main content */
   min-height: 100vh;
   background: var(--bg-secondary);
 }
 
+/* Sidebar styling */
 .dashboard-sidebar {
   background: var(--bg-primary);
   border-right: 1px solid var(--border-primary);
   padding: var(--spacing-3xl) var(--spacing-lg) var(--spacing-xl) var(--spacing-2xl);
 }
 
+/* Dashboard row container for flexible layouts */
 .dashboard-row {
   display: flex; 
   flex-direction: row;
@@ -19,11 +25,17 @@
   flex-wrap: wrap;
 }
 
+/* ========================================
+   SECTIONS
+   ======================================== */
+
+/* Generic section container */
 .section {
   margin-top: var(--spacing-lg);
   margin-bottom: var(--spacing-3xl);
 }
 
+/* Section title styling */
 .section-title {
   font-size: var(--font-size-3xl);
   letter-spacing: 0.02em;
@@ -31,6 +43,11 @@
   margin: var(--spacing-2xl) 0 var(--spacing-lg);
 }
 
+/* ========================================
+   USER AVATAR & INFO
+   ======================================== */
+
+/* Circular avatar */
 .avatar {
   width: 60px;
   height: 60px;
@@ -44,38 +61,14 @@
   margin-bottom: var(--spacing-md);
 }
 
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.stat-number {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: #555;
-}
-
+/* User info container */
 .user-info {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
+/* User avatar in header */
 .user-avatar {
   background-color: #3b82f6;
   color: #fff;
@@ -89,6 +82,45 @@
   justify-content: center;
 }
 
+/* ========================================
+   STATS CARDS
+   ======================================== */
+
+/* Stats container grid */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Individual stat card */
+.stat-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Large number in stat card */
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Label below stat number */
+.stat-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* ========================================
+   DASHBOARD HEADER
+   ======================================== */
+
+/* Header container */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -96,16 +128,23 @@
   margin-bottom: 2rem;
 }
 
+/* Main heading */
 .dashboard-header h1 {
   margin: 0;
   font-size: 2rem;
 }
 
+/* ========================================
+   DATA TABLE
+   ======================================== */
+
+/* Table styling */
 .data-table {
   width: 100%;
   border-collapse: collapse;
 }
 
+/* Table cells */
 .data-table th,
 .data-table td {
   padding: 0.75rem 1rem;
@@ -113,11 +152,17 @@
   text-align: left;
 }
 
+/* Table header */
 .data-table th {
   font-weight: 600;
   background-color: #f9fafb;
 }
 
+/* ========================================
+   TEST STATUS BADGES
+   ======================================== */
+
+/* Generic test status badge */
 .test-status {
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
@@ -125,35 +170,134 @@
   font-weight: 500;
 }
 
+/* Completed status (green) */
 .status-completed {
   background-color: #16a34a;
   color: #fff;
 }
 
+/* Pending status (orange) */
 .status-pending {
   background-color: #f59e0b;
   color: #fff;
 }
 
+/* ========================================
+   TEST CARDS SECTION
+   ======================================== */
+
+/* Grid layout for test cards */
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+/* Warning banner for incomplete screening */
+.screening-notice {
+  background: #fef3c7; /* Light yellow */
+  border: 2px solid #fbbf24; /* Yellow border */
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Screening notice heading */
+.screening-notice h3 {
+  margin: 0 0 0.5rem 0;
+  color: #92400e; /* Dark yellow */
+  font-size: 1.125rem;
+}
+
+/* Screening notice text */
+.screening-notice p {
+  margin: 0;
+  color: #78350f; /* Dark yellow */
+  font-size: 0.875rem;
+}
+
+/* ========================================
+   GENERIC CARD COMPONENT
+   ======================================== */
+
+/* Card container */
+.card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* Card header */
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Card title */
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Card body */
+.card-body {
+  padding: 1.5rem;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* List without bullets */
+.list-unstyled {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Muted/gray text */
+.text-muted {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile/tablet breakpoint */
 @media (max-width: 768px) {
+  /* Stack sidebar and content vertically */
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Change sidebar border */
   .dashboard-sidebar {
     border-right: none;
     border-bottom: 1px solid var(--border-primary);
   }
 
+  /* Stack header items vertically */
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
 
+  /* Smaller stat cards on mobile */
   .stats-container {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
+
+  /* Single column for test cards on mobile */
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
 }
-
-
