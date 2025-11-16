@@ -1,69 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-const defaultScreeningState = () => {return {
+export const SCREENING_STORAGE_KEY = 'screening_state';
+
+export const defaultScreeningState = () => ({
   consent: false,
   health: {
     drug: false,
     neuro: false,
     medical: false,
   },
-  definition: 'NO', //  'YES', 'MAYBE', 'NO'
-  pain: false,
+  definition: null, // 'yes' | 'maybe' | 'no'
+  pain: null, // 'yes' | 'no'
   synTypes: {
-    letter_color: false,
-    word_color: false,
-    sound_color: false,
-    number_color: false,
-    words_taste: false,
-    sound_taste: false,
-    sequence_space: false,
+    grapheme: null,
+    music: null,
+    lexical: null,
+    sequence: null,
   },
-  otherExperiences: ''
-}}
+  otherExperiences: '',
+});
+
+const readFromStorage = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  const saved = window.sessionStorage.getItem(SCREENING_STORAGE_KEY);
+  return saved ? JSON.parse(saved) : null;
+};
 
 export default function useScreeningState() {
-  const [state, setState] = useState(() => {
-    const saved = sessionStorage.getItem('screening_state');
-    return saved ? JSON.parse(saved) : defaultScreeningState();
-  });
+  const [state, setState] = useState(() => readFromStorage() ?? defaultScreeningState());
 
   useEffect(() => {
-    sessionStorage.setItem('screening_state', JSON.stringify(state));
+    if (typeof window === 'undefined') {
+      return;
+    }
+    window.sessionStorage.setItem(SCREENING_STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
   const updateState = (updates) => {
-    setState(prev => ({ ...prev, ...updates }));
+    setState((prev) => ({ ...prev, ...updates }));
   };
 
   const clearState = () => {
-    sessionStorage.removeItem('screening_state');
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(SCREENING_STORAGE_KEY);
+    }
     setState(defaultScreeningState());
   };
 
-  const handleNestedChange = (key, nestedKey, value) => {
+  const handleHealthChange = (field, checked) => {
     setState((prev) => ({
       ...prev,
-      [key]: {
-        ...prev[key],
-        [nestedKey]: value,
+      health: {
+        ...prev.health,
+        [field]: checked,
       },
     }));
   };
 
-  const handleHealthChange = (field, e) => {
-    handleNestedChange('health', field, e.target.checked);
+  const handleSynTypesChange = (type, value) => {
+    setState((prev) => ({
+      ...prev,
+      synTypes: {
+        ...prev.synTypes,
+        [type]: value,
+      },
+    }));
   };
-
-  const handleSynTypesChange = (type, e) => {
-    handleNestedChange('synTypes', type, e.target.value);
-  };
-
 
   return {
-      state,
-      updateState,
-      clearState,
-      handleHealthChange, 
-      handleSynTypesChange, 
+    state,
+    updateState,
+    clearState,
+    handleHealthChange,
+    handleSynTypesChange,
   };
 }

@@ -14,7 +14,12 @@ export default function ScreeningStep({
   onBack,
   nextLabel = 'Continue',
   backLabel = 'Back',
-  showActions = true
+  nextDisabled = false,
+  backDisabled = false,
+  loading = false,
+  loadingLabel = 'Saving…',
+  error,
+  showActions = true,
 }) {
   const navigate = useNavigate();
 
@@ -41,17 +46,30 @@ export default function ScreeningStep({
       )}
 
       <Card chip={chip} title={title}>
+        {error && (
+          <div
+            className="alert alert-error"
+            role="alert"
+            style={{ marginBottom: '1rem' }}
+          >
+            {error}
+          </div>
+        )}
         {children}
 
         {showActions && (
           <div className="actions actions-between">
             {step > 0 && (
-              <Button variant="secondary" onClick={handleBack}>
+              <Button
+                variant="secondary"
+                onClick={handleBack}
+                disabled={backDisabled || loading}
+              >
                 {backLabel}
               </Button>
             )}
-            <Button onClick={handleNext}>
-              {nextLabel}
+            <Button onClick={handleNext} disabled={nextDisabled || loading}>
+              {loading ? loadingLabel : nextLabel}
             </Button>
           </div>
         )}

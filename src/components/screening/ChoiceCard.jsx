@@ -23,7 +23,12 @@ export default function ChoiceCard({
     <a
       href="#"
       className={className}
-      onClick={onClick}
+      onClick={(event) => {
+        event.preventDefault();
+        if (onClick) {
+          onClick(event);
+        }
+      }}
       {...props}
     >
       {content}

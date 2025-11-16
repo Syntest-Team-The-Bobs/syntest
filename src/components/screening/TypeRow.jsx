@@ -7,6 +7,18 @@ export default function TypeRow({
   value,
   onChange
 }) {
+  const options = [
+    { value: 'yes', label: 'Yes' },
+    { value: 'sometimes', label: 'Sometimes' },
+    { value: 'no', label: 'No' },
+  ];
+
+  const handleChange = (event) => {
+    if (onChange) {
+      onChange(event.target.value);
+    }
+  };
+
   return (
     <li className="type-row">
       <div className="type-main">
@@ -14,39 +26,19 @@ export default function TypeRow({
         <div className="type-sub">{description}</div>
       </div>
       <div className="type-opts">
-        <label className="opt">
-          <input
-            type="radio"
-            name={name}
-            value="yes"
-            checked={value === 'yes'}
-            onChange={onChange}
-            data-audit-label={`${title} — yes`}
-          />
-          <span>Yes</span>
-        </label>
-        <label className="opt">
-          <input
-            type="radio"
-            name={name}
-            value="sometimes"
-            checked={value === 'sometimes'}
-            onChange={onChange}
-            data-audit-label={`${title} — sometimes`}
-          />
-          <span>Sometimes</span>
-        </label>
-        <label className="opt">
-          <input
-            type="radio"
-            name={name}
-            value="no"
-            checked={value === 'no'}
-            onChange={onChange}
-            data-audit-label={`${title} — no`}
-          />
-          <span>No</span>
-        </label>
+        {options.map((option) => (
+          <label className="opt" key={option.value}>
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={handleChange}
+              aria-label={`${title} — ${option.label}`}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
       </div>
     </li>
   );
