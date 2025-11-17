@@ -4,6 +4,8 @@ from flask import Flask, request, session, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import random  
+
 
 # -----------------------------
 # Models (must exist in models.py)
@@ -16,6 +18,9 @@ from models import db, Participant, Researcher, Test, TestResult, ScreeningRespo
 # -----------------------------
 from screening import bp as screening
 from dashboard import bp as dashboard
+from speedcongruency import bp as speedcongruency_bp
+
+
 
 # Set instance path for Flask (where database will be stored)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -50,6 +55,7 @@ with app.app_context():
 # Register blueprint
 app.register_blueprint(screening)
 app.register_blueprint(dashboard)
+app.register_blueprint(speedcongruency_bp)
 
 # =====================================
 # AUTHENTICATION ENDPOINTS
