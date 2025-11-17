@@ -27,7 +27,7 @@ export default function ParticipantDashboard() {
     { path: '/tests/color/number', label: 'Number Color Test' },
     { path: '/tests/color/word', label: 'Word Color Test' },
     { path: '/tests/color/sound', label: 'Sound Color Test' },
-    { path: '/tests/color/speed-congruency/instructions', label: 'Speed Congruency' },
+    { path: '/tests/color/speed-congruency', label: 'Speed Congruency' },
     // { path: '/tests/flavor', label: 'Flavor Test' },
     // { path: '/tests/association', label: 'Association' },
     // { path: '/analytics', label: 'Analytics' },
