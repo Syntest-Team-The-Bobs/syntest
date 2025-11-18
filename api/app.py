@@ -66,9 +66,10 @@ if database_url:
 else:
     db_path = os.path.join(instance_path, 'syntest.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_DOMAIN'] = None  # for localhost
+app.config['SESSION_COOKIE_DOMAIN'] = None
 
 # Initialize database
 db.init_app(app)
