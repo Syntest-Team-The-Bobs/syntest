@@ -1,5 +1,6 @@
+from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, session
-from models import Participant, Researcher, TestResult
+from models import Participant, Researcher, TestResult, ColorStimulus
 
 
 researcher_bp = Blueprint(
@@ -12,15 +13,10 @@ researcher_bp = Blueprint(
 @researcher_bp.route("/dashboard", methods=["GET"])
 def get_researcher_dashboard():
     """
-    Minimal researcher dashboard endpoint used by the current frontend.
+    Researcher dashboard endpoint used by the current frontend.
 
-    Returns:
-    - user: { name, institution }
-    - total_participants: int
-    - completed_tests: int
-
-    This is intentionally conservative so we don't risk breaking
-    existing participant flows or Heroku behavior.
+    Returns aggregate stats plus recent activity while keeping
+    the shape backwards compatible with earlier minimal versions.
     """
     try:
         # Must be logged in as a researcher
@@ -37,6 +33,47 @@ def get_researcher_dashboard():
         total_participants = Participant.query.count()
         completed_tests = TestResult.query.filter_by(status="completed").count()
 
+        # Active participants within last 7 days
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        active_participants = (
+            Participant.query.filter(Participant.last_login >= seven_days_ago).count()
+        )
+
+        # Total stimuli
+        total_stimuli = ColorStimulus.query.count()
+
+        # Recent participants (last 10)
+        recent_participants = (
+            Participant.query.order_by(Participant.created_at.desc()).limit(10).all()
+        )
+        recent_participants_data = [
+            {
+                "name": p.name,
+                "email": p.email,
+                "created_at": p.created_at.strftime("%Y-%m-%d %H:%M")
+                if p.created_at
+                else "N/A",
+            }
+            for p in recent_participants
+        ]
+
+        # Recent stimuli (last 10)
+        recent_stimuli = (
+            ColorStimulus.query.order_by(ColorStimulus.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        recent_stimuli_data = [
+            {
+                "description": s.description or "N/A",
+                "family": s.family or "N/A",
+                "created_at": s.created_at.strftime("%Y-%m-%d %H:%M")
+                if s.created_at
+                else "N/A",
+            }
+            for s in recent_stimuli
+        ]
+
         return jsonify(
             {
                 "user": {
@@ -44,7 +81,11 @@ def get_researcher_dashboard():
                     "institution": researcher.institution,
                 },
                 "total_participants": total_participants,
+                "active_participants": active_participants,
+                "total_stimuli": total_stimuli,
                 "completed_tests": completed_tests,
+                "recent_participants": recent_participants_data,
+                "recent_stimuli": recent_stimuli_data,
             }
         )
     except Exception as e:

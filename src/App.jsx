@@ -60,16 +60,15 @@ function App() {
               // </ProtectedRoute>
             }
           />
+          <Route
+            path="/researcher/dashboard"
+            element={
+              <ProtectedRoute role="researcher">
+                <ResearcherDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Route>
-
-        <Route
-          path="/researcher/dashboard"
-          element={
-            <ProtectedRoute role="researcher">
-              <ResearcherDashboard />
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/tests/color/speed-congruency"
