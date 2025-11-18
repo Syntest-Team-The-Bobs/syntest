@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TestProgress from './TestProgress';
 import TestInstructions from './TestInstructions';
 import ColorWheel from './ColorWheel';
 import StimulusDisplay from './StimulusDisplay';
 import ColorPreviewLock from './ColorPreviewLock';
 import ProgressBar from '../ui/ProgressBar';
-import MusicPlayer from './MusicPlayer';
 
 /**
  * TestLayout - Main UI layout for color synesthesia test interface
@@ -14,17 +13,6 @@ import MusicPlayer from './MusicPlayer';
  * - Orchestrates layout of all test UI components in a 3-column grid
  * - Displays title, instructions, and progress information
  * - Manages visual hierarchy and spacing of test elements
- * - Conditionally renders MusicPlayer for music tests or StimulusDisplay for other tests
- * - Disables Next button during audio playback (music tests only)
- * 
- * Layout Structure:
- * - Header: Title and instructions
- * - Progress: Test phase and trial information
- * - 3-Column Grid:
- *   - Left: Instructions panel
- *   - Center: Color wheel
- *   - Right: Stimulus display (music player or text) + color preview + Next button
- * - Footer: Overall progress bar
  */
 export default function TestLayout({
   title,
@@ -43,13 +31,9 @@ export default function TestLayout({
   onNext,
   getFontSize
 }) {
-  // Track music playing state to disable Next button during playback
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "3rem 2rem" }}>
-        
         {/* Page title */}
         <h1 style={{ 
           fontSize: "2.25rem", 
@@ -61,7 +45,7 @@ export default function TestLayout({
           {title}: CONSISTENCY & SPEED
         </h1>
 
-        {/* Instructions summary - different text for music vs other tests */}
+        {/* Instructions summary */}
         <p style={{ 
           textAlign: "center", 
           maxWidth: "850px", 
@@ -70,19 +54,9 @@ export default function TestLayout({
           fontSize: "0.9375rem", 
           lineHeight: "1.6" 
         }}>
-          {testType === 'music' ? (
-            <>
-              You'll assign a color to each <strong>musical sound</strong>. <strong>Press the play button</strong> to hear each sound, then <strong>click and hold</strong> the mouse on the wheel and <strong>drag</strong> to preview and adjust a color.
-              To record a choice, <strong>click to lock</strong> it — the small circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked — and click again to unlock if you need to change it.
-              Press <strong>Next</strong> to save each choice. For best results, use a laptop/desktop with audio enabled.
-            </>
-          ) : (
-            <>
-              You'll assign a color to each <strong>{testType}</strong>. <strong>Click and hold</strong> the mouse on the wheel and <strong>drag</strong> to preview and adjust a color.
-              To record a choice, <strong>click to lock</strong> it — the small circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked — and click again to unlock if you need to change it.
-              Press <strong>Next</strong> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
-            </>
-          )}
+          You'll assign a color to each <strong>{testType}</strong>. <strong>Click and hold</strong> the mouse on the wheel and <strong>drag</strong> to preview and adjust a color.
+          To record a choice, <strong>click to lock</strong> it — the small circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked — and click again to unlock if you need to change it.
+          Press <strong>Next</strong> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
         </p>
 
         {/* Test phase and progress indicators */}
@@ -112,11 +86,10 @@ export default function TestLayout({
           alignItems: "start", 
           maxWidth: "1400px" 
         }}>
-          
-          {/* Left column: Instructions */}
+          {/* Left: Instructions */}
           <TestInstructions testType={testType} />
 
-          {/* Center column: Color picker wheel */}
+          {/* Center: Color picker */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <ColorWheel 
               width={500} 
@@ -137,7 +110,7 @@ export default function TestLayout({
             </p>
           </div>
 
-          {/* Right column: Stimulus, preview, and action button */}
+          {/* Right: Stimulus, preview, and action button */}
           <div style={{ 
             display: "flex", 
             flexDirection: "column", 
@@ -145,38 +118,29 @@ export default function TestLayout({
             gap: "1.5rem", 
             paddingLeft: "1rem" 
           }}>
-            {/* Conditionally render MusicPlayer for music tests, StimulusDisplay for others */}
-            {testType === 'music' ? (
-              <MusicPlayer 
-                stimulus={current.stimulus} 
-                onPlayingChange={setIsMusicPlaying}
-              />
-            ) : (
-              <StimulusDisplay 
-                stimulus={stimulus}
-                testType={testType}
-                getFontSize={getFontSize}
-              />
-            )}
+            <StimulusDisplay 
+              stimulus={stimulus}
+              testType={testType}
+              getFontSize={getFontSize}
+            />
 
-            {/* Color preview box with lock toggle */}
             <ColorPreviewLock 
               selected={selected}
               locked={locked}
               onToggle={onToggleLock}
             />
 
-            {/* Next button - disabled until color is locked AND music is not playing */}
+            {/* Next button - disabled until color is locked */}
             <button
               onClick={onNext}
-              disabled={!locked || isMusicPlaying}
+              disabled={!locked}
               style={{
                 marginTop: "1rem",
                 padding: "0.625rem 2rem",
                 border: "none",
                 borderRadius: "4px",
-                cursor: (locked && !isMusicPlaying) ? "pointer" : "not-allowed",
-                backgroundColor: (locked && !isMusicPlaying) ? "#000" : "#d1d5db",
+                cursor: locked ? "pointer" : "not-allowed",
+                backgroundColor: locked ? "#000" : "#d1d5db",
                 color: "white",
                 fontWeight: "600",
                 fontSize: "0.875rem",

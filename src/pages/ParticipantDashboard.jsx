@@ -8,7 +8,7 @@ import '../styles/dashboard.css'
 const getTestRoute = (testName) => {
   const routeMap = {
     'Grapheme-Color': '/tests/color/letter',
-    'Music-Color': '/tests/color/music',
+    'Music-Color': '/tests/color/sound',
     'Lexical-Gustatory': null, // Not yet implemented
     'Sequence-Space': null, // Not yet implemented
   }
@@ -28,7 +28,7 @@ const getTestRoute = (testName) => {
     return '/tests/color/word'
   }
   if (lowerName.includes('music') || lowerName.includes('sound')) {
-    return '/tests/color/music'
+    return '/tests/color/sound'
   }
   return null
 }
@@ -57,7 +57,7 @@ export default function ParticipantDashboard() {
     { path: '/tests/color/letter', label: 'Letter Color Test' },
     { path: '/tests/color/number', label: 'Number Color Test' },
     { path: '/tests/color/word', label: 'Word Color Test' },
-    { path: '/tests/color/music', label: 'Sound Color Test' },
+    { path: '/tests/color/sound', label: 'Sound Color Test' },
     { path: '/tests/color/speed-congruency', label: 'Speed Congruency' },
     // { path: '/tests/flavor', label: 'Flavor Test' },
     // { path: '/tests/association', label: 'Association' },
