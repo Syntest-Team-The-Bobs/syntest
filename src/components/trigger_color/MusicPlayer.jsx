@@ -26,6 +26,8 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
   const instrumentRef = useRef(null);
   const audioContextRef = useRef(null);
   const activeNodesRef = useRef([]);
+  const timeoutIdRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   /**
    * Parse stimulus string into notes and instrument name
@@ -43,6 +45,16 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
   };
 
   /**
+   * Track mounted state to prevent state updates after unmount
+   */
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  /**
    * Load instrument samples when stimulus changes
    * Cleanup previous instrument to prevent memory leaks
    */
@@ -50,6 +62,10 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
     loadInstrument();
     
     return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
       stopSound();
       if (instrumentRef.current) {
         instrumentRef.current = null;
@@ -209,7 +225,10 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
       }
     });
     activeNodesRef.current = [];
-    setIsPlaying(false);
+    
+    if (isMountedRef.current) {
+      setIsPlaying(false);
+    }
   };
 
   /**
@@ -238,7 +257,7 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
     // Set volume envelope (fade in/out for smooth sound)
     gainNode.gain.setValueAtTime(0, startTime);
     gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.05);  // Quick fade in
-    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration); // Fade out
+    gainNode.gain.linearRampToValueAtTime(0, startTime + duration); // Fade out
     
     // Start and schedule stop
     oscillator.start(startTime);
@@ -309,8 +328,9 @@ export default function MusicPlayer({ stimulus, onPlayingChange }) {
       }
       
       // Automatically stop after 3 seconds
-      setTimeout(() => {
+      timeoutIdRef.current = setTimeout(() => {
         stopSound();
+        timeoutIdRef.current = null;
       }, 3000);
       
     } catch (error) {
