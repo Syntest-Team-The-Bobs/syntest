@@ -1,159 +1,3 @@
-# # speedcongruency.py
-
-# from flask import Blueprint, request, jsonify
-# import random
-# from datetime import datetime
-
-# from models import db, SpeedCongruency  # uses your existing model
-
-# bp = Blueprint("speed_congruency", __name__, url_prefix="/api/speed-congruency")
-
-# # --------------------------------------------------
-# # DEV-ONLY CONFIG (you can change these any time)
-# # --------------------------------------------------
-
-# # Fake triggers that mimic “Mother”, “Father”, etc.
-# DEV_TRIGGERS = [
-#     "MOTHER",
-#     "FATHER",
-#     "MONDAY",
-#     "MUSIC",
-# ]
-
-# # Simple colour palette just so things look nice
-# DEV_COLOR_PALETTE = [
-#     "#22c55e",  # green
-#     "#3b82f6",  # blue
-#     "#f97316",  # orange
-#     "#ec4899",  # pink
-#     "#facc15",  # yellow
-#     "#a855f7",  # purple
-#     "#0ea5e9",  # cyan
-#     "#ef4444",  # red
-# ]
-
-
-# def _build_trial(index: int):
-#     """
-#     Build a single fake trial for the given index.
-#     Frontend DOESN'T CARE that this is fake; it just needs the shape.
-#     """
-#     trigger = DEV_TRIGGERS[index % len(DEV_TRIGGERS)]
-#     # choose the "correct" colour
-#     correct_color = random.choice(DEV_COLOR_PALETTE)
-
-#     # choose 3 distractors
-#     distractors = [c for c in DEV_COLOR_PALETTE if c != correct_color]
-#     random.shuffle(distractors)
-#     distractors = distractors[:3]
-
-#     options = [
-#         {
-#             "id": "correct",
-#             "label": trigger,
-#             "color": correct_color,
-#             "name": "correct",
-#         }
-#     ]
-#     for i, hex_code in enumerate(distractors, start=1):
-#         options.append(
-#             {
-#                 "id": f"opt{i}",
-#                 "label": trigger,
-#                 "color": hex_code,
-#                 "name": f"opt{i}",
-#             }
-#         )
-
-#     random.shuffle(options)
-
-#     total_trials = len(DEV_TRIGGERS)
-
-#     return {
-#         "id": index,
-#         "participantId": "DEV_USER",   # dev stub only
-#         "trigger": trigger,
-#         "options": options,
-#         "totalTrials": total_trials,
-#         "index": index,
-#     }
-
-
-# # --------------------------------------------------
-# # GET /api/speed-congruency/next
-# # --------------------------------------------------
-
-# @bp.get("/next")
-# def dev_speedcongruency_next():
-#     """
-#     Development endpoint that ignores auth and uses fake data.
-
-#     Frontend calls: GET /api/speed-congruency/next?trialIndex=0
-#     """
-#     raw_index = request.args.get("trialIndex", request.args.get("index", 0))
-
-#     try:
-#         index = int(raw_index)
-#     except (TypeError, ValueError):
-#         index = 0
-
-#     total = len(DEV_TRIGGERS)
-#     if index < 0 or index >= total:
-#         # no more trials – frontend will show the "done" screen
-#         return jsonify({"done": True, "totalTrials": total}), 200
-
-#     trial = _build_trial(index)
-#     return jsonify(trial), 200
-
-
-# # --------------------------------------------------
-# # POST /api/speed-congruency/submit
-# # --------------------------------------------------
-
-# @bp.post("/submit")
-# def dev_speedcongruency_submit():
-#     """
-#     Development endpoint that records the trial in SpeedCongruency
-#     with a fake participant_id so you can inspect the DB.
-#     """
-#     data = request.get_json(force=True) or {}
-
-#     trial_index = data.get("trialIndex")
-#     trigger = data.get("trigger")
-#     selected_id = data.get("selectedOptionId")
-#     reaction_ms = data.get("reactionTimeMs")
-
-#     # In this dev version, "correct" id means the answer is correct.
-#     matched = selected_id == "correct"
-
-#     # Optional: store one row per trial so you can inspect the DB later.
-#     row = SpeedCongruency(
-#         participant_id="DEV_USER",  # not linked to real Participant
-#         stimulus_id=None,
-#         trial_index=trial_index,
-#         cue_word=trigger,
-#         cue_type="word",
-#         expected_r=None,
-#         expected_g=None,
-#         expected_b=None,
-#         chosen_name=selected_id,
-#         chosen_r=None,
-#         chosen_g=None,
-#         chosen_b=None,
-#         matched=matched,
-#         response_ms=int(reaction_ms) if reaction_ms is not None else None,
-#         meta_json={
-#             "dev": True,
-#             "created_at_client": datetime.utcnow().isoformat(),
-#         },
-#     )
-#     db.session.add(row)
-#     db.session.commit()
-
-#     return jsonify({"ok": True, "matched": matched}), 200
-
-# speedcongruency.py
-
 from flask import Blueprint, request, jsonify, session
 import random
 
@@ -246,19 +90,41 @@ def _build_color_options(cue_label: str, expected_hex: str):
     random.shuffle(palette)
     distractors = palette[:3]
 
+    def _hex_to_rgb(hex_code: str):
+        h = hex_code.lstrip('#')
+        if len(h) == 3:
+            h = ''.join([c*2 for c in h])
+        try:
+            r = int(h[0:2], 16)
+            g = int(h[2:4], 16)
+            b = int(h[4:6], 16)
+            return r, g, b
+        except Exception:
+            return 0, 0, 0
+
+    # include r,g,b and hex in each option to match frontend expectations
     options = [
         {
             "id": "correct",          # we will use this to decide matched=True
             "label": cue_label,
             "color": expected_hex,
+            "hex": expected_hex,
+            "r": _hex_to_rgb(expected_hex)[0],
+            "g": _hex_to_rgb(expected_hex)[1],
+            "b": _hex_to_rgb(expected_hex)[2],
         }
     ]
 
     for i, hex_code in enumerate(distractors, start=1):
+        r, g, b = _hex_to_rgb(hex_code)
         options.append({
             "id": f"opt{i}",
             "label": cue_label,
             "color": hex_code,
+            "hex": hex_code,
+            "r": r,
+            "g": g,
+            "b": b,
         })
 
     random.shuffle(options)
