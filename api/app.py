@@ -1,6 +1,6 @@
 # app.py
 import os
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, session, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -35,13 +35,20 @@ os.makedirs(instance_path, exist_ok=True)
 # -----------------------------
 # Flask App Setup
 # -----------------------------
-app = Flask(__name__, instance_path=instance_path, static_folder='../dist', static_url_path='/')
+app = Flask(__name__, instance_path=instance_path)
 
+# CORS configuration - support both localhost and Heroku
 allowed_origins = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    os.environ.get('FRONTEND_URL', '')
+    'https://syntest-app-f9a30ed992ca.herokuapp.com',
+    'http://syntest-app-f9a30ed992ca.herokuapp.com',
 ]
+# Add Heroku app URL if set via environment variable
+heroku_url = os.environ.get('HEROKU_APP_URL')
+if heroku_url:
+    allowed_origins.append(heroku_url)
+    allowed_origins.append(heroku_url.replace('https://', 'http://'))
 
 CORS(app,
      origins=allowed_origins,
@@ -54,9 +61,11 @@ CORS(app,
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 
+# Database configuration - use Heroku's PostgreSQL if available, otherwise SQLite
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    # Heroku uses postgres:// but SQLAlchemy needs postgresql://
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     db_path = os.path.join(instance_path, 'syntest.db')
@@ -238,19 +247,39 @@ def api_get_current_user():
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 # =====================================
-# ROOT HEALTH CHECK
+# STATIC FILE SERVING (for production)
+# Serve React app after all API routes
 # =====================================
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
-@app.errorhandler(404)
-def not_found(e):
-    return app.send_static_file('index.html')
+@app.route('/', defaults={'path': ''}, methods=['GET'])
+@app.route('/<path:path>', methods=['GET'])
+def serve(path):
+    """Serve React app static files in production (catch-all for non-API routes)"""
+    # Don't serve static files for API routes
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
+    
+    dist_dir = os.path.join(basedir, '..', 'dist')
+    # Serve specific static files if they exist
+    if path and os.path.exists(os.path.join(dist_dir, path)):
+        return send_from_directory(dist_dir, path)
+    
+    # Serve index.html for React Router (all other routes)
+    index_path = os.path.join(dist_dir, 'index.html')
+    if os.path.exists(index_path):
+        return send_from_directory(dist_dir, 'index.html')
+    
+    # Fallback if dist doesn't exist
+    return jsonify({
+        'status': 'ok',
+        'message': 'SYNTEST API is running',
+        'version': '1.0.0',
+        'note': 'Frontend not built. Run: npm run build'
+    })
 
 
 # =====================================
 # RUN DEVELOPMENT SERVER
 # =====================================
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
