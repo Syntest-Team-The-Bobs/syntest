@@ -32,8 +32,15 @@ os.makedirs(instance_path, exist_ok=True)
 # Flask App Setup
 # -----------------------------
 app = Flask(__name__, instance_path=instance_path)
+
+allowed_origins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    os.environ.get('FRONTEND_URL', '')
+]
+
 CORS(app,
-     origins=['http://localhost:5173', 'http://127.0.0.1:5173'],
+     origins=allowed_origins,
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -41,12 +48,19 @@ CORS(app,
      always_send=True)
 
 # Configuration
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
-db_path = os.path.join(instance_path, 'syntest.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
+
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    db_path = os.path.join(instance_path, 'syntest.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_DOMAIN'] = None  # for localhost
+app.config['SESSION_COOKIE_DOMAIN'] = None
 
 # Initialize database
 db.init_app(app)
