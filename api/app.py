@@ -4,7 +4,6 @@ from flask import Flask, request, session, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import random  
 
 
 # -----------------------------
