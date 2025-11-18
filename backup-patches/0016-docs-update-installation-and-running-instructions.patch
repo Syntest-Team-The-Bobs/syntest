@@ -1,0 +1,89 @@
+From 0125d2786805950fff8cff57b91d66a0cf6cf867 Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Sun, 16 Nov 2025 17:40:05 -0500
+Subject: [PATCH 16/26] docs: update installation and running instructions
+
+---
+ README.md | 53 ++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 46 insertions(+), 7 deletions(-)
+
+diff --git a/README.md b/README.md
+index ce645a0..841a782 100644
+--- a/README.md
++++ b/README.md
+@@ -19,26 +19,65 @@ cd syntest
+ ```bash
+ # Go into the backend folder
+ cd api
+-# Create virtualenv
++
++# Create virtualenv (recommended)
+ python -m venv .venv
+-# Activate the virtualenv, on Windows .venv\Scripts\activate.bat
+-source .venv/bin/activate 
++
++# Activate the virtualenv
++# Windows:
++.venv\Scripts\activate
++# Mac/Linux:
++source .venv/bin/activate
++
++# Install Python dependencies
+ pip install -r requirements.txt
++
++# Go back to project root
++cd ..
+ ```
+ 
++**Note:** If you don't use a virtual environment, install globally: `pip install -r api/requirements.txt`
++
+ ### 3. Frontend Dependencies
+ 
+ ```bash
+-cd src 
++# Make sure you're in the project root (not in api/)
+ npm install
+ ```
+ 
+ ### 4. Run it!
++
++#### Option 1: Run everything together (recommended)
++```bash
++npm start
++# or
++npm run dev:all
++```
++This will start both backend and frontend servers simultaneously.
++
++#### Option 2: Run servers separately
+ ```bash
+-# To run the backend: 
+-npm run api 
+-# To run the front end 
++# Terminal 1 - Backend:
++npm run api
++# or
++npm run dev:backend
++
++# Terminal 2 - Frontend:
+ npm run dev
++# or  
++npm run dev:frontend
++```
++
++#### Option 3: Use the start script (Windows)
++```bash
++# Double-click or run:
++start.bat
++```
++
++#### Initialize Database (if needed)
++If you get database errors, initialize the database first:
++```bash
++npm run init-db
+ ```
+ 
+ ---
+-- 
+2.46.1
+

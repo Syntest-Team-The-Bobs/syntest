@@ -1,0 +1,942 @@
+From cbadc6be7f57492642f38c2985888a032030466f Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Sun, 16 Nov 2025 17:36:43 -0500
+Subject: [PATCH 14/26] fix(frontend): complete screening flow functionality
+ and data persistence
+
+- Fix step 4 navigation to always save data before routing
+- Update ScreeningExit to properly display exit messages
+- Add recommended tests links in ParticipantDashboard
+- Add comprehensive tests for ScreeningFlow
+- Ensure complete data persistence throughout screening process
+---
+ src/pages/ParticipantDashboard.jsx         |  74 +++-
+ src/pages/ScreeningExit.jsx                |  93 +++--
+ src/pages/ScreeningFlow.jsx                | 391 +++++++++++++++------
+ src/pages/__tests__/ScreeningFlow.test.jsx | 101 ++++++
+ 4 files changed, 501 insertions(+), 158 deletions(-)
+ create mode 100644 src/pages/__tests__/ScreeningFlow.test.jsx
+
+diff --git a/src/pages/ParticipantDashboard.jsx b/src/pages/ParticipantDashboard.jsx
+index 8c6291a..be2d935 100644
+--- a/src/pages/ParticipantDashboard.jsx
++++ b/src/pages/ParticipantDashboard.jsx
+@@ -1,11 +1,42 @@
+ import { useEffect, useState } from 'react'
++import { useNavigate } from 'react-router-dom'
+ import { dashboardService } from '../services/dashboard'
+ import Sidebar from '../components/layout/Sidebar';
+ import '../styles/dashboard.css'
+ 
++// Map test names to routes
++const getTestRoute = (testName) => {
++  const routeMap = {
++    'Grapheme-Color': '/tests/color/letter',
++    'Music-Color': '/tests/color/sound',
++    'Lexical-Gustatory': null, // Not yet implemented
++    'Sequence-Space': null, // Not yet implemented
++  }
++  // Try exact match first
++  if (routeMap[testName]) {
++    return routeMap[testName]
++  }
++  // Try case-insensitive partial match
++  const lowerName = testName.toLowerCase()
++  if (lowerName.includes('grapheme') || lowerName.includes('letter')) {
++    return '/tests/color/letter'
++  }
++  if (lowerName.includes('number')) {
++    return '/tests/color/number'
++  }
++  if (lowerName.includes('word')) {
++    return '/tests/color/word'
++  }
++  if (lowerName.includes('music') || lowerName.includes('sound')) {
++    return '/tests/color/sound'
++  }
++  return null
++}
++
+ export default function ParticipantDashboard() {
+   const [data, setData] = useState(null)
+   const [loading, setLoading] = useState(true)
++  const navigate = useNavigate()
+ 
+   useEffect(() => {
+     const fetchData = async () => {
+@@ -73,15 +104,44 @@ export default function ParticipantDashboard() {
+           <div className="card-body">
+             {data.recommended_tests && data.recommended_tests.length > 0 ? (
+               <ul className="list-unstyled">
+-                {data.recommended_tests.map((test) => (
+-                  <li key={test.id} style={{ marginBottom: 'var(--spacing-md)' }}>
+-                    <strong>{test.name}</strong>
+-                    {test.description && <p className="text-muted">{test.description}</p>}
+-                  </li>
+-                ))}
++                {data.recommended_tests.map((test, idx) => {
++                  const route = getTestRoute(test.name)
++                  return (
++                    <li key={test.id || idx} style={{ marginBottom: 'var(--spacing-md)' }}>
++                      {route ? (
++                        <a
++                          href={route}
++                          onClick={(e) => {
++                            e.preventDefault()
++                            navigate(route)
++                          }}
++                          style={{ 
++                            color: 'var(--color-primary, #007bff)', 
++                            textDecoration: 'underline',
++                            cursor: 'pointer'
++                          }}
++                        >
++                          <strong>{test.name}</strong>
++                        </a>
++                      ) : (
++                        <strong>{test.name}</strong>
++                      )}
++                      {test.reason && (
++                        <p className="text-muted" style={{ margin: '4px 0 0', fontSize: '0.9em' }}>
++                          {test.reason}
++                        </p>
++                      )}
++                      {test.description && (
++                        <p className="text-muted" style={{ margin: '4px 0 0' }}>
++                          {test.description}
++                        </p>
++                      )}
++                    </li>
++                  )
++                })}
+               </ul>
+             ) : (
+-              <p className="text-muted">No recommended tests at this time.</p>
++              <p className="text-muted">No recommended tests at this time. Complete the screening to see recommended tests.</p>
+             )}
+           </div>
+         </div>
+diff --git a/src/pages/ScreeningExit.jsx b/src/pages/ScreeningExit.jsx
+index cc9e5f7..49cbf22 100644
+--- a/src/pages/ScreeningExit.jsx
++++ b/src/pages/ScreeningExit.jsx
+@@ -1,65 +1,61 @@
+-import { useParams, useNavigate } from 'react-router-dom';
++import { useNavigate, useParams } from 'react-router-dom';
+ import Button from '../components/ui/Button';
++import Chip from '../components/ui/Chip';
+ import '../styles/app.css';
+ 
+-export default function ScreeningExit() {
+-  const exitReasons = {
+-    A: {
+-      "chip_label": "Exit: A",
+-      "heading": "Thanks for your time",
+-      "lead": "You indicated no synesthetic experience, so you are unable to continue in this study.",
+-      "thanks_line": "",
+-      "bullets": "",
+-      "note": "",
+-    },
+-    BC: {
+-      "chip_label": "Exit: B/C",
+-      "heading": "Not eligible (B/C)",
+-      "thanks_line": "Thanks for your time!",
+-      "lead": "Based on your health and substances responses, you are not eligible for this study.",
+-      "bullets": "",
+-      "note": "",
+-    },
+-    D: {
+-      "chip_label": "Exit: D",
+-      "heading": "Not eligible (D)",
+-      "thanks_line": "Thanks for your time!",
+-      "lead": "Experiences triggered by pain or emotions are excluded from this screening.",
+-      "bullets": "",
+-      "note": "",
+-    },
+-    NONE: {
+-      "chip_label": "Exit: None",
+-      "heading": "No eligible types selected",
+-      "thanks_line": "Thanks for your time!",
+-      "lead": "You didn’t select Yes or Maybe for any supported types, so there isn’t a follow-up task to run.",
+-      "bullets": "",
+-      "note": "",
+-    },
+-  };
++const EXIT_COPY = {
++  A: {
++    chipLabel: 'Exit • A',
++    heading: 'Thanks for your time',
++    thanksLine: null,
++    lead: 'You indicated no synesthetic experience, so you are unable to continue in this study.',
++    bullets: [],
++    note: null,
++  },
++  BC: {
++    chipLabel: 'Exit • B/C',
++    heading: 'Not eligible (B/C)',
++    thanksLine: 'Thanks for your time!',
++    lead: 'Based on your health and substances responses, you are not eligible for this study.',
++    bullets: [],
++    note: null,
++  },
++  D: {
++    chipLabel: 'Exit • D',
++    heading: 'Not eligible (D)',
++    thanksLine: 'Thanks for your time!',
++    lead: 'Experiences triggered by pain or emotions are excluded from this screening.',
++    bullets: [],
++    note: null,
++  },
++  NONE: {
++    chipLabel: 'Exit • None',
++    heading: 'No eligible types selected',
++    thanksLine: 'Thanks for your time!',
++    lead: 'You didn’t select Yes or Maybe for any supported types, so there isn’t a follow-up task to run.',
++    bullets: [],
++    note: null,
++  },
++};
+ 
++export default function ScreeningExit() {
+   const { code } = useParams();
+-  const exitData = exitReasons[code] || exitReasons.A;
+   const navigate = useNavigate();
++  const exitData = EXIT_COPY[code] || EXIT_COPY.A;
+ 
+   return (
+     <div className="container container-centered container-md">
+-      <div className='card'>
+-        <span
+-          className='chip'
+-          label={exitData.chipLabel}
+-          variant="info"></span>
++      <div className="card">
++        <Chip label={exitData.chipLabel} variant="info" />
+         <h2 className="h3">{exitData.heading}</h2>
+ 
+         {exitData.thanksLine && (
+           <p className="lead font-bold">{exitData.thanksLine}</p>
+         )}
+ 
+-        {exitData.lead && (
+-          <p style={{ marginTop: '6px' }}>{exitData.lead}</p>
+-        )}
++        {exitData.lead && <p style={{ marginTop: '6px' }}>{exitData.lead}</p>}
+ 
+-        {exitData.bullets && (
++        {exitData.bullets.length > 0 && (
+           <ul className="summary-list" style={{ margin: '10px 0 14px' }}>
+             {exitData.bullets.map((bullet, idx) => (
+               <li key={idx}>{bullet}</li>
+@@ -75,9 +71,7 @@ export default function ScreeningExit() {
+         )}
+ 
+         <div className="actions" style={{ marginTop: '16px' }}>
+-          <Button onClick={() => navigate('/screening/0')}>
+-            Return to start
+-          </Button>
++          <Button onClick={() => navigate('/screening/0')}>Return to start</Button>
+           <Button variant="secondary" onClick={() => navigate('/')}>
+             Close
+           </Button>
+@@ -88,6 +82,5 @@ export default function ScreeningExit() {
+         </p>
+       </div>
+     </div>
+-
+   );
+ }
+diff --git a/src/pages/ScreeningFlow.jsx b/src/pages/ScreeningFlow.jsx
+index 7247b94..934ac23 100644
+--- a/src/pages/ScreeningFlow.jsx
++++ b/src/pages/ScreeningFlow.jsx
+@@ -1,25 +1,208 @@
+-import { useState } from 'react';
+-import { useParams, useNavigate } from 'react-router-dom';
++import { useCallback, useEffect, useMemo, useState } from 'react';
++import { useNavigate, useParams } from 'react-router-dom';
+ import Button from '../components/ui/Button';
+ import Checkbox from '../components/ui/Checkbox';
+ import ScreeningStep from '../components/screening/ScreeningStep';
+ import ChoiceCard from '../components/screening/ChoiceCard';
+ import TypeRow from '../components/screening/TypeRow';
+ import useScreeningState from '../hooks/useScreeningState';
++import { screeningService } from '../services/screening';
+ import '../styles/app.css';
+ 
++const SUMMARY_STORAGE_KEY = 'screening_summary';
++
+ export default function ScreeningFlow() {
+   const { step: stepParam } = useParams();
+-  const step = parseInt(stepParam) || 0;
++  const step = Number(stepParam ?? 0);
+   const navigate = useNavigate();
+   const {
+     state,
+     updateState,
+     clearState,
+-    handleHealthChange, 
+-    handleSynTypesChange, 
++    handleHealthChange,
++    handleSynTypesChange,
+   } = useScreeningState();
++  const [saving, setSaving] = useState(false);
++  const [error, setError] = useState(null);
++  const [summary, setSummary] = useState(() => {
++    if (typeof window === 'undefined') {
++      return null;
++    }
++    const stored = window.sessionStorage.getItem(SUMMARY_STORAGE_KEY);
++    return stored ? JSON.parse(stored) : null;
++  });
++
++  useEffect(() => {
++    setError(null);
++  }, [step]);
++
++  const persistSummary = useCallback((payload) => {
++    setSummary(payload);
++    if (typeof window !== 'undefined') {
++      window.sessionStorage.setItem(SUMMARY_STORAGE_KEY, JSON.stringify(payload));
++    }
++  }, []);
++
++  const resetSummary = useCallback(() => {
++    setSummary(null);
++    if (typeof window !== 'undefined') {
++      window.sessionStorage.removeItem(SUMMARY_STORAGE_KEY);
++    }
++  }, []);
++
++  const withSaving = useCallback(async (fn) => {
++    setSaving(true);
++    setError(null);
++    try {
++      await fn();
++    } catch (err) {
++      console.error('Screening step failed', err);
++      const serverMessage =
++        err?.response?.data?.message ||
++        err?.message ||
++        'Unable to save your responses. Please try again.';
++      setError(serverMessage);
++    } finally {
++      setSaving(false);
++    }
++  }, []);
++
++  const hasHealthExclusions = useMemo(
++    () => Object.values(state.health).some(Boolean),
++    [state.health],
++  );
++
++  const hasEligibleType = useMemo(
++    () =>
++      Object.values(state.synTypes).some(
++        (value) => value === 'yes' || value === 'sometimes',
++      ),
++    [state.synTypes],
++  );
++
++  useEffect(() => {
++    if (step !== 5 || summary) {
++      return;
++    }
++    let isMounted = true;
++    (async () => {
++      setSaving(true);
++      setError(null);
++      try {
++        const result = await screeningService.finalize();
++        if (!isMounted) {
++          return;
++        }
++        persistSummary(result);
++        if (result?.exit_code && !result?.eligible) {
++          navigate(`/screening/exit/${result.exit_code}`);
++        }
++      } catch (err) {
++        if (!isMounted) {
++          return;
++        }
++        console.error('Failed to finalize screening', err);
++        const serverMessage =
++          err?.response?.data?.message ||
++          err?.message ||
++          'Unable to fetch your recommended tests. Please try again.';
++        setError(serverMessage);
++      } finally {
++        if (isMounted) {
++          setSaving(false);
++        }
++      }
++    })();
++    return () => {
++      isMounted = false;
++    };
++  }, [navigate, persistSummary, step, summary]);
+ 
++  const startAssignedTests = () => {
++    clearState();
++    resetSummary();
++    navigate('/participant/dashboard');
++  };
++
++  const summarySelectedTypes =
++    summary?.selected_types || summary?.selectedTypes || [];
++  const summaryRecommendations =
++    summary?.recommended || summary?.recommended_tests || [];
++
++  const handleConsentSubmit = () => {
++    if (!state.consent || saving) {
++      return;
++    }
++    withSaving(async () => {
++      await screeningService.saveConsent(state.consent);
++      navigate('/screening/1');
++    });
++  };
++
++  const handleStep1Next = () => {
++    withSaving(async () => {
++      await screeningService.saveStep1(state.health);
++      if (hasHealthExclusions) {
++        resetSummary();
++        navigate('/screening/exit/BC');
++      } else {
++        navigate('/screening/2');
++      }
++    });
++  };
++
++  const handleStep2Next = () => {
++    if (!state.definition) {
++      setError('Select the option that best fits you to continue.');
++      return;
++    }
++    withSaving(async () => {
++      await screeningService.saveStep2(state.definition);
++      if (state.definition === 'no') {
++        resetSummary();
++        navigate('/screening/exit/A');
++      } else {
++        navigate('/screening/3');
++      }
++    });
++  };
++
++  const handleStep3Next = () => {
++    if (!state.pain) {
++      setError('Select an option to continue.');
++      return;
++    }
++    withSaving(async () => {
++      await screeningService.saveStep3(state.pain);
++      if (state.pain === 'yes') {
++        resetSummary();
++        navigate('/screening/exit/D');
++      } else {
++        navigate('/screening/4');
++      }
++    });
++  };
++
++  const handleStep4Next = () => {
++    // Always save step 4 data before navigating, even if no eligible types
++    // This ensures the database has the complete screening data for analysis
++    withSaving(async () => {
++      await screeningService.saveStep4(state.synTypes, state.otherExperiences);
++      if (!hasEligibleType) {
++        // Finalize to determine exit code, then navigate to exit page
++        const result = await screeningService.finalize();
++        resetSummary();
++        if (result?.exit_code) {
++          navigate(`/screening/exit/${result.exit_code}`);
++        } else {
++          navigate('/screening/exit/NONE');
++        }
++      } else {
++        resetSummary();
++        navigate('/screening/5');
++      }
++    });
++  };
+ 
+   // Step 0: Intro
+   if (step === 0) {
+@@ -29,36 +212,36 @@ export default function ScreeningFlow() {
+         totalSteps={5}
+         title="Take the questionnaire"
+         showActions={false}
++        error={error}
+       >
+         <p className="lead">
+           In this first screening, we'll check basic eligibility and your experiences.
+         </p>
+ 
+-        <label className="checkbox-group">
++        <label className="checkbox-group" htmlFor="consent">
+           <input
+             id="consent"
+             type="checkbox"
+             checked={state.consent}
+-            onChange={(e) => updateState({consent: e.target.checked})}
++            onChange={(e) => updateState({ consent: e.target.checked })}
+             data-audit-label="Consent agreement"
+           />
+           <span>I consent to take part in this study.</span>
+         </label>
+ 
+         <p className="text-muted mb-3">
+-          By checking this box, you acknowledge that you have read and understood the
+-          study information sheet, agree to participate voluntarily, and consent to the
+-          collection and use of your data for research purposes. You may withdraw at any
+-          time without penalty.
++          By checking this box, you acknowledge that you have read and understood the study
++          information sheet, agree to participate voluntarily, and consent to the collection
++          and use of your data for research purposes. You may withdraw at any time without penalty.
+         </p>
+ 
+         <Button
+           id="begin-screening"
+           className="btn-block"
+-          disabled={!state.consent}
+-          onClick={() => state.consent && navigate('/screening/1')}
++          disabled={!state.consent || saving}
++          onClick={handleConsentSubmit}
+         >
+-          Begin screening
++          {saving ? 'Saving…' : 'Begin screening'}
+         </Button>
+       </ScreeningStep>
+     );
+@@ -66,37 +249,33 @@ export default function ScreeningFlow() {
+ 
+   // Step 1: Health & Substances
+   if (step === 1) {
+-    const hasExclusions = [
+-      state.health.drug,
+-      state.health.neuro,
+-      state.health.medical
+-    ].some(value => value);
+-
+     return (
+       <ScreeningStep
+         step={1}
+         totalSteps={5}
+         chip={{ label: 'Health & Substances', variant: 'primary' }}
+         title="Confirm none apply to you:"
+-        onNext={() => hasExclusions ? navigate('/screening/exit/BC') : navigate('/screening/2')}
+-        nextLabel={hasExclusions ? "Exit study" : "Continue"}
++        onNext={handleStep1Next}
++        nextLabel={hasHealthExclusions ? 'Exit study' : 'Continue'}
++        loading={saving}
++        error={error}
+       >
+         <Checkbox
+           children="Use of recreational drugs including marijuana, LSD, or psychedelics"
+           checked={state.health.drug}
+-          onChange={(e) => {handleHealthChange('drug', e)}}
++          onChange={(e) => handleHealthChange('drug', e.target.checked)}
+           data-audit-label="Substance exclusion — recreational drugs"
+         />
+         <Checkbox
+           children="Neurological condition or treatment affecting perception"
+           checked={state.health.neuro}
+-          onChange={(e) => {handleHealthChange('neuro', e)}}
++          onChange={(e) => handleHealthChange('neuro', e.target.checked)}
+           data-audit-label="Substance exclusion — neurological condition"
+         />
+         <Checkbox
+           children="Medical treatment impacting perception (e.g., brain tumor) or hallucinogenic physiology"
+           checked={state.health.medical}
+-          onChange={(e) => {handleHealthChange('edical', e)}}
++          onChange={(e) => handleHealthChange('medical', e.target.checked)}
+           data-audit-label="Substance exclusion — medical treatment"
+         />
+         <p className="text-muted">If any are checked, you're not eligible.</p>
+@@ -106,16 +285,17 @@ export default function ScreeningFlow() {
+ 
+   // Step 2: Definition
+   if (step === 2) {
+-    const hasDefinitions = state.definition == "YES" || state.definition == "NO"
+-
+     return (
+       <ScreeningStep
+         step={2}
+         totalSteps={5}
+         chip={{ label: 'Definition', variant: 'info' }}
+         title="What is synesthesia?"
+-        onNext={() => !hasDefinitions ? navigate('/screening/exit/A') : navigate('/screening/3')}
+-        nextLabel={!hasDefinitions ? "Exit study" : "Continue"}
++        onNext={handleStep2Next}
++        nextLabel="Continue"
++        nextDisabled={!state.definition || saving}
++        loading={saving}
++        error={error}
+       >
+         <p>
+           Synesthesia is a neurological condition where stimulation of <em>one</em> sense automatically
+@@ -128,9 +308,15 @@ export default function ScreeningFlow() {
+           <div>
+             <div className="label-uppercase">DO</div>
+             <ul className="arrow-list">
+-              <li><span className="arrow"></span> Letters → Colors</li>
+-              <li><span className="arrow"></span> Music → Colors</li>
+-              <li><span className="arrow"></span> Words → Tastes</li>
++              <li>
++                <span className="arrow"></span> Letters → Colors
++              </li>
++              <li>
++                <span className="arrow"></span> Music → Colors
++              </li>
++              <li>
++                <span className="arrow"></span> Words → Tastes
++              </li>
+             </ul>
+           </div>
+           <div>
+@@ -147,15 +333,15 @@ export default function ScreeningFlow() {
+           <ChoiceCard
+             title="Yes"
+             subtitle="I experience consistent sensory connections"
+-            selected={state.definition === 'YES'}
+-            onClick={() => updateState({definition: 'YES'})}
++            selected={state.definition === 'yes'}
++            onClick={() => updateState({ definition: 'yes' })}
+             data-audit-label="Definition choice — yes"
+           />
+           <ChoiceCard
+             title="Maybe"
+             subtitle="I'm not sure if my experiences qualify"
+-            selected={state.definition === 'MAYBE'}
+-            onClick={() => updateState({definition: 'MAYBE'})}
++            selected={state.definition === 'maybe'}
++            onClick={() => updateState({ definition: 'maybe' })}
+             data-audit-label="Definition choice — maybe"
+           />
+         </div>
+@@ -163,9 +349,9 @@ export default function ScreeningFlow() {
+           variant="negative"
+           title="No — exit per criterion A"
+           subtitle="I don't experience these sensory connections"
+-          selected={state.definition === 'NO'}
+-          onClick={() => { updateState({definition: 'NO'}); }}
+-          data-audit-label= "Definition choice - no"
++          selected={state.definition === 'no'}
++          onClick={() => updateState({ definition: 'no' })}
++          data-audit-label="Definition choice — no"
+         />
+       </ScreeningStep>
+     );
+@@ -179,8 +365,11 @@ export default function ScreeningFlow() {
+         totalSteps={5}
+         chip={{ label: 'Pain & Emotion', variant: 'info' }}
+         title="Are your triggers pain or emotions?"
+-        onNext={() => state.pain === "YES" ? navigate('/screening/exit/D') : navigate('/screening/4')}
+-        nextLabel={state.pain === "YES" ? "Exit study" : "Continue"}
++        onNext={handleStep3Next}
++        nextLabel={state.pain === 'yes' ? 'Exit study' : 'Continue'}
++        nextDisabled={!state.pain}
++        loading={saving}
++        error={error}
+       >
+         <p>
+           For ethical and replicability reasons, we must exclude synesthetic experiences that are primarily
+@@ -213,9 +402,9 @@ export default function ScreeningFlow() {
+             <input
+               type="radio"
+               name="pain_emotion"
+-              value="YES"
+-              checked={state.pain === 'YES'}
+-              onChange={(e) => updateState({pain: e.target.value})}
++              value="yes"
++              checked={state.pain === 'yes'}
++              onChange={(e) => updateState({ pain: e.target.value })}
+               data-audit-label="Pain/emotion trigger — yes"
+             />
+             <div className="select-body">
+@@ -229,9 +418,9 @@ export default function ScreeningFlow() {
+             <input
+               type="radio"
+               name="pain_emotion"
+-              value="NO"
+-              checked={state.pain === 'NO'}
+-              onChange={(e) => updateState({pain: e.target.value})}
++              value="no"
++              checked={state.pain === 'no'}
++              onChange={(e) => updateState({ pain: e.target.value })}
+               data-audit-label="Pain/emotion trigger — no"
+             />
+             <div className="select-body">
+@@ -246,45 +435,45 @@ export default function ScreeningFlow() {
+ 
+   // Step 4: Type Selection
+   if (step === 4) {
+-    const hasSynTypes = Object.values(state.synTypes).some(value => value);
+-
+     return (
+       <ScreeningStep
+         step={4}
+         totalSteps={5}
+         chip={{ label: 'Type Selection', variant: 'success' }}
+         title="Select any types you experience"
+-        onNext={() => !hasSynTypes ? navigate('/screening/exit/NONE') : navigate('/screening/4')}
++        onNext={handleStep4Next}
+         nextLabel="Continue"
++        loading={saving}
++        error={error}
+       >
+         <ul className="type-rows">
+           <TypeRow
+             title="Letter • Color"
+             description='Letters/numbers evoke specific colors (e.g., "A" is red).'
+             name="grapheme"
+-            value={state.synTypes.letter_color}
+-            onChange={(e) =>  handleSynTypesChange('letter_color', e) }
++            value={state.synTypes.grapheme}
++            onChange={(value) => handleSynTypesChange('grapheme', value)}
+           />
+           <TypeRow
+             title="Music/Sound • Color"
+             description="Single notes or dyads evoke colors (70 tones testable)."
+             name="music"
+-            value={state.synTypes.sound_color}
+-            onChange={(e) =>  handleSynTypesChange('sound_color', e) }
++            value={state.synTypes.music}
++            onChange={(value) => handleSynTypesChange('music', value)}
+           />
+           <TypeRow
+             title="Lexical/Word • Taste"
+             description="Words evoke tastes via the 5 basic tastes."
+             name="lexical"
+-            value={state.synTypes.words_taste}
+-            onChange={(e) =>  handleSynTypesChange('words_taste', e) }
++            value={state.synTypes.lexical}
++            onChange={(value) => handleSynTypesChange('lexical', value)}
+           />
+           <TypeRow
+             title="Sequence • Space"
+             description="Days, months, or years have fixed spatial layouts."
+             name="sequence"
+-            value={state.synTypes.sequence_space}
+-            onChange={(e) =>  handleSynTypesChange('sequence_space', e) }
++            value={state.synTypes.sequence}
++            onChange={(value) => handleSynTypesChange('sequence', value)}
+           />
+         </ul>
+ 
+@@ -294,8 +483,7 @@ export default function ScreeningFlow() {
+           type="text"
+           placeholder="Other synesthetic experiences (optional)"
+           value={state.otherExperiences}
+-          onChange={(e) => updateState({otherExperiences: e.target.value})}
+-          // TODO: this needs work
++          onChange={(e) => updateState({ otherExperiences: e.target.value })}
+           data-mask="true"
+           data-audit-label="Other synesthetic experiences free-text"
+         />
+@@ -314,51 +502,52 @@ export default function ScreeningFlow() {
+         totalSteps={5}
+         chip={{ label: 'Routing', variant: 'info' }}
+         title="Your next step"
+-        nextLabel="Begin Assigned Task"
+-        onNext={() => navigate('/test/assigned')}
++        nextLabel="Begin assigned tests"
++        onNext={startAssignedTests}
++        nextDisabled={!summary?.eligible}
++        loading={saving}
++        error={error}
+       >
+-        <div className="tag-group">
+-          <span className="tag">Grapheme – Color</span>
+-          <span className="tag">Lexical – Taste</span>
+-        </div>
++        {!summary && <p>Fetching your assigned tests…</p>}
+ 
+-        <div className="summary-grid">
+-          <div className="summary-card">
+-            <div className="summary-title">Trigger → Color</div>
+-            <div className="summary-sub">Color consistency + speeded congruency</div>
+-            <ul className="summary-list">
+-              <li>Grapheme-Color</li>
+-              <li>Music-Color</li>
+-            </ul>
+-          </div>
++        {summary && (
++          <>
++            <p className="lead">
++              {summary.eligible
++                ? 'You qualify for the next phase of testing.'
++                : 'Screening complete.'}
++            </p>
+ 
+-          <div className="summary-card">
+-            <div className="summary-title">Trigger → Gustatory</div>
+-            <div className="summary-sub">Two-trial taste consistency (R²)</div>
+-            <ul className="summary-list">
+-              <li>Lexical-Gustatory</li>
+-              <li>Sound-Taste</li>
+-            </ul>
+-          </div>
+-
+-          <div className="summary-card">
+-            <div className="summary-title">Sequence → Space</div>
+-            <div className="summary-sub">Layout mapping + consistency</div>
+-            <ul className="summary-list">
+-              <li>Days</li>
+-              <li>Months</li>
+-              <li>Year</li>
+-            </ul>
+-          </div>
+-        </div>
++            {summarySelectedTypes.length > 0 ? (
++              <div className="summary-note">
++                <div className="note-title">Selected types</div>
++                <ul className="summary-list">
++                  {summarySelectedTypes.map((type) => (
++                    <li key={type}>{type}</li>
++                  ))}
++                </ul>
++              </div>
++            ) : (
++              <p className="text-muted">No eligible types recorded.</p>
++            )}
+ 
+-        <div className="summary-note">
+-          <div className="note-title">What you'll do</div>
+-          <ul className="note-list">
+-            <li>We test only your selected types</li>
+-            <li>You can stop at any time</li>
+-          </ul>
+-        </div>
++            {summaryRecommendations.length > 0 && (
++              <>
++                <div className="summary-title mt-3">Recommended next steps</div>
++                <div className="summary-grid">
++                  {summaryRecommendations.map((rec, idx) => (
++                    <div className="summary-card" key={`${rec.name}-${idx}`}>
++                      <div className="summary-title">{rec.name}</div>
++                      {rec.reason && (
++                        <div className="summary-sub">{rec.reason}</div>
++                      )}
++                    </div>
++                  ))}
++                </div>
++              </>
++            )}
++          </>
++        )}
+       </ScreeningStep>
+     );
+   }
+diff --git a/src/pages/__tests__/ScreeningFlow.test.jsx b/src/pages/__tests__/ScreeningFlow.test.jsx
+new file mode 100644
+index 0000000..97d725e
+--- /dev/null
++++ b/src/pages/__tests__/ScreeningFlow.test.jsx
+@@ -0,0 +1,101 @@
++import { fireEvent, render, screen, waitFor } from '@testing-library/react';
++import { MemoryRouter, Route, Routes } from 'react-router-dom';
++import { vi } from 'vitest';
++import ScreeningFlow from '../ScreeningFlow';
++
++vi.mock('../../services/screening', () => {
++  const service = {
++    saveConsent: vi.fn(() => Promise.resolve({ ok: true })),
++    saveStep1: vi.fn(() => Promise.resolve({ ok: true })),
++    saveStep2: vi.fn(() => Promise.resolve({ ok: true })),
++    saveStep3: vi.fn(() => Promise.resolve({ ok: true })),
++    saveStep4: vi.fn(() => Promise.resolve({ ok: true })),
++    finalize: vi.fn(() =>
++      Promise.resolve({
++        eligible: true,
++        selected_types: ['Grapheme – Color'],
++        recommended: [{ name: 'Color Consistency', reason: 'Selected grapheme' }],
++      }),
++    ),
++  };
++  return { screeningService: service };
++});
++
++const renderWithRouter = (initialPath = '/screening/0') =>
++  render(
++    <MemoryRouter initialEntries={[initialPath]}>
++      <Routes>
++        <Route path="/screening/:step" element={<ScreeningFlow />} />
++      </Routes>
++    </MemoryRouter>,
++  );
++
++describe('ScreeningFlow', () => {
++  beforeEach(() => {
++    window.sessionStorage.clear();
++    vi.clearAllMocks();
++  });
++
++  it('requires consent before advancing to the next step', async () => {
++    renderWithRouter('/screening/0');
++
++    const checkbox = screen.getByLabelText('I consent to take part in this study.');
++    fireEvent.click(checkbox);
++
++    fireEvent.click(screen.getByRole('button', { name: /begin screening/i }));
++
++    await waitFor(() => {
++      expect(screen.getByText(/confirm none apply to you/i)).toBeInTheDocument();
++    });
++  });
++
++  it('saves health responses and routes to step 2 when eligible', async () => {
++    window.sessionStorage.setItem(
++      'screening_state',
++      JSON.stringify({
++        consent: true,
++        health: { drug: false, neuro: false, medical: false },
++        definition: null,
++        pain: null,
++        synTypes: { grapheme: null, music: null, lexical: null, sequence: null },
++        otherExperiences: '',
++      }),
++    );
++
++    renderWithRouter('/screening/1');
++
++    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
++
++    await waitFor(() => {
++      expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
++    });
++  });
++
++  it('records type selections and fetches summary data', async () => {
++    window.sessionStorage.setItem(
++      'screening_state',
++      JSON.stringify({
++        consent: true,
++        health: { drug: false, neuro: false, medical: false },
++        definition: 'yes',
++        pain: 'no',
++        synTypes: { grapheme: null, music: null, lexical: null, sequence: null },
++        otherExperiences: '',
++      }),
++    );
++
++    renderWithRouter('/screening/4');
++
++    fireEvent.click(screen.getByLabelText('Letter • Color — Yes'));
++    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
++
++    await waitFor(() => {
++      expect(screen.getByText(/your next step/i)).toBeInTheDocument();
++    });
++
++    await waitFor(() => {
++      expect(screen.getByText(/color consistency/i)).toBeInTheDocument();
++    });
++  });
++});
++
+-- 
+2.46.1
+

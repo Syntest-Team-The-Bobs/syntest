@@ -1,0 +1,107 @@
+From 299f1a8496f5825bfe9c634898da30d9377d446b Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Mon, 17 Nov 2025 19:30:56 -0500
+Subject: [PATCH 20/26] Address PR review comments: remove package-lock from
+ gitignore, add Mac instructions, improve continue button handling
+
+---
+ .gitignore                  |  1 -
+ README.md                   | 12 ++++++++++--
+ src/pages/ScreeningFlow.jsx | 33 ++++++++++++++++++++++-----------
+ 3 files changed, 32 insertions(+), 14 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 4bea4fd..2c6f78b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -66,7 +66,6 @@ node_modules/
+ npm-debug.log*
+ yarn-debug.log*
+ yarn-error.log*
+-package-lock.json
+ yarn.lock
+ pnpm-lock.yaml
+ 
+diff --git a/README.md b/README.md
+index 841a782..edef296 100644
+--- a/README.md
++++ b/README.md
+@@ -62,16 +62,24 @@ npm run api
+ # or
+ npm run dev:backend
+ 
++# Alternative: If using virtual environment with Flask CLI:
++# Windows: cd api && .venv\Scripts\flask run --no-debugger
++# Mac/Linux: cd api && .venv/bin/flask run --no-debugger
++
+ # Terminal 2 - Frontend:
+ npm run dev
+ # or  
+ npm run dev:frontend
+ ```
+ 
+-#### Option 3: Use the start script (Windows)
++#### Option 3: Use the start script
+ ```bash
+-# Double-click or run:
++# Windows:
+ start.bat
++
++# Mac/Linux:
++chmod +x start.sh
++./start.sh
+ ```
+ 
+ #### Initialize Database (if needed)
+diff --git a/src/pages/ScreeningFlow.jsx b/src/pages/ScreeningFlow.jsx
+index 934ac23..b884bc3 100644
+--- a/src/pages/ScreeningFlow.jsx
++++ b/src/pages/ScreeningFlow.jsx
+@@ -184,22 +184,33 @@ export default function ScreeningFlow() {
+   };
+ 
+   const handleStep4Next = () => {
++    // Prevent multiple clicks while saving
++    if (saving) {
++      return;
++    }
+     // Always save step 4 data before navigating, even if no eligible types
+     // This ensures the database has the complete screening data for analysis
+     withSaving(async () => {
+-      await screeningService.saveStep4(state.synTypes, state.otherExperiences);
+-      if (!hasEligibleType) {
+-        // Finalize to determine exit code, then navigate to exit page
+-        const result = await screeningService.finalize();
+-        resetSummary();
+-        if (result?.exit_code) {
+-          navigate(`/screening/exit/${result.exit_code}`);
++      try {
++        await screeningService.saveStep4(state.synTypes, state.otherExperiences);
++        if (!hasEligibleType) {
++          // Finalize to determine exit code, then navigate to exit page
++          const result = await screeningService.finalize();
++          resetSummary();
++          if (result?.exit_code) {
++            navigate(`/screening/exit/${result.exit_code}`);
++          } else {
++            navigate('/screening/exit/NONE');
++          }
+         } else {
+-          navigate('/screening/exit/NONE');
++          resetSummary();
++          navigate('/screening/5');
+         }
+-      } else {
+-        resetSummary();
+-        navigate('/screening/5');
++      } catch (err) {
++        // Error is already handled by withSaving, but ensure we don't navigate on error
++        console.error('Step 4 save failed:', err);
++        // Don't navigate if there's an error - let user retry
++        throw err;
+       }
+     });
+   };
+-- 
+2.46.1
+

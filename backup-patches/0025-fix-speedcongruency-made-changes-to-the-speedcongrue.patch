@@ -1,0 +1,365 @@
+From b8df1fd5d29ddc21dd025e1f226b9133edb1aa81 Mon Sep 17 00:00:00 2001
+From: tenzytaec26 <tcthin27@colby.edu>
+Date: Tue, 18 Nov 2025 14:52:15 -0500
+Subject: [PATCH 25/26] fix(speedcongruency): made changes to the
+ speedcongruency.py file to change hexd code to rgb values
+
+---
+ .github/copilot-instructions.md |  53 ++++++++++
+ api/speedcongruency.py          | 178 ++++----------------------------
+ package-lock.json               |  10 --
+ 3 files changed, 75 insertions(+), 166 deletions(-)
+ create mode 100644 .github/copilot-instructions.md
+
+diff --git a/.github/copilot-instructions.md b/.github/copilot-instructions.md
+new file mode 100644
+index 0000000..ba51b45
+--- /dev/null
++++ b/.github/copilot-instructions.md
+@@ -0,0 +1,53 @@
++## Purpose
++
++This file gives concise, repository-specific guidance for AI coding agents (Copilot-style) so they can be productive immediately. It focuses on architecture, developer workflows, conventions, integration points, and common pitfalls discovered in this codebase.
++
++**Big Picture**
++- **Frontend:** React + Vite app in `src/` (entry: `src/main.jsx`, UI components in `src/components`). Start dev server with `npm run dev` from the repository root (see `package.json`).
++- **Backend:** Flask app in `api/` (entry: `api/app.py`). The backend is an API-only Flask app exposing blueprints (see `api/app.py` imports: `screening`, `dashboard`, `speedcongruency`).
++- **Data flow:** Frontend calls Flask API under `/api/*`. The axios instance `src/services/api.js` sets `withCredentials: true` (critical) so Flask session cookies are used.
++
++**Local dev & run commands**
++- **Install frontend deps:** Run `npm install` at the project root where `package.json` sits.
++- **Run frontend:** `npm run dev` (Vite — default port 5173). The Flask CORS config accepts `http://localhost:5173`.
++- **Install backend deps:** `cd api && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (macOS / Linux).
++- **Run backend (recommended):** `cd api && source .venv/bin/activate && python app.py` (this runs Flask via `app.run(debug=True)` as in `api/app.py`).
++- **Note:** `package.json` defines an `api` script using a Windows-style `.venv\\Scripts\\flask` path — do not rely on that on macOS; prefer the `api/README.md` or direct `python app.py`.
++
++**API & Auth contract**
++- **Session-based auth:** Flask uses cookie sessions (see `api/app.py`). The frontend must send cookies — `src/services/api.js` sets `withCredentials: true` for this reason.
++- **Important endpoints:** `POST /api/auth/login`, `POST /api/auth/signup`, `POST /api/auth/logout`, `GET /api/auth/me` (see `api/README.md` and `api/app.py`). Frontend services call these via `src/services/*.js`.
++
++**Key repo files to inspect for patterns and examples**
++- `api/app.py` — blueprint registration, CORS config, auth endpoints, DB init, runs the Flask app.
++- `api/README.md` — backend setup, routes list.
++- `package.json` — frontend scripts (`dev`, `build`) and the suspicious `api` script (Windows path).
++- `src/services/api.js` — central axios instance; contains global response interceptor and must remain `withCredentials: true`.
++- `src/hooks/useColorTest.js` — example of domain-specific hook that drives test flow and response recording (practice vs testing phases).
++- `src/services/*` — wrappers for specific API calls (look here to find how frontend maps to backend endpoints).
++
++**Conventions & Patterns (what to follow exactly)**
++- **Single axios instance:** Use `src/services/api.js` for all HTTP calls so session cookies, base URL, and error handling are consistent.
++- **Hooks + services split:** Business logic for tests lives in `src/hooks` (e.g., `useColorTest.js`) and low-level deck/stimulus logic in `src/services` (e.g., `useDeck`, `buildDeck`). Components should use hooks, not reimplement timers/deck logic.
++- **Blueprints on backend:** Each test/feature has its own blueprint (e.g., screening, speed-congruency). Add routes to the matching module and register in `api/app.py`.
++- **DB location:** SQLite DB file is created under `api/instance/syntest.db` (see `api/app.py`). The app creates the directory if needed.
++
++**Environment & configuration**
++- **Frontend API base:** `VITE_API_BASE_URL` controls the client base URL. Default in `src/services/api.js` is `/api` which expects the Flask server to be proxied or on same origin during development.
++- **Ports & CORS:** `api/app.py` allows `http://localhost:5173` and `http://127.0.0.1:5173`. When changing dev ports, update CORS origins accordingly.
++
++**Common gotchas**
++- **Windows path in `package.json` `api` script:** On macOS/Linux that `api` script will fail. Use `api/README.md` instructions instead.
++- **Cookies required:** Forgetting `withCredentials` or not running both frontend and backend on expected origins will result in silent auth failures.
++- **Hardcoded SECRET_KEY:** `api/app.py` includes a dev `SECRET_KEY` — do not expose or assume production readiness.
++
++**When making changes or adding features**
++- Add backend endpoints as Flask blueprints and register them in `api/app.py` with clear route prefixes (follow existing `screening`, `dashboard`, `speedcongruency` pattern).
++- Update `src/services/*` to expose a thin wrapper that calls `src/services/api.js`. Keep business logic in hooks (`src/hooks`) or `api/services.py` (backend).
++- Keep client-side test flows in hooks (see `useColorTest.js`) — components should be thin renderers of hook state.
++
++**If you need to run or test things**
++- Start backend first on `localhost:5000`, then frontend (`npm run dev`) — the frontend expects the API at `/api` or `VITE_API_BASE_URL`.
++- Inspect requests in browser DevTools to verify cookies are included (look under request headers -> cookie).
++
++If any of the above is unclear or you'd like me to expand a section (e.g., give example edits for adding a new blueprint, or create a sample `npm` script for macOS), tell me which area to iterate on.
+diff --git a/api/speedcongruency.py b/api/speedcongruency.py
+index 5b3f014..1a5f7fe 100644
+--- a/api/speedcongruency.py
++++ b/api/speedcongruency.py
+@@ -1,159 +1,3 @@
+-# # speedcongruency.py
+-
+-# from flask import Blueprint, request, jsonify
+-# import random
+-# from datetime import datetime
+-
+-# from models import db, SpeedCongruency  # uses your existing model
+-
+-# bp = Blueprint("speed_congruency", __name__, url_prefix="/api/speed-congruency")
+-
+-# # --------------------------------------------------
+-# # DEV-ONLY CONFIG (you can change these any time)
+-# # --------------------------------------------------
+-
+-# # Fake triggers that mimic “Mother”, “Father”, etc.
+-# DEV_TRIGGERS = [
+-#     "MOTHER",
+-#     "FATHER",
+-#     "MONDAY",
+-#     "MUSIC",
+-# ]
+-
+-# # Simple colour palette just so things look nice
+-# DEV_COLOR_PALETTE = [
+-#     "#22c55e",  # green
+-#     "#3b82f6",  # blue
+-#     "#f97316",  # orange
+-#     "#ec4899",  # pink
+-#     "#facc15",  # yellow
+-#     "#a855f7",  # purple
+-#     "#0ea5e9",  # cyan
+-#     "#ef4444",  # red
+-# ]
+-
+-
+-# def _build_trial(index: int):
+-#     """
+-#     Build a single fake trial for the given index.
+-#     Frontend DOESN'T CARE that this is fake; it just needs the shape.
+-#     """
+-#     trigger = DEV_TRIGGERS[index % len(DEV_TRIGGERS)]
+-#     # choose the "correct" colour
+-#     correct_color = random.choice(DEV_COLOR_PALETTE)
+-
+-#     # choose 3 distractors
+-#     distractors = [c for c in DEV_COLOR_PALETTE if c != correct_color]
+-#     random.shuffle(distractors)
+-#     distractors = distractors[:3]
+-
+-#     options = [
+-#         {
+-#             "id": "correct",
+-#             "label": trigger,
+-#             "color": correct_color,
+-#             "name": "correct",
+-#         }
+-#     ]
+-#     for i, hex_code in enumerate(distractors, start=1):
+-#         options.append(
+-#             {
+-#                 "id": f"opt{i}",
+-#                 "label": trigger,
+-#                 "color": hex_code,
+-#                 "name": f"opt{i}",
+-#             }
+-#         )
+-
+-#     random.shuffle(options)
+-
+-#     total_trials = len(DEV_TRIGGERS)
+-
+-#     return {
+-#         "id": index,
+-#         "participantId": "DEV_USER",   # dev stub only
+-#         "trigger": trigger,
+-#         "options": options,
+-#         "totalTrials": total_trials,
+-#         "index": index,
+-#     }
+-
+-
+-# # --------------------------------------------------
+-# # GET /api/speed-congruency/next
+-# # --------------------------------------------------
+-
+-# @bp.get("/next")
+-# def dev_speedcongruency_next():
+-#     """
+-#     Development endpoint that ignores auth and uses fake data.
+-
+-#     Frontend calls: GET /api/speed-congruency/next?trialIndex=0
+-#     """
+-#     raw_index = request.args.get("trialIndex", request.args.get("index", 0))
+-
+-#     try:
+-#         index = int(raw_index)
+-#     except (TypeError, ValueError):
+-#         index = 0
+-
+-#     total = len(DEV_TRIGGERS)
+-#     if index < 0 or index >= total:
+-#         # no more trials – frontend will show the "done" screen
+-#         return jsonify({"done": True, "totalTrials": total}), 200
+-
+-#     trial = _build_trial(index)
+-#     return jsonify(trial), 200
+-
+-
+-# # --------------------------------------------------
+-# # POST /api/speed-congruency/submit
+-# # --------------------------------------------------
+-
+-# @bp.post("/submit")
+-# def dev_speedcongruency_submit():
+-#     """
+-#     Development endpoint that records the trial in SpeedCongruency
+-#     with a fake participant_id so you can inspect the DB.
+-#     """
+-#     data = request.get_json(force=True) or {}
+-
+-#     trial_index = data.get("trialIndex")
+-#     trigger = data.get("trigger")
+-#     selected_id = data.get("selectedOptionId")
+-#     reaction_ms = data.get("reactionTimeMs")
+-
+-#     # In this dev version, "correct" id means the answer is correct.
+-#     matched = selected_id == "correct"
+-
+-#     # Optional: store one row per trial so you can inspect the DB later.
+-#     row = SpeedCongruency(
+-#         participant_id="DEV_USER",  # not linked to real Participant
+-#         stimulus_id=None,
+-#         trial_index=trial_index,
+-#         cue_word=trigger,
+-#         cue_type="word",
+-#         expected_r=None,
+-#         expected_g=None,
+-#         expected_b=None,
+-#         chosen_name=selected_id,
+-#         chosen_r=None,
+-#         chosen_g=None,
+-#         chosen_b=None,
+-#         matched=matched,
+-#         response_ms=int(reaction_ms) if reaction_ms is not None else None,
+-#         meta_json={
+-#             "dev": True,
+-#             "created_at_client": datetime.utcnow().isoformat(),
+-#         },
+-#     )
+-#     db.session.add(row)
+-#     db.session.commit()
+-
+-#     return jsonify({"ok": True, "matched": matched}), 200
+-
+-# speedcongruency.py
+-
+ from flask import Blueprint, request, jsonify, session
+ import random
+ 
+@@ -246,19 +90,41 @@ def _build_color_options(cue_label: str, expected_hex: str):
+     random.shuffle(palette)
+     distractors = palette[:3]
+ 
++    def _hex_to_rgb(hex_code: str):
++        h = hex_code.lstrip('#')
++        if len(h) == 3:
++            h = ''.join([c*2 for c in h])
++        try:
++            r = int(h[0:2], 16)
++            g = int(h[2:4], 16)
++            b = int(h[4:6], 16)
++            return r, g, b
++        except Exception:
++            return 0, 0, 0
++
++    # include r,g,b and hex in each option to match frontend expectations
+     options = [
+         {
+             "id": "correct",          # we will use this to decide matched=True
+             "label": cue_label,
+             "color": expected_hex,
++            "hex": expected_hex,
++            "r": _hex_to_rgb(expected_hex)[0],
++            "g": _hex_to_rgb(expected_hex)[1],
++            "b": _hex_to_rgb(expected_hex)[2],
+         }
+     ]
+ 
+     for i, hex_code in enumerate(distractors, start=1):
++        r, g, b = _hex_to_rgb(hex_code)
+         options.append({
+             "id": f"opt{i}",
+             "label": cue_label,
+             "color": hex_code,
++            "hex": hex_code,
++            "r": r,
++            "g": g,
++            "b": b,
+         })
+ 
+     random.shuffle(options)
+diff --git a/package-lock.json b/package-lock.json
+index c6796f9..60f0c21 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -55,7 +55,6 @@
+       "integrity": "sha512-e7jT4DxYvIDLk1ZHmU/m/mB19rex9sv0c2ftBtjSBv+kVM/902eh0fINUzD7UwLLNR+jU585GxUJ8/EBfAM5fw==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "@babel/code-frame": "^7.27.1",
+         "@babel/generator": "^7.28.5",
+@@ -1362,7 +1361,6 @@
+       "integrity": "sha512-6mDvHUFSjyT2B2yeNx2nUgMxh9LtOWvkhIU3uePn2I2oyNymUAX1NIsdgviM4CH+JSrp2D2hsMvJOkxY+0wNRA==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "csstype": "^3.0.2"
+       }
+@@ -1404,7 +1402,6 @@
+       "integrity": "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "bin": {
+         "acorn": "bin/acorn"
+       },
+@@ -1691,7 +1688,6 @@
+         }
+       ],
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "baseline-browser-mapping": "^2.8.19",
+         "caniuse-lite": "^1.0.30001751",
+@@ -2269,7 +2265,6 @@
+       "integrity": "sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "@eslint-community/eslint-utils": "^4.8.0",
+         "@eslint-community/regexpp": "^4.12.1",
+@@ -3886,7 +3881,6 @@
+       "integrity": "sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "engines": {
+         "node": ">=12"
+       },
+@@ -3976,7 +3970,6 @@
+       "resolved": "https://registry.npmjs.org/react/-/react-19.2.0.tgz",
+       "integrity": "sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==",
+       "license": "MIT",
+-      "peer": true,
+       "engines": {
+         "node": ">=0.10.0"
+       }
+@@ -3986,7 +3979,6 @@
+       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.0.tgz",
+       "integrity": "sha512-UlbRu4cAiGaIewkPyiRGJk0imDN2T3JjieT6spoL2UeSf5od4n5LB/mQ4ejmxhCFT1tYe8IvaFulzynWovsEFQ==",
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "scheduler": "^0.27.0"
+       },
+@@ -4723,7 +4715,6 @@
+       "integrity": "sha512-BxAKBWmIbrDgrokdGZH1IgkIk/5mMHDreLDmCJ0qpyJaAteP8NvMhkwr/ZCQNqNH97bw/dANTE9PDzqwJghfMQ==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "esbuild": "^0.25.0",
+         "fdir": "^6.5.0",
+@@ -4934,7 +4925,6 @@
+       "integrity": "sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "funding": {
+         "url": "https://github.com/sponsors/colinhacks"
+       }
+-- 
+2.46.1
+

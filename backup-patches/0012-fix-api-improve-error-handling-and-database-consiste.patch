@@ -1,0 +1,375 @@
+From d3f3569f5399e08c4c83ae1f5d592727b458f1ec Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Sun, 16 Nov 2025 17:36:33 -0500
+Subject: [PATCH 12/26] fix(api): improve error handling and database
+ consistency
+
+- Add comprehensive error handling with rollback to all screening endpoints
+- Fix participant age validation (handle empty strings)
+- Improve error messages for unique constraint violations
+- Update dashboard to query ScreeningRecommendedTest table (normalized)
+- Ensure all screening models are imported in app.py for table creation
+- Handle invalid roles gracefully in api_get_current_user
+---
+ api/app.py       |  41 ++++++++++++--
+ api/dashboard.py |  70 ++++++++++++++++++++++--
+ api/screening.py | 139 +++++++++++++++++++++++++++++++++--------------
+ 3 files changed, 198 insertions(+), 52 deletions(-)
+
+diff --git a/api/app.py b/api/app.py
+index 916a7eb..44d3aa7 100644
+--- a/api/app.py
++++ b/api/app.py
+@@ -8,8 +8,14 @@ from datetime import datetime
+ # -----------------------------
+ # Models (must exist in models.py)
+ # -----------------------------
+-from models import db, Participant, Researcher, Test, TestResult, ScreeningResponse, \
+-    ColorStimulus, ColorTrial, SpeedCongruency, TestData
++from models import (
++    db, Participant, Researcher, Test, TestResult, ScreeningResponse,
++    ColorStimulus, ColorTrial, SpeedCongruency, TestData,
++    # Screening models (needed for db.create_all() to create tables)
++    ScreeningSession, ScreeningHealth, ScreeningDefinition,
++    ScreeningPainEmotion, ScreeningTypeChoice, ScreeningEvent,
++    ScreeningRecommendedTest
++)
+ 
+ # -----------------------------
+ # Screening API blueprint (expects views/api_screening.py to expose `bp`)
+@@ -81,12 +87,22 @@ def api_signup():
+         password_hash = generate_password_hash(password)
+ 
+         if role == 'participant':
++            # Handle age - convert empty string to None, or try to convert to int
++            age = data.get('age')
++            if age == '' or age is None:
++                age = None
++            else:
++                try:
++                    age = int(age) if age else None
++                except (ValueError, TypeError):
++                    age = None
++            
+             new_user = Participant(
+                 name=name,
+                 email=email,
+                 password_hash=password_hash,
+-                age=data.get('age'),
+-                country=data.get('country', 'Spain')
++                age=age,
++                country=data.get('country', 'Spain') or 'Spain'
+             )
+         else:
+             access_code = data.get('accessCode')
+@@ -109,7 +125,13 @@ def api_signup():
+         print(f"Error creating account: {str(e)}")
+         import traceback
+         traceback.print_exc()
+-        return jsonify({'error': f'Error creating account: {str(e)}'}), 500
++        error_message = str(e)
++        # Make error message more user-friendly
++        if 'UNIQUE constraint' in error_message or 'unique' in error_message.lower():
++            return jsonify({'error': 'Email already registered'}), 400
++        if 'NOT NULL constraint' in error_message:
++            return jsonify({'error': 'Missing required fields'}), 400
++        return jsonify({'error': f'Error creating account: {error_message}'}), 500
+ 
+ 
+ @app.route('/api/auth/login', methods=['POST'])
+@@ -172,7 +194,14 @@ def api_get_current_user():
+         user_id = session['user_id']
+         role = session.get('user_role')
+ 
+-        user = Participant.query.get(user_id) if role == 'participant' else Researcher.query.get(user_id)
++        if role == 'participant':
++            user = Participant.query.get(user_id)
++        elif role == 'researcher':
++            user = Researcher.query.get(user_id)
++        else:
++            # Invalid role, clear session and return error
++            session.clear()
++            return jsonify({'error': 'Invalid role'}), 400
+ 
+         if not user:
+             return jsonify({'error': 'User not found'}), 404
+diff --git a/api/dashboard.py b/api/dashboard.py
+index 18c1b93..a5ccc28 100644
+--- a/api/dashboard.py
++++ b/api/dashboard.py
+@@ -1,5 +1,5 @@
+ from flask import Blueprint, jsonify, session
+-from models import Participant, Researcher
++from models import Participant, Researcher, ScreeningSession, ScreeningRecommendedTest, TestResult, Test
+ 
+ bp = Blueprint('dashboard', __name__, url_prefix='/api/participant')
+ 
+@@ -25,12 +25,74 @@ def get_dashboard_data():
+             'role': role
+         }
+ 
++        # Get recommended tests from latest completed screening session
++        recommended_tests = []
++        if role == 'participant':
++            # Find the latest completed screening session
++            latest_screening = (
++                ScreeningSession.query
++                .filter_by(participant_id=user_id, eligible=True)
++                .order_by(ScreeningSession.completed_at.desc())
++                .first()
++            )
++            
++            if latest_screening:
++                # Get recommended tests from normalized table, ordered by position
++                recs = (
++                    ScreeningRecommendedTest.query
++                    .filter_by(session_id=latest_screening.id)
++                    .order_by(ScreeningRecommendedTest.position)
++                    .all()
++                )
++                
++                # Build recommended tests list with test details if available
++                for rec in recs:
++                    test_info = {
++                        'name': rec.suggested_name,
++                        'reason': rec.reason,
++                        'test_id': rec.test_id
++                    }
++                    # If test_id exists, fetch test details
++                    if rec.test_id:
++                        test = Test.query.get(rec.test_id)
++                        if test:
++                            test_info.update({
++                                'id': test.id,
++                                'description': test.description,
++                                'synesthesia_type': test.synesthesia_type,
++                                'duration': test.duration
++                            })
++                    recommended_tests.append(test_info)
++
++        # Count test results for participant
++        tests_completed = 0
++        tests_pending = 0
++        if role == 'participant':
++            test_results = TestResult.query.filter_by(participant_id=user_id).all()
++            completed_results = [tr for tr in test_results if tr.status == 'completed']
++            tests_completed = len(completed_results)
++            tests_pending = len([tr for tr in test_results if tr.status in ['not_started', 'in_progress']])
++            # Add pending tests from recommendations if not started
++            if recommended_tests:
++                for rec in recommended_tests:
++                    if rec.get('test_id'):
++                        existing = TestResult.query.filter_by(
++                            participant_id=user_id,
++                            test_id=rec.get('test_id')
++                        ).first()
++                        if not existing:
++                            tests_pending += 1
++
++        total_tests = tests_completed + tests_pending
++        completion_percentage = int((tests_completed / total_tests * 100)) if total_tests > 0 else 0
++
+         # Prepare dashboard data
+         data = {
+             "user": user_data,
+-            "tests_completed": 3,
+-            "tests_pending": 2,
+-            "completion_percentage": 60
++            "tests_completed": tests_completed,
++            "tests_pending": tests_pending,
++            "completion_percentage": completion_percentage,
++            "recommended_tests": recommended_tests
+         }
+         return jsonify(data)
+     except Exception as e:
+diff --git a/api/screening.py b/api/screening.py
+index 2cef030..18a298e 100644
+--- a/api/screening.py
++++ b/api/screening.py
+@@ -17,37 +17,67 @@ bp = Blueprint("screening", __name__, url_prefix="/api/screening")
+ # ---------------------------
+ def _current_participant_id():
+     """
+-    Replace with your real auth. For dev, stash a demo participant in session.
++    Get current participant ID from session.
++    Uses 'user_id' to be consistent with the rest of the app.
++    Falls back to creating a demo participant if not authenticated (for testing).
+     """
+-    pid = session.get("pid")
+-    if pid:
+-        return pid
+-    p = Participant(
+-        name="Demo User",
+-        email=f"demo{datetime.utcnow().timestamp()}@example.com",
+-        password_hash="dev",
+-        age=None,
+-        country=None,
+-    )
+-    db.session.add(p)
+-    db.session.commit()
+-    session["pid"] = p.id
+-    return p.id
++    try:
++        # Try to use authenticated user_id (consistent with dashboard and auth endpoints)
++        user_id = session.get("user_id")
++        user_role = session.get("user_role")
++        
++        # If user is authenticated and is a participant, use their ID
++        if user_id and user_role == "participant":
++            return user_id
++        
++        # For testing/development: create demo participant if not authenticated
++        # TODO: In production, require authentication
++        pid = session.get("pid")  # Legacy fallback
++        if pid:
++            # Verify participant still exists
++            if Participant.query.get(pid):
++                return pid
++        
++        # Create a new demo participant
++        p = Participant(
++            name="Demo User",
++            email=f"demo{datetime.utcnow().timestamp()}@example.com",
++            password_hash="dev",
++            age=None,
++            country=None,
++        )
++        db.session.add(p)
++        db.session.commit()
++        session["pid"] = p.id
++        return p.id
++    except Exception as e:
++        db.session.rollback()
++        print(f"Error in _current_participant_id: {str(e)}")
++        import traceback
++        traceback.print_exc()
++        raise
+ 
+ 
+ def _get_or_create_session():
+-    pid = _current_participant_id()
+-    s = (
+-        ScreeningSession.query
+-        .filter_by(participant_id=pid, status="in_progress")
+-        .order_by(ScreeningSession.started_at.desc())
+-        .first()
+-    )
+-    if not s:
+-        s = ScreeningSession(participant_id=pid, consent_given=False)
+-        db.session.add(s)
+-        db.session.commit()
+-    return s
++    try:
++        pid = _current_participant_id()
++        s = (
++            ScreeningSession.query
++            .filter_by(participant_id=pid, status="in_progress")
++            .order_by(ScreeningSession.started_at.desc())
++            .first()
++        )
++        if not s:
++            s = ScreeningSession(participant_id=pid, consent_given=False)
++            db.session.add(s)
++            db.session.commit()
++        return s
++    except Exception as e:
++        db.session.rollback()
++        print(f"Error in _get_or_create_session: {str(e)}")
++        import traceback
++        traceback.print_exc()
++        raise
+ 
+ 
+ # ---------------------------
+@@ -55,12 +85,19 @@ def _get_or_create_session():
+ # ---------------------------
+ @bp.post("/consent")
+ def save_consent():
+-    s = _get_or_create_session()
+-    data = request.get_json(force=True)
+-    s.consent_given = bool(data.get("consent"))
+-    s.record_event(0, "consent", {"value": s.consent_given})
+-    db.session.commit()
+-    return jsonify(ok=True, session_id=s.id)
++    try:
++        s = _get_or_create_session()
++        data = request.get_json(force=True)
++        s.consent_given = bool(data.get("consent"))
++        s.record_event(0, "consent", {"value": s.consent_given})
++        db.session.commit()
++        return jsonify(ok=True, session_id=s.id)
++    except Exception as e:
++        db.session.rollback()
++        print(f"Error in save_consent: {str(e)}")
++        import traceback
++        traceback.print_exc()
++        return jsonify(error=f"Server error: {str(e)}"), 500
+ 
+ 
+ @bp.post("/step/1")
+@@ -82,8 +119,14 @@ def save_step2():
+     s = _get_or_create_session()
+     d = s.definition or ScreeningDefinition(session_id=s.id)
+     payload = request.get_json(force=True)
+-    val = payload.get("answer", "yes")
+-    d.answer = YesNoMaybe(val)
++    # Frontend sends 'answer' field with value 'yes', 'maybe', or 'no'
++    val = payload.get("answer")
++    if not val:
++        return jsonify(error="Missing answer field"), 400
++    try:
++        d.answer = YesNoMaybe(val)
++    except ValueError:
++        return jsonify(error=f"Invalid answer value: {val}"), 400
+     db.session.add(d)
+     s.record_event(2, "save", payload)
+     db.session.commit()
+@@ -94,8 +137,14 @@ def save_step2():
+ def save_step3():
+     s = _get_or_create_session()
+     pe = s.pain_emotion or ScreeningPainEmotion(session_id=s.id)
+-    val = request.get_json(force=True).get("answer", "no")
+-    pe.answer = YesNo(val)
++    payload = request.get_json(force=True)
++    val = payload.get("answer")
++    if not val:
++        return jsonify(error="Missing answer field"), 400
++    try:
++        pe.answer = YesNo(val)
++    except ValueError:
++        return jsonify(error=f"Invalid answer value: {val}"), 400
+     db.session.add(pe)
+     s.record_event(3, "save", {"answer": pe.answer.value})
+     db.session.commit()
+@@ -107,11 +156,15 @@ def save_step4():
+     s = _get_or_create_session()
+     tc = s.type_choice or ScreeningTypeChoice(session_id=s.id)
+     j = request.get_json(force=True)
+-    tc.grapheme = Frequency(j.get("grapheme")) if j.get("grapheme") else None
+-    tc.music    = Frequency(j.get("music"))    if j.get("music")    else None
+-    tc.lexical  = Frequency(j.get("lexical"))  if j.get("lexical")  else None
+-    tc.sequence = Frequency(j.get("sequence")) if j.get("sequence") else None
+-    tc.other    = (j.get("other") or "").strip() or None
++    # Only set Frequency enum if value is provided and valid
++    try:
++        tc.grapheme = Frequency(j.get("grapheme")) if j.get("grapheme") else None
++        tc.music    = Frequency(j.get("music"))    if j.get("music")    else None
++        tc.lexical  = Frequency(j.get("lexical"))  if j.get("lexical")  else None
++        tc.sequence = Frequency(j.get("sequence")) if j.get("sequence") else None
++    except ValueError as e:
++        return jsonify(error=f"Invalid frequency value: {str(e)}"), 400
++    tc.other = (j.get("other") or "").strip() or None
+     db.session.add(tc)
+     s.record_event(4, "save", j)
+     db.session.commit()
+@@ -129,5 +182,7 @@ def finalize_screening():
+         eligible=s.eligible,
+         exit_code=s.exit_code,
+         selected_types=s.selected_types,
++        selectedTypes=s.selected_types,  # Support both naming conventions
+         recommended=s.recommended_tests,
++        recommended_tests=s.recommended_tests,  # Support both naming conventions
+     )
+-- 
+2.46.1
+

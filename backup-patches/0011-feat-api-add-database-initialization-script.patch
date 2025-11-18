@@ -1,0 +1,46 @@
+From bfa8aa790cfc1eb7dd95c5817ee9be2e2df8a726 Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Sun, 16 Nov 2025 17:36:28 -0500
+Subject: [PATCH 11/26] feat(api): add database initialization script
+
+- Create init_db.py to manually initialize database tables
+- Ensures all screening models are properly created
+- Useful for development and deployment setup
+---
+ api/init_db.py | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 api/init_db.py
+
+diff --git a/api/init_db.py b/api/init_db.py
+new file mode 100644
+index 0000000..16cd5dc
+--- /dev/null
++++ b/api/init_db.py
+@@ -0,0 +1,24 @@
++"""
++Script to initialize/update the database with all tables.
++Run this if you get errors about missing tables.
++"""
++from app import app, db
++from models import (
++    Participant, Researcher, Test, TestResult, ScreeningResponse,
++    ColorStimulus, ColorTrial, SpeedCongruency, TestData,
++    ScreeningSession, ScreeningHealth, ScreeningDefinition,
++    ScreeningPainEmotion, ScreeningTypeChoice, ScreeningEvent,
++    ScreeningRecommendedTest
++)
++
++with app.app_context():
++    print("Creating all database tables...")
++    db.create_all()
++    print("✓ Database initialized successfully!")
++    print("\nTables created:")
++    from sqlalchemy import inspect
++    inspector = inspect(db.engine)
++    tables = inspector.get_table_names()
++    for table in sorted(tables):
++        print(f"  - {table}")
++
+-- 
+2.46.1
+

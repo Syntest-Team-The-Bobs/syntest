@@ -1,0 +1,346 @@
+From b9287855dfc2ba56d267f62807f28e6efa94a32d Mon Sep 17 00:00:00 2001
+From: Rish C <rishitchatterjee007@gmail.com>
+Date: Sun, 16 Nov 2025 17:36:39 -0500
+Subject: [PATCH 13/26] refactor(frontend): improve screening components and
+ state management
+
+- Enhance ChoiceCard, ScreeningStep, and TypeRow components
+- Improve useScreeningState hook with better error handling
+- Add unit tests for useScreeningState hook
+- Ensure consistent state management across screening flow
+---
+ src/components/screening/ChoiceCard.jsx       |  7 +-
+ src/components/screening/ScreeningStep.jsx    | 26 +++++-
+ src/components/screening/TypeRow.jsx          | 58 ++++++-------
+ src/hooks/__tests__/useScreeningState.test.js | 52 ++++++++++++
+ src/hooks/useScreeningState.js                | 82 +++++++++++--------
+ 5 files changed, 151 insertions(+), 74 deletions(-)
+ create mode 100644 src/hooks/__tests__/useScreeningState.test.js
+
+diff --git a/src/components/screening/ChoiceCard.jsx b/src/components/screening/ChoiceCard.jsx
+index 55e0587..c1601c6 100644
+--- a/src/components/screening/ChoiceCard.jsx
++++ b/src/components/screening/ChoiceCard.jsx
+@@ -23,7 +23,12 @@ export default function ChoiceCard({
+     <a
+       href="#"
+       className={className}
+-      onClick={onClick}
++      onClick={(event) => {
++        event.preventDefault();
++        if (onClick) {
++          onClick(event);
++        }
++      }}
+       {...props}
+     >
+       {content}
+diff --git a/src/components/screening/ScreeningStep.jsx b/src/components/screening/ScreeningStep.jsx
+index ee5e620..76fbc26 100644
+--- a/src/components/screening/ScreeningStep.jsx
++++ b/src/components/screening/ScreeningStep.jsx
+@@ -14,7 +14,12 @@ export default function ScreeningStep({
+   onBack,
+   nextLabel = 'Continue',
+   backLabel = 'Back',
+-  showActions = true
++  nextDisabled = false,
++  backDisabled = false,
++  loading = false,
++  loadingLabel = 'Saving…',
++  error,
++  showActions = true,
+ }) {
+   const navigate = useNavigate();
+ 
+@@ -41,17 +46,30 @@ export default function ScreeningStep({
+       )}
+ 
+       <Card chip={chip} title={title}>
++        {error && (
++          <div
++            className="alert alert-error"
++            role="alert"
++            style={{ marginBottom: '1rem' }}
++          >
++            {error}
++          </div>
++        )}
+         {children}
+ 
+         {showActions && (
+           <div className="actions actions-between">
+             {step > 0 && (
+-              <Button variant="secondary" onClick={handleBack}>
++              <Button
++                variant="secondary"
++                onClick={handleBack}
++                disabled={backDisabled || loading}
++              >
+                 {backLabel}
+               </Button>
+             )}
+-            <Button onClick={handleNext}>
+-              {nextLabel}
++            <Button onClick={handleNext} disabled={nextDisabled || loading}>
++              {loading ? loadingLabel : nextLabel}
+             </Button>
+           </div>
+         )}
+diff --git a/src/components/screening/TypeRow.jsx b/src/components/screening/TypeRow.jsx
+index 6a87b97..42d5e88 100644
+--- a/src/components/screening/TypeRow.jsx
++++ b/src/components/screening/TypeRow.jsx
+@@ -7,6 +7,18 @@ export default function TypeRow({
+   value,
+   onChange
+ }) {
++  const options = [
++    { value: 'yes', label: 'Yes' },
++    { value: 'sometimes', label: 'Sometimes' },
++    { value: 'no', label: 'No' },
++  ];
++
++  const handleChange = (event) => {
++    if (onChange) {
++      onChange(event.target.value);
++    }
++  };
++
+   return (
+     <li className="type-row">
+       <div className="type-main">
+@@ -14,39 +26,19 @@ export default function TypeRow({
+         <div className="type-sub">{description}</div>
+       </div>
+       <div className="type-opts">
+-        <label className="opt">
+-          <input
+-            type="radio"
+-            name={name}
+-            value="yes"
+-            checked={value === 'yes'}
+-            onChange={onChange}
+-            data-audit-label={`${title} — yes`}
+-          />
+-          <span>Yes</span>
+-        </label>
+-        <label className="opt">
+-          <input
+-            type="radio"
+-            name={name}
+-            value="sometimes"
+-            checked={value === 'sometimes'}
+-            onChange={onChange}
+-            data-audit-label={`${title} — sometimes`}
+-          />
+-          <span>Sometimes</span>
+-        </label>
+-        <label className="opt">
+-          <input
+-            type="radio"
+-            name={name}
+-            value="no"
+-            checked={value === 'no'}
+-            onChange={onChange}
+-            data-audit-label={`${title} — no`}
+-          />
+-          <span>No</span>
+-        </label>
++        {options.map((option) => (
++          <label className="opt" key={option.value}>
++            <input
++              type="radio"
++              name={name}
++              value={option.value}
++              checked={value === option.value}
++              onChange={handleChange}
++              aria-label={`${title} — ${option.label}`}
++            />
++            <span>{option.label}</span>
++          </label>
++        ))}
+       </div>
+     </li>
+   );
+diff --git a/src/hooks/__tests__/useScreeningState.test.js b/src/hooks/__tests__/useScreeningState.test.js
+new file mode 100644
+index 0000000..9a37c7e
+--- /dev/null
++++ b/src/hooks/__tests__/useScreeningState.test.js
+@@ -0,0 +1,52 @@
++import { act, renderHook } from '@testing-library/react';
++import useScreeningState, {
++  SCREENING_STORAGE_KEY,
++  defaultScreeningState,
++} from '../useScreeningState';
++
++describe('useScreeningState', () => {
++  beforeEach(() => {
++    window.sessionStorage.clear();
++  });
++
++  it('initializes with the default shape when storage is empty', () => {
++    const { result } = renderHook(() => useScreeningState());
++
++    expect(result.current.state).toEqual(defaultScreeningState());
++  });
++
++  it('persists updates to sessionStorage', () => {
++    const { result } = renderHook(() => useScreeningState());
++
++    act(() => {
++      result.current.handleHealthChange('drug', true);
++    });
++
++    expect(result.current.state.health.drug).toBe(true);
++
++    const stored = JSON.parse(
++      window.sessionStorage.getItem(SCREENING_STORAGE_KEY),
++    );
++    expect(stored.health.drug).toBe(true);
++  });
++
++  it('resets state and removes stored copy on clearState, then repopulates defaults', () => {
++    const { result } = renderHook(() => useScreeningState());
++
++    act(() => {
++      result.current.updateState({ consent: true });
++    });
++
++    expect(result.current.state.consent).toBe(true);
++
++    act(() => {
++      result.current.clearState();
++    });
++
++    expect(result.current.state).toEqual(defaultScreeningState());
++    expect(
++      JSON.parse(window.sessionStorage.getItem(SCREENING_STORAGE_KEY)),
++    ).toEqual(defaultScreeningState());
++  });
++});
++
+diff --git a/src/hooks/useScreeningState.js b/src/hooks/useScreeningState.js
+index ace7efc..165235d 100644
+--- a/src/hooks/useScreeningState.js
++++ b/src/hooks/useScreeningState.js
+@@ -1,69 +1,79 @@
+-import { useState, useEffect } from 'react';
++import { useEffect, useState } from 'react';
+ 
+-const defaultScreeningState = () => {return {
++export const SCREENING_STORAGE_KEY = 'screening_state';
++
++export const defaultScreeningState = () => ({
+   consent: false,
+   health: {
+     drug: false,
+     neuro: false,
+     medical: false,
+   },
+-  definition: 'NO', //  'YES', 'MAYBE', 'NO'
+-  pain: false,
++  definition: null, // 'yes' | 'maybe' | 'no'
++  pain: null, // 'yes' | 'no'
+   synTypes: {
+-    letter_color: false,
+-    word_color: false,
+-    sound_color: false,
+-    number_color: false,
+-    words_taste: false,
+-    sound_taste: false,
+-    sequence_space: false,
++    grapheme: null,
++    music: null,
++    lexical: null,
++    sequence: null,
+   },
+-  otherExperiences: ''
+-}}
++  otherExperiences: '',
++});
++
++const readFromStorage = () => {
++  if (typeof window === 'undefined') {
++    return null;
++  }
++  const saved = window.sessionStorage.getItem(SCREENING_STORAGE_KEY);
++  return saved ? JSON.parse(saved) : null;
++};
+ 
+ export default function useScreeningState() {
+-  const [state, setState] = useState(() => {
+-    const saved = sessionStorage.getItem('screening_state');
+-    return saved ? JSON.parse(saved) : defaultScreeningState();
+-  });
++  const [state, setState] = useState(() => readFromStorage() ?? defaultScreeningState());
+ 
+   useEffect(() => {
+-    sessionStorage.setItem('screening_state', JSON.stringify(state));
++    if (typeof window === 'undefined') {
++      return;
++    }
++    window.sessionStorage.setItem(SCREENING_STORAGE_KEY, JSON.stringify(state));
+   }, [state]);
+ 
+   const updateState = (updates) => {
+-    setState(prev => ({ ...prev, ...updates }));
++    setState((prev) => ({ ...prev, ...updates }));
+   };
+ 
+   const clearState = () => {
+-    sessionStorage.removeItem('screening_state');
++    if (typeof window !== 'undefined') {
++      window.sessionStorage.removeItem(SCREENING_STORAGE_KEY);
++    }
+     setState(defaultScreeningState());
+   };
+ 
+-  const handleNestedChange = (key, nestedKey, value) => {
++  const handleHealthChange = (field, checked) => {
+     setState((prev) => ({
+       ...prev,
+-      [key]: {
+-        ...prev[key],
+-        [nestedKey]: value,
++      health: {
++        ...prev.health,
++        [field]: checked,
+       },
+     }));
+   };
+ 
+-  const handleHealthChange = (field, e) => {
+-    handleNestedChange('health', field, e.target.checked);
+-  };
+-
+-  const handleSynTypesChange = (type, e) => {
+-    handleNestedChange('synTypes', type, e.target.value);
++  const handleSynTypesChange = (type, value) => {
++    setState((prev) => ({
++      ...prev,
++      synTypes: {
++        ...prev.synTypes,
++        [type]: value,
++      },
++    }));
+   };
+ 
+-
+   return {
+-      state,
+-      updateState,
+-      clearState,
+-      handleHealthChange, 
+-      handleSynTypesChange, 
++    state,
++    updateState,
++    clearState,
++    handleHealthChange,
++    handleSynTypesChange,
+   };
+ }
+-- 
+2.46.1
+
