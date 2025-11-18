@@ -62,16 +62,24 @@ npm run api
 # or
 npm run dev:backend
 
+# Alternative: If using virtual environment with Flask CLI:
+# Windows: cd api && .venv\Scripts\flask run --no-debugger
+# Mac/Linux: cd api && .venv/bin/flask run --no-debugger
+
 # Terminal 2 - Frontend:
 npm run dev
 # or  
 npm run dev:frontend
 ```
 
-#### Option 3: Use the start script (Windows)
+#### Option 3: Use the start script
 ```bash
-# Double-click or run:
+# Windows:
 start.bat
+
+# Mac/Linux:
+chmod +x start.sh
+./start.sh
 ```
 
 #### Initialize Database (if needed)

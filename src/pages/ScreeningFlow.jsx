@@ -184,22 +184,33 @@ export default function ScreeningFlow() {
   };
 
   const handleStep4Next = () => {
+    // Prevent multiple clicks while saving
+    if (saving) {
+      return;
+    }
     // Always save step 4 data before navigating, even if no eligible types
     // This ensures the database has the complete screening data for analysis
     withSaving(async () => {
-      await screeningService.saveStep4(state.synTypes, state.otherExperiences);
-      if (!hasEligibleType) {
-        // Finalize to determine exit code, then navigate to exit page
-        const result = await screeningService.finalize();
-        resetSummary();
-        if (result?.exit_code) {
-          navigate(`/screening/exit/${result.exit_code}`);
+      try {
+        await screeningService.saveStep4(state.synTypes, state.otherExperiences);
+        if (!hasEligibleType) {
+          // Finalize to determine exit code, then navigate to exit page
+          const result = await screeningService.finalize();
+          resetSummary();
+          if (result?.exit_code) {
+            navigate(`/screening/exit/${result.exit_code}`);
+          } else {
+            navigate('/screening/exit/NONE');
+          }
         } else {
-          navigate('/screening/exit/NONE');
+          resetSummary();
+          navigate('/screening/5');
         }
-      } else {
-        resetSummary();
-        navigate('/screening/5');
+      } catch (err) {
+        // Error is already handled by withSaving, but ensure we don't navigate on error
+        console.error('Step 4 save failed:', err);
+        // Don't navigate if there's an error - let user retry
+        throw err;
       }
     });
   };
