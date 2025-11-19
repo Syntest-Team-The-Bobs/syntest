@@ -72,10 +72,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_DOMAIN'] = None
 
-# Initialize database
-db.init_app(app)
-with app.app_context():
-    db.create_all()
+# Initialize database (guarded so deployment failures don't crash the app)
+try:
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+except Exception as e:
+    # Log but do not prevent the app from starting up
+    print(f"Database initialization error: {str(e)}")
+    import traceback
+    traceback.print_exc()
 
 # Register blueprints
 app.register_blueprint(screening)
