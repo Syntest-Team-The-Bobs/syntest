@@ -10,6 +10,7 @@ import ScreeningExit from './pages/ScreeningExit'
 import ColorNumberTest from './pages/trigger_color/ColorNumberTest'
 import ColorLetterTest from './pages/trigger_color/ColorLetterTest'
 import ColorWordTest from './pages/trigger_color/ColorWordTest'
+import ColorMusicTest from './pages/trigger_color/ColorMusicTest';
 import SpeedCongruencyTest from './pages/trigger_color/SpeedCongruencyTest'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
@@ -59,6 +60,9 @@ function App() {
               // </ProtectedRoute>
             }
           />
+
+          {/* Music/Sound to Color test */}
+          <Route path="/tests/color/music" element={<ColorMusicTest />} />
         </Route>
 
         <Route
