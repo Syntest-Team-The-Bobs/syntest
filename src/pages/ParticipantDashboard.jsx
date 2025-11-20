@@ -1,48 +1,32 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { dashboardService } from '../services/dashboard'
-import Sidebar from '../components/layout/Sidebar';
+import Sidebar from '../components/layout/Sidebar'
+import TestCard from '../components/dashboard/TestCard'
 import '../styles/dashboard.css'
 
-// Map test names to routes
-const getTestRoute = (testName) => {
-  const routeMap = {
-    'Grapheme-Color': '/tests/color/letter',
-    'Music-Color': '/tests/color/sound',
-    'Lexical-Gustatory': null, // Not yet implemented
-    'Sequence-Space': null, // Not yet implemented
-  }
-  // Try exact match first
-  if (routeMap[testName]) {
-    return routeMap[testName]
-  }
-  // Try case-insensitive partial match
-  const lowerName = testName.toLowerCase()
-  if (lowerName.includes('grapheme') || lowerName.includes('letter')) {
-    return '/tests/color/letter'
-  }
-  if (lowerName.includes('number')) {
-    return '/tests/color/number'
-  }
-  if (lowerName.includes('word')) {
-    return '/tests/color/word'
-  }
-  if (lowerName.includes('music') || lowerName.includes('sound')) {
-    return '/tests/color/sound'
-  }
-  return null
-}
+/**
+ * ParticipantDashboard Component
+ * Main dashboard view for participants showing:
+ * - Stats overview (tests completed, pending, completion %)
+ * - Screening test (always visible)
+ * - Warning banner if screening incomplete
+ * - Recommended tests (locked until screening complete)
+ */
 
 export default function ParticipantDashboard() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  // State management
+  const [data, setData] = useState(null) // Dashboard data from API
+  const [loading, setLoading] = useState(true) // Loading state
+  const [screeningCompleted, setScreeningCompleted] = useState(false) // Screening completion status
 
+  // Fetch dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const dashboardData = await dashboardService.getParticipantDashboard()
         setData(dashboardData)
+        // Check if screening is completed from backend data
+        setScreeningCompleted(dashboardData.screening_completed || false)
       } catch (error) {
         console.error('Error fetching dashboard:', error)
       } finally {
@@ -52,36 +36,88 @@ export default function ParticipantDashboard() {
     fetchData()
   }, [])
 
+  // Sidebar navigation links
   const sidebarLinks = [
-    { path: '/screening/0', label: 'Pre-Screening Test' },
-    { path: '/tests/color/letter', label: 'Letter Color Test' },
-    { path: '/tests/color/number', label: 'Number Color Test' },
-    { path: '/tests/color/word', label: 'Word Color Test' },
-    { path: '/tests/color/sound', label: 'Sound Color Test' },
-    { path: '/tests/color/speed-congruency', label: 'Speed Congruency' },
-    // { path: '/tests/flavor', label: 'Flavor Test' },
-    // { path: '/tests/association', label: 'Association' },
-    // { path: '/analytics', label: 'Analytics' },
-    { path: '/settings', label: 'Settings' },
-  ];
+    { path: '/settings', label: 'Settings' }
+  ]
 
+  // Screening test object (always shown at top)
+  const screeningTest = {
+    id: 'screening',
+    name: 'Screening Test',
+    description: 'Complete this test first to unlock other tests',
+    path: '/screening/0',
+    isLocked: false, // Screening is never locked
+    isCompleted: screeningCompleted,
+  }
+
+  // Recommended tests array (locked until screening complete)
+  const recommendedTests = [
+    {
+      id: 'letter-color',
+      name: 'Letter to Color',
+      description: 'Associate letters with colors',
+      path: '/tests/color/letter',
+      isLocked: !screeningCompleted, // Locked if screening not done
+      isCompleted: false,
+    },
+    {
+      id: 'number-color',
+      name: 'Number to Color',
+      description: 'Associate numbers with colors',
+      path: '/tests/color/number',
+      isLocked: !screeningCompleted,
+      isCompleted: false,
+    },
+    {
+      id: 'word-color',
+      name: 'Word Color Test',
+      description: 'Associate words with colors',
+      path: '/tests/color/word',
+      isLocked: !screeningCompleted,
+      isCompleted: false,
+    },
+    {
+      id: 'sound-color',
+      name: 'Sound Color Test',
+      description: 'Associate sounds with colors',
+      path: '/tests/color/sound',
+      isLocked: !screeningCompleted,
+      isCompleted: false,
+    },
+    {
+      id: 'speed-congruency',
+      name: 'Speed Congruency',
+      description: 'Test your response speed',
+      path: '/tests/color/speed-congruency',
+      isLocked: !screeningCompleted,
+      isCompleted: false,
+    },
+  ]
+
+  // Loading state - show while fetching data
   if (loading) {
     return <div className="container">Loading...</div>
   }
 
+  // Error state - show if data fetch failed
   if (!data) {
     return <div className="container">Error loading dashboard</div>
   }
 
   return (
     <div className="dashboard-grid">
+      {/* Sidebar navigation */}
       <Sidebar links={sidebarLinks} />
 
+      {/* Main content area */}
       <main style={{ padding: 'var(--spacing-3xl)' }}>
+        {/* Dashboard header */}
         <div className="dashboard-header">
           <h1>Dashboard</h1>
         </div>
 
+        {/* Stats cards - shows completion metrics */}
         <div className="stats-container">
           <div className="stat-card">
             <div className="stat-number">{data.tests_completed}</div>
@@ -97,56 +133,32 @@ export default function ParticipantDashboard() {
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Recommended Tests</h3>
+        {/* Screening Test Section - always visible */}
+        <div className="section">
+          <h2 className="section-title">Screening Test</h2>
+          <div className="tests-grid">
+            <TestCard test={screeningTest} />
           </div>
-          <div className="card-body">
-            {data.recommended_tests && data.recommended_tests.length > 0 ? (
-              <ul className="list-unstyled">
-                {data.recommended_tests.map((test, idx) => {
-                  const route = getTestRoute(test.name)
-                  return (
-                    <li key={test.id || idx} style={{ marginBottom: 'var(--spacing-md)' }}>
-                      {route ? (
-                        <a
-                          href={route}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(route)
-                          }}
-                          style={{ 
-                            color: 'var(--color-primary, #007bff)', 
-                            textDecoration: 'underline',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <strong>{test.name}</strong>
-                        </a>
-                      ) : (
-                        <strong>{test.name}</strong>
-                      )}
-                      {test.reason && (
-                        <p className="text-muted" style={{ margin: '4px 0 0', fontSize: '0.9em' }}>
-                          {test.reason}
-                        </p>
-                      )}
-                      {test.description && (
-                        <p className="text-muted" style={{ margin: '4px 0 0' }}>
-                          {test.description}
-                        </p>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <p className="text-muted">No recommended tests at this time. Complete the screening to see recommended tests.</p>
-            )}
+        </div>
+
+        {/* Screening Notice - only show if screening not completed */}
+        {!screeningCompleted && (
+          <div className="screening-notice">
+            <h3>Complete the Screening Test First</h3>
+            <p>You need to complete the screening test to unlock all other tests.</p>
+          </div>
+        )}
+
+        {/* Recommended Tests Section - shows all available tests */}
+        <div className="section">
+          <h2 className="section-title">Recommended Tests</h2>
+          <div className="tests-grid">
+            {recommendedTests.map((test) => (
+              <TestCard key={test.id} test={test} />
+            ))}
           </div>
         </div>
       </main>
     </div>
   )
 }
-
