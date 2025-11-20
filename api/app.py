@@ -35,6 +35,7 @@ os.makedirs(instance_path, exist_ok=True)
 # -----------------------------
 app = Flask(__name__, instance_path=instance_path, static_folder='../dist', static_url_path='/')
 
+# CORS configuration - support both localhost and Heroku
 allowed_origins = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
@@ -52,8 +53,10 @@ CORS(app,
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 
+# Database configuration - use Heroku's PostgreSQL if available, otherwise SQLite
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
+    # Heroku uses postgres:// but SQLAlchemy needs postgresql://
     database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
@@ -64,12 +67,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_DOMAIN'] = None
 
-# Initialize database
-db.init_app(app)
-with app.app_context():
-    db.create_all()
+# Initialize database (guarded so deployment failures don't crash the app)
+try:
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+except Exception as e:
+    # Log but do not prevent the app from starting up
+    print(f"Database initialization error: {str(e)}")
+    import traceback
+    traceback.print_exc()
 
-# Register blueprint
+# Register blueprints
 app.register_blueprint(screening)
 app.register_blueprint(dashboard)
 app.register_blueprint(speedcongruency_bp)
@@ -237,7 +246,8 @@ def api_get_current_user():
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 # =====================================
-# ROOT HEALTH CHECK
+# STATIC FILE SERVING (for production)
+# Serve React app after all API routes
 # =====================================
 @app.route('/')
 def index():
@@ -245,6 +255,8 @@ def index():
 
 @app.errorhandler(404)
 def not_found(e):
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
     return app.send_static_file('index.html')
 
 
@@ -252,4 +264,5 @@ def not_found(e):
 # RUN DEVELOPMENT SERVER
 # =====================================
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
