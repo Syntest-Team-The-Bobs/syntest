@@ -42,11 +42,13 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
     phase,
     selected,
     locked,
+    noExperience,
     deck,
     idx,
     current,
     onPick,
     toggleLock,
+    toggleNoExperience,
     startTest,
     handleNext
   } = useColorTest(stimuli, practiceStimuli, handleTestComplete);
@@ -104,9 +106,11 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
       itemsPerTrial={itemsPerTrial}
       locked={locked}
       selected={selected}
+      noExperience={noExperience}
       progressValue={idx / total}
       onPick={onPick}
       onToggleLock={toggleLock}
+      onToggleNoExperience={toggleNoExperience}
       onNext={handleNext}
       getFontSize={getFontSize}
     />
