@@ -57,7 +57,7 @@ export default function TestLayout({
           lineHeight: "1.6" 
         }}>
           You'll assign a color to each <strong>{testType}</strong>. <strong>Click and hold</strong> the mouse on the wheel and <strong>drag</strong> to preview and adjust a color.
-          To record a choice, <strong>click to lock</strong> it — the small circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked — and click again to unlock if you need to change it.
+          To record a choice, <strong>click to lock</strong> it — the lock icon appears when locked — and click again to unlock if you need to change it.
           If you <strong>don't experience a color</strong> for a particular {testType}, check the "No synesthetic experience" box below the color preview.
           Press <strong>Next</strong> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
         </p>
@@ -109,7 +109,7 @@ export default function TestLayout({
               maxWidth: "450px", 
               lineHeight: "1.5" 
             }}>
-              Click and hold, then drag to adjust. Click to <strong>lock</strong> (circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span>); click again to unlock.
+              Click and hold, then drag to adjust. Click to <strong>lock</strong> (shows lock icon); click again to unlock.
             </p>
           </div>
 
@@ -133,7 +133,7 @@ export default function TestLayout({
               onToggle={onToggleLock}
             />
 
-            {/* No Experience Checkbox - NEW */}
+            {/* No Experience Checkbox */}
             <div style={{ 
               marginTop: "1rem", 
               marginBottom: "0.5rem",
@@ -142,7 +142,7 @@ export default function TestLayout({
               border: "1px solid #e5e7eb",
               borderRadius: "6px",
               boxSizing: "border-box",
-              maxWidth: "245px"
+              maxWidth: "260px"
             }}>
               <label style={{ 
                 display: "flex", 
