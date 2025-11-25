@@ -38,16 +38,16 @@ export default function ColorPreviewLock({ selected, locked, onToggle }) {
         {selected ? selected.hex : "———"}
       </div>
 
-      {/* Lock/unlock icon indicator */}
+      {/* Lock/unlock icon indicator - CENTERED */}
       <div
         onClick={onToggle}
         style={{
           position: "absolute",
-          bottom: "-16px",
-          left: "50%",
+          bottom: "-18px",
+          left: "100px",
           transform: "translateX(-50%)",
-          width: "28px",
-          height: "28px",
+          width: "32px",
+          height: "32px",
           borderRadius: "50%",
           backgroundColor: "white",
           border: "2px solid #000",

@@ -142,7 +142,7 @@ export default function TestLayout({
               border: "1px solid #e5e7eb",
               borderRadius: "6px",
               boxSizing: "border-box",
-              maxWidth: "260px"
+              maxWidth: "245px"
             }}>
               <label style={{ 
                 display: "flex", 
