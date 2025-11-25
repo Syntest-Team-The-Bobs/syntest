@@ -25,9 +25,11 @@ export default function TestLayout({
   itemsPerTrial,
   locked,
   selected,
+  noExperience,
   progressValue,
   onPick,
   onToggleLock,
+  onToggleNoExperience,
   onNext,
   getFontSize
 }) {
@@ -56,6 +58,7 @@ export default function TestLayout({
         }}>
           You'll assign a color to each <strong>{testType}</strong>. <strong>Click and hold</strong> the mouse on the wheel and <strong>drag</strong> to preview and adjust a color.
           To record a choice, <strong>click to lock</strong> it — the small circle turns <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked — and click again to unlock if you need to change it.
+          If you <strong>don't experience a color</strong> for a particular {testType}, check the "No synesthetic experience" box below the color preview.
           Press <strong>Next</strong> to save each choice. For best results, use a laptop/desktop and turn off blue-light filters.
         </p>
 
@@ -114,9 +117,9 @@ export default function TestLayout({
           <div style={{ 
             display: "flex", 
             flexDirection: "column", 
-            alignItems: "flex-start", 
-            gap: "1.5rem", 
-            paddingLeft: "1rem" 
+            alignItems: "stretch", 
+            gap: "1.5rem",
+            width: "280px"
           }}>
             <StimulusDisplay 
               stimulus={stimulus}
@@ -130,20 +133,72 @@ export default function TestLayout({
               onToggle={onToggleLock}
             />
 
-            {/* Next button - disabled until color is locked */}
+            {/* No Experience Checkbox - NEW */}
+            <div style={{ 
+              marginTop: "1rem", 
+              marginBottom: "0.5rem",
+              padding: "0.5rem",
+              backgroundColor: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: "6px",
+              boxSizing: "border-box",
+              maxWidth: "245px"
+            }}>
+              <label style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "0.5rem", 
+                cursor: "pointer",
+                userSelect: "none"
+              }}>
+                <input
+                  type="checkbox"
+                  checked={noExperience}
+                  onChange={onToggleNoExperience}
+                  style={{ 
+                    width: "16px", 
+                    height: "16px",
+                    cursor: "pointer",
+                    accentColor: "#000",
+                    flexShrink: 0
+                  }}
+                />
+                <span style={{ 
+                  fontSize: "0.875rem", 
+                  color: "#111827",
+                  fontWeight: "500",
+                  lineHeight: "1.3"
+                }}>
+                  No synesthetic experience
+                </span>
+              </label>
+              <p style={{
+                fontSize: "0.75rem",
+                color: "#6b7280",
+                marginTop: "0.375rem",
+                marginLeft: "1.25rem",
+                marginBottom: 0,
+                lineHeight: "1.3"
+              }}>
+                Check this if you don't experience any color association with this {testType}.
+              </p>
+            </div>
+
+            {/* Next button - disabled until color is locked OR no experience checked */}
             <button
               onClick={onNext}
-              disabled={!locked}
+              disabled={!locked && !noExperience}
               style={{
                 marginTop: "1rem",
                 padding: "0.625rem 2rem",
                 border: "none",
                 borderRadius: "4px",
-                cursor: locked ? "pointer" : "not-allowed",
-                backgroundColor: locked ? "#000" : "#d1d5db",
+                cursor: (locked || noExperience) ? "pointer" : "not-allowed",
+                backgroundColor: (locked || noExperience) ? "#000" : "#d1d5db",
                 color: "white",
                 fontWeight: "600",
                 fontSize: "0.875rem",
+                alignSelf: "flex-start"
               }}
             >
               Next →
