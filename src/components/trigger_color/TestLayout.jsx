@@ -31,6 +31,7 @@ export default function TestLayout({
   onToggleLock,
   onToggleNoExperience,
   onNext,
+  onReplay,
   getFontSize
 }) {
   return (
@@ -124,6 +125,7 @@ export default function TestLayout({
               stimulus={stimulus}
               testType={testType}
               getFontSize={getFontSize}
+              onReplay={onReplay}
             />
 
             <ColorPreviewLock 
