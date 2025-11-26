@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TestIntro from "./TestIntro";
 import TestComplete from "./TestComplete";
 import TestLayout from "./TestLayout";
 import { useColorTest } from "../../hooks/useColorTest";
 import { colorService } from "../../services/color";
+import { musicPlayer } from "../../services/audioPlayer";
 
 /**
  * BaseColorTest - Main orchestrator for color synesthesia tests
@@ -15,6 +16,7 @@ import { colorService } from "../../services/color";
  * - Manages navigation between test phases
  * - Delegates state management to useColorTest hook
  * - Delegates UI rendering to presentational components
+ * - Handles audio playback for music tests
  */
 export default function BaseColorTest({ testType, stimuli, practiceStimuli, title, introConfig }) {
   const navigate = useNavigate();
@@ -52,6 +54,31 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
     startTest,
     handleNext
   } = useColorTest(stimuli, practiceStimuli, handleTestComplete);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (testType === 'music') {
+        musicPlayer.stop();
+      }
+    };
+  }, [testType]);
+
+  // Auto-play music stimulus when it changes
+  useEffect(() => {
+    if (testType === 'music' && current && phase !== 'intro' && phase !== 'done') {
+      musicPlayer.play(current.stimulus);
+    }
+  }, [testType, current, phase]);
+
+  /**
+   * Handle replay button for music tests
+   */
+  const handleReplay = () => {
+    if (testType === 'music' && current) {
+      musicPlayer.play(current.stimulus);
+    }
+  };
 
   /**
    * Calculates responsive font size based on stimulus type and length
@@ -112,6 +139,7 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
       onToggleLock={toggleLock}
       onToggleNoExperience={toggleNoExperience}
       onNext={handleNext}
+      onReplay={testType === 'music' ? handleReplay : undefined}
       getFontSize={getFontSize}
     />
   );
