@@ -4,6 +4,7 @@ import TestIntro from "./TestIntro";
 import TestComplete from "./TestComplete";
 import TestLayout from "./TestLayout";
 import { useColorTest } from "../../hooks/useColorTest";
+import { useColorTestAPI } from "../../hooks/useColorTestAPI";  // ← ADD THIS IMPORT
 import { colorService } from "../../services/color";
 import { musicPlayer } from "../../services/audioPlayer";
 
@@ -12,7 +13,7 @@ import { musicPlayer } from "../../services/audioPlayer";
  * 
  * Responsibilities:
  * - Coordinates test flow (intro → test → complete)
- * - Handles test submission via colorService
+ * - Handles test submission via useColorTestAPI hook
  * - Manages navigation between test phases
  * - Delegates state management to useColorTest hook
  * - Delegates UI rendering to presentational components
@@ -21,21 +22,21 @@ import { musicPlayer } from "../../services/audioPlayer";
 export default function BaseColorTest({ testType, stimuli, practiceStimuli, title, introConfig }) {
   const navigate = useNavigate();
   
+  // ← ADD THIS: Get API submission function
+  const { submitBatch, isSubmitting, error } = useColorTestAPI();
+  
   /**
    * Submits test results to backend when test is complete
    * Called by useColorTest hook when final trial is submitted
    */
   async function handleTestComplete(finalResponses) {
     try {
-      await colorService.submitColorTest({
-        testType: `color-${testType}`,
-        participantId: null,
-        trials: finalResponses,
-        completedAt: new Date().toISOString(),
-        metadata: colorService.calculateMetadata(finalResponses),
-      });
+      // Use the new API hook instead of colorService
+      await submitBatch(finalResponses, testType);
+      console.log('✅ Test results saved successfully!');
     } catch (e) {
-      console.error("Error submitting results:", e);
+      console.error("❌ Error submitting results:", e);
+      // Optionally show an error message to the user
     }
   }
 
