@@ -210,7 +210,9 @@ function BaseSpeedCongruencyTest({
         const existing = JSON.parse(localStorage.getItem(key) || '[]');
         existing.push(payload);
         localStorage.setItem(key, JSON.stringify(existing));
-      } catch (_) {}
+      } catch (err) {
+        console.error('Failed to save to localStorage:', err);
+      }
 
       setErrorMessage(
         'Could not save to the server. Your response was saved locally and you can continue.'
