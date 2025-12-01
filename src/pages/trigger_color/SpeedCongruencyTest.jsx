@@ -78,17 +78,32 @@ function shuffle(arr) {
  * but this version always works standalone.
  */
 function buildSpeedCongruencyDecks() {
-  const practiceStimuli = shuffle(DUMMY_TRIALS).slice(0, 1);
-  const stimuli = shuffle(DUMMY_TRIALS); // keep simple for now
+  // To avoid redundancy between practice and main trials we pick a small
+  // practice set and remove those items from the main stimuli. This means
+  // users see distinct practice examples rather than repeating the same
+  // trial in practice and immediately again in the main test. If you prefer
+  // the other behavior (same items for practice + main), change this to two
+  // independent shuffles or use the commented alternate below.
+  const shuffled = shuffle(DUMMY_TRIALS);
+  const practiceStimuli = shuffled.slice(0, 1);
+  const stimuli = shuffled.slice(1); // remaining items for the main test
+
+  // Alternate (keep practice items in main as well):
+  // const practiceStimuli = shuffle(DUMMY_TRIALS).slice(0,1);
+  // const stimuli = shuffle(DUMMY_TRIALS);
+
   return { stimuli, practiceStimuli };
 }
 
 /**
- * BaseSpeedCongruencyTest
- * Mirrors “delegate logic to BaseColorTest” idea, but for the speed test.
- * Keeping it in this file avoids needing new components right now.
+ * SpeedCongruencyTestFlow (internal)
+ * This implements the test flow for the speed congruency task. It mirrors
+ * the idea of a shared base component (e.g. `BaseColorTest`) but is kept
+ * inline in this file for now. Consider extracting to
+ * `src/components/trigger_color/SpeedCongruencyTestFlow.jsx` if it grows or
+ * is reused elsewhere.
  */
-function BaseSpeedCongruencyTest({
+function SpeedCongruencyTestFlow({
   stimuli,
   practiceStimuli,
   title,
@@ -134,6 +149,9 @@ function BaseSpeedCongruencyTest({
   const resetForTrial = () => {
     setSelectedOptionId(null);
     setErrorMessage('');
+    // Ensure submission state is cleared between trials so the UI doesn't
+    // remain disabled if a previous submission failed or was interrupted.
+    setIsSubmitting(false);
     choiceStartRef.current = null;
   };
 
@@ -189,28 +207,30 @@ function BaseSpeedCongruencyTest({
 
     setIsSubmitting(true);
     setErrorMessage('');
+      const STORAGE_KEY = 'speedCongruency_results';
 
     try {
-      // Submitting is optional; the test still runs even if backend is down.
-      if (speedCongruencyService?.submitTrial) {
-        await speedCongruencyService.submitTrial(payload);
-      } else {
-        // Fall back to local storage if service function doesn’t exist
-        const key = 'speedCongruency_results';
-        const existing = JSON.parse(localStorage.getItem(key) || '[]');
-        existing.push(payload);
-        localStorage.setItem(key, JSON.stringify(existing));
-      }
+      // Attempt to submit to the backend. Don't branch on the method's
+      // existence — it is expected to be present in `speedCongruencyService`.
+      // Any failure (network, server, or missing implementation) will be
+      // handled by the surrounding try/catch which persists the entry
+      // locally with `status: 'pending'`.
+      await speedCongruencyService.submitTrial(payload);
       advance();
     } catch (e) {
       console.error('Error submitting speed congruency trial:', e);
       // Save locally so nothing is lost, then let the user continue
       try {
-        const key = 'speedCongruency_pending';
-        const existing = JSON.parse(localStorage.getItem(key) || '[]');
-        existing.push(payload);
-        localStorage.setItem(key, JSON.stringify(existing));
+          // On error, save the entry to the same unified storage key and mark
+          // it as pending for later retry. We keep the original payload but add
+          // a `status` flag so consumers know this was not delivered.
+          const toStore = { ...payload, status: 'pending' };
+          const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          existing.push(toStore);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
       } catch (err) {
+        // Log localStorage failures so they can be diagnosed during development
+        // while still allowing the user to continue the test.
         console.error('Failed to save to localStorage:', err);
       }
 
@@ -286,8 +306,8 @@ function BaseSpeedCongruencyTest({
   if (phase === 'done') {
     return (
       <div style={pageStyle}>
-        <Card style={cardStyle} title={introConfig.title}>
-          <p>Thank you for completing the Speed Congruency Test.</p>
+        <Card style={cardStyle} title={title}>
+          <p>Thank you for completing the {title}.</p>
         </Card>
       </div>
     );
@@ -296,7 +316,7 @@ function BaseSpeedCongruencyTest({
   if (!currentTrial) {
     return (
       <div style={pageStyle}>
-        <Card style={cardStyle} title={introConfig.title}>
+        <Card style={cardStyle} title={title}>
           <p>No trials are available for this test.</p>
         </Card>
       </div>
@@ -306,7 +326,7 @@ function BaseSpeedCongruencyTest({
   if (phase === 'intro') {
     return (
       <div style={pageStyle}>
-        <Card style={cardStyle} title={introConfig.title}>
+        <Card style={cardStyle} title={title}>
           <p style={{ marginBottom: '10px' }}>{introConfig.description}</p>
 
           <div style={{ textAlign: 'left', margin: '18px auto', maxWidth: 560 }}>
@@ -395,7 +415,18 @@ function BaseSpeedCongruencyTest({
           disabled={!selectedOptionId || isSubmitting}
           style={{ width: '100%' }}
         >
-          {trialIndex + 1 === totalTrials && mode === 'main' ? 'Finish' : 'Next'}
+          {
+            // If we're at the last trial in practice and there is a main deck,
+            // prompt the user to start the main test. Otherwise show 'Finish'
+            // on the last main trial, or 'Next' for intermediate trials.
+            mode === 'practice' && trialIndex + 1 === totalTrials
+              ? stimuli.length > 0
+                ? 'Start Main Test'
+                : 'Finish'
+              : mode === 'main' && trialIndex + 1 === totalTrials
+              ? 'Finish'
+              : 'Next'
+          }
         </Button>
 
         {errorMessage && (
@@ -420,7 +451,7 @@ export default function SpeedCongruencyTest() {
   const { stimuli, practiceStimuli } = useMemo(() => buildSpeedCongruencyDecks(), []);
 
   return (
-    <BaseSpeedCongruencyTest
+    <SpeedCongruencyTestFlow
       title="SPEED CONGRUENCY TEST"
       introConfig={SPEED_CONFIG}
       stimuli={stimuli}
