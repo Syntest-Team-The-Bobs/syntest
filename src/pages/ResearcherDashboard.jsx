@@ -1,147 +1,225 @@
-import { useEffect, useState } from 'react'
-import { dashboardService } from '../services/dashboard'
-import '../styles/dashboard.css'
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import DashboardStatCard from "../components/dashboard/DashboardStatCard";
+import RecentTable from "../components/dashboard/RecentTable";
+import ParticipantGrowthChart from "../components/dashboard/ParticipantGrowthChart";
+import TestCompletionChart from "../components/dashboard/TestCompletionChart";
+import PopularTestsChart from "../components/dashboard/PopularTestsChart";
+import StimulusBreakdownChart from "../components/dashboard/StimulusBreakdownChart";
+import { dashboardService } from "../services/dashboard";
+import "../styles/researcherdashboard.css";
 
 export default function ResearcherDashboard() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dashboardData = await dashboardService.getResearcherDashboard()
-        setData(dashboardData)
-      } catch (error) {
-        console.error('Error fetching dashboard:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (!authLoading && (!user || user.role !== "researcher")) {
+      navigate("/login");
+      return;
     }
-    fetchData()
-  }, [])
 
-  if (loading) {
-    return <div className="container">Loading...</div>
+    if (user && user.role === "researcher") {
+      loadData();
+    }
+  }, [user, authLoading, navigate]);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await dashboardService.getResearcherDashboard();
+      setDashboardData(data);
+    } catch (e) {
+      console.error("Failed to load dashboard", e);
+      setError(e.response?.data?.error || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (!data) {
-    return <div className="container">Error loading dashboard</div>
+  if (authLoading || loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="dashboard-spinner"></div>
+        <p className="dashboard-loading-text">Loading dashboard...</p>
+      </div>
+    );
   }
 
-  const recentParticipants = data.recent_participants || []
-  const recentStimuli = data.recent_stimuli || []
+  if (error) {
+    return (
+      <div className="dashboard-error">
+        <h2 className="dashboard-error-title">Error Loading Dashboard</h2>
+        <p className="dashboard-error-text">{error}</p>
+        <button onClick={loadData} className="dashboard-error-button">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="dashboard-loading">
+        <p>No data available</p>
+      </div>
+    );
+  }
+
+  const {
+    summary,
+    recent,
+    insights,
+    charts,
+    user: researcherInfo,
+  } = dashboardData;
 
   return (
-    <div className="container">
+    <div className="dashboard-container">
+      {/* Header */}
       <div className="dashboard-header">
-        <h1>Researcher Dashboard</h1>
-        <div className="user-info">
-          <div className="user-avatar">
-            {data.user.name?.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div style={{ fontWeight: 600 }}>{data.user.name}</div>
-            {data.user.institution && (
-              <div className="text-muted">{data.user.institution}</div>
-            )}
-          </div>
+        <div>
+          <h1 className="dashboard-title">Researcher Dashboard</h1>
+          {researcherInfo?.institution && (
+            <p className="text-sm text-gray-600 mt-1">
+              {researcherInfo.institution}
+            </p>
+          )}
         </div>
-      </div>
-
-      {/* Summary stats row */}
-      <div className="stats-container">
-        <div className="stat-card">
-          <div className="stat-number">{data.total_participants}</div>
-          <div className="stat-label">Total Participants</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.active_participants}</div>
-          <div className="stat-label">Active Participants</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.total_stimuli}</div>
-          <div className="stat-label">Total Stimuli</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.completed_tests}</div>
-          <div className="stat-label">Tests Completed</div>
-        </div>
-      </div>
-
-      {/* Research overview */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Research Overview</h3>
-        </div>
-        <div className="card-body">
-          <p>
-            Welcome to the researcher dashboard. Here you can view aggregated
-            participant data and analyze test results.
+        <div className="dashboard-welcome">
+          <p className="text-lg font-medium">
+            Welcome back, {researcherInfo?.name || user?.name}
           </p>
+          <p className="text-sm text-gray-500">{researcherInfo?.email}</p>
         </div>
       </div>
 
-      {/* Recent participants */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Recent Participants</h3>
-        </div>
-        <div className="card-body">
-          {recentParticipants.length === 0 ? (
-            <p className="text-muted">No data yet</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>NAME</th>
-                  <th>EMAIL</th>
-                  <th>CREATED AT</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentParticipants.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>{p.name}</td>
-                    <td>{p.email}</td>
-                    <td>{p.created_at}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+      {/* Primary Stats */}
+      <div className="dashboard-stats-grid">
+        <DashboardStatCard
+          label="Total Participants"
+          value={summary?.total_participants || 0}
+        />
+        <DashboardStatCard
+          label="Active (7 days)"
+          value={summary?.active_participants || 0}
+        />
+        <DashboardStatCard
+          label="Total Stimuli"
+          value={summary?.total_stimuli || 0}
+        />
+        <DashboardStatCard
+          label="Tests Completed"
+          value={summary?.tests_completed || 0}
+        />
       </div>
 
-      {/* Recent stimuli */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Recent Stimuli</h3>
+      {/* Secondary Stats */}
+      {insights && (
+        <div className="dashboard-stats-grid">
+          <DashboardStatCard
+            label="Completion Rate"
+            value={`${insights.completion_rate}%`}
+          />
+          <DashboardStatCard
+            label="Screening Conversion"
+            value={`${insights.screening_conversion}%`}
+          />
+          <DashboardStatCard
+            label="New (30 days)"
+            value={insights.new_participants_30d}
+          />
+          <DashboardStatCard
+            label="Avg Consistency"
+            value={
+              insights.avg_consistency_score
+                ? insights.avg_consistency_score.toFixed(2)
+                : "N/A"
+            }
+          />
         </div>
-        <div className="card-body">
-          {recentStimuli.length === 0 ? (
-            <p className="text-muted">No data yet</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>DESCRIPTION</th>
-                  <th>FAMILY</th>
-                  <th>CREATED AT</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentStimuli.map((s, idx) => (
-                  <tr key={idx}>
-                    <td>{s.description}</td>
-                    <td>{s.family}</td>
-                    <td>{s.created_at}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      )}
+
+      {/* Charts Section */}
+      {charts && (
+        <>
+          {/* Participant Growth Chart */}
+          {charts.participant_growth && (
+            <div className="dashboard-table-container">
+              <h3 className="dashboard-table-title">
+                Participant Growth (Last 30 Days)
+              </h3>
+              <ParticipantGrowthChart data={charts.participant_growth} />
+            </div>
           )}
-        </div>
-      </div>
+
+          {/* Charts Grid */}
+          <div className="dashboard-charts-grid">
+            {/* Test Completion Breakdown */}
+            {charts.test_completion && (
+              <div className="dashboard-table-container">
+                <h3 className="dashboard-table-title">Test Status</h3>
+                <TestCompletionChart
+                  completed={charts.test_completion.completed}
+                  inProgress={charts.test_completion.in_progress}
+                  notStarted={charts.test_completion.not_started}
+                />
+              </div>
+            )}
+
+            {/* Stimulus Family Breakdown */}
+            {charts.stimulus_breakdown &&
+              charts.stimulus_breakdown.length > 0 && (
+                <div className="dashboard-table-container">
+                  <h3 className="dashboard-table-title">
+                    Stimulus Distribution
+                  </h3>
+                  <StimulusBreakdownChart
+                    breakdown={charts.stimulus_breakdown}
+                  />
+                </div>
+              )}
+          </div>
+
+          {/* Popular Tests Chart */}
+          {charts.popular_tests && charts.popular_tests.length > 0 && (
+            <div className="dashboard-table-container">
+              <h3 className="dashboard-table-title">Most Popular Tests</h3>
+              <PopularTestsChart tests={charts.popular_tests} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Recent Activity Tables */}
+      <RecentTable
+        title="Recent Participants"
+        columns={["name", "email", "status", "last_login"]}
+        rows={recent?.participants || []}
+      />
+
+      <RecentTable
+        title="Recent Tests Completed"
+        columns={[
+          "participant_name",
+          "test_name",
+          "consistency_score",
+          "completed_at",
+        ]}
+        rows={recent?.tests || []}
+      />
+
+      <RecentTable
+        title="Recent Stimuli"
+        columns={["description", "family", "trigger_type", "created_at"]}
+        rows={recent?.stimuli || []}
+      />
     </div>
-  )
+  );
 }

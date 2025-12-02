@@ -17,13 +17,15 @@
     "init-db": "cd api && python init_db.py"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
     "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
     "lucide-react": "^0.553.0",
     "react": "^19.2.0",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",
-    "vite": "^7.2.2",
-    "@vitejs/plugin-react": "^5.1.1"
+    "vite": "^7.2.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
