@@ -103,7 +103,7 @@ app.register_blueprint(screening)
 app.register_blueprint(dashboard)
 app.register_blueprint(speedcongruency_bp)
 app.register_blueprint(researcher_bp)
-app.register_blueprint(colortest_bp) 
+app.register_blueprint(colortest_bp)
 
 # =====================================
 # AUTHENTICATION ENDPOINTS
