@@ -12,7 +12,7 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash
 
-from app import app   # uses same db + config as your main API
+from app import app  # uses same db + config as your main API
 from models import db, Participant, ColorStimulus, TestData
 
 
@@ -49,19 +49,17 @@ def seed():
         # 2) Create some ColorStimulus rows (trigger + RGB)
         # -------------------------------------------------
         stimulus_specs = [
-            ("SUN",    255, 223,   0),
-            ("MOON",   135, 206, 235),
-            ("MUSIC",  144, 238, 144),
+            ("SUN", 255, 223, 0),
+            ("MOON", 135, 206, 235),
+            ("MUSIC", 144, 238, 144),
             ("MONDAY", 255, 105, 180),
         ]
 
         stimuli = []
         for desc, r, g, b in stimulus_specs:
-            stim = (
-                ColorStimulus.query
-                .filter_by(description=desc, r=r, g=g, b=b)
-                .first()
-            )
+            stim = ColorStimulus.query.filter_by(
+                description=desc, r=r, g=g, b=b
+            ).first()
             if not stim:
                 stim = ColorStimulus(
                     description=desc,
@@ -85,16 +83,16 @@ def seed():
         # 3) Create TestData rows that link this participant to these stimuli
         #    and mark them as valid/pass color-test associations
         # -------------------------------------------------
-        user_key = str(participant.id)   # this is what our speed API will use
+        user_key = str(participant.id)  # this is what our speed API will use
 
         for stim in stimuli:
-            existing_td = (
-                TestData.query
-                .filter_by(user_id=user_key, stimulus_id=stim.id, family="color")
-                .first()
-            )
+            existing_td = TestData.query.filter_by(
+                user_id=user_key, stimulus_id=stim.id, family="color"
+            ).first()
             if existing_td:
-                print(f"TestData already exists for user_id={user_key}, stimulus_id={stim.id}")
+                print(
+                    f"TestData already exists for user_id={user_key}, stimulus_id={stim.id}"
+                )
                 continue
 
             td = TestData(
@@ -103,12 +101,11 @@ def seed():
                 owner_researcher_id=None,
                 session_id=None,
                 stimulus_id=stim.id,
-                test_type="color-word",      # arbitrary label for now
+                test_type="color-word",  # arbitrary label for now
                 stimulus_type="word",
                 family="color",
                 locale="en",
                 created_at=datetime.utcnow(),
-
                 # Make them look like good / valid associations
                 cct_cutoff=0.1,
                 cct_triggers=1,
