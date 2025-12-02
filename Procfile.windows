@@ -1,0 +1,2 @@
+release: npm run build && npm run init-db
+web: cd api && python app.py
