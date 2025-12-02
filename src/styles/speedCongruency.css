@@ -1,0 +1,186 @@
+/* Speed Congruency Test Styles */
+
+/* Screens */
+.screen {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background: #f6f6f6;
+  overflow: hidden;
+}
+
+.bg-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.overlay {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 64px 20px;
+  text-align: center;
+}
+
+.prompt {
+  margin-top: 16px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.word-card {
+  margin: 44px auto 0;
+  max-width: 760px;
+  background: var(--white);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  padding: 72px 24px;
+}
+
+.word {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* countdown circle */
+.countdown {
+  position: absolute;
+  right: 36px;
+  top: 120px;
+  width: 150px;
+  height: 150px;
+  border: 2px solid #222;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.countdown span {
+  font-size: 64px;
+  font-weight: 800;
+}
+
+/* Response view variations */
+.response .word-chip {
+  margin: 22px auto 40px;
+  display: inline-block;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 18px 28px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.palette {
+  display: flex;
+  gap: 64px;
+  justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 200px;
+  height: 160px;
+  border: 3px solid #1a1a1a;
+  background: #eee;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.swatch[data-color="red"] {
+  background: #e6483d;
+}
+
+.swatch[data-color="orange"] {
+  background: #ea874d;
+}
+
+.swatch[data-color="blue"] {
+  background: #4a7ff5;
+}
+
+.swatch[data-color="purple"] {
+  background: #b55bf0;
+}
+
+.rt-row {
+  margin-top: 28px;
+  font-size: 18px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Right top analog clock icon */
+.clock {
+  position: absolute;
+  right: 36px;
+  top: 120px;
+}
+
+.clock-face {
+  width: 150px;
+  height: 150px;
+  border: 3px solid #222;
+  background: #fff;
+  position: relative;
+}
+
+.hand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: 0 0;
+  background: #222;
+}
+
+.hand-hour {
+  width: 40px;
+  height: 4px;
+  transform: rotate(-45deg);
+}
+
+.hand-minute {
+  width: 60px;
+  height: 3px;
+  transform: rotate(20deg);
+}
+
+@media (max-width: 900px) {
+  .palette {
+    gap: 28px;
+  }
+
+  .swatch {
+    width: 150px;
+    height: 120px;
+  }
+
+  .countdown,
+  .clock {
+    right: 16px;
+    top: 120px;
+  }
+
+  .countdown,
+  .clock .clock-face {
+    width: 120px;
+    height: 120px;
+  }
+
+  .countdown span {
+    font-size: 48px;
+  }
+}
+
+
