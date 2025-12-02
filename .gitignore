@@ -70,6 +70,7 @@ yarn.lock
 pnpm-lock.yaml
 
 # Build outputs
+dist/
 build/
 .vite/
 .next/
