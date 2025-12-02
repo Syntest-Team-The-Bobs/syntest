@@ -30,13 +30,11 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Install Python dependencies
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
 # Go back to project root
 cd ..
 ```
-
-**Note:** If you don't use a virtual environment, install globally: `pip install -r api/requirements.txt`
 
 ### 3. Frontend Dependencies
 
@@ -72,20 +70,23 @@ npm run dev
 npm run dev:frontend
 ```
 
-#### Option 3: Use the start script
-```bash
-# Windows:
-start.bat
-
-# Mac/Linux:
-chmod +x start.sh
-./start.sh
-```
-
 #### Initialize Database (if needed)
 If you get database errors, initialize the database first:
 ```bash
 npm run init-db
+```
+
+### Local Heroku Development
+To test deployment, run 
+```bash 
+heroku local release
+heroku local web
+```
+
+On Windows: 
+```bash 
+heroku local release -f Procfile.windows
+heroku local web -f Procfile.windows
 ```
 
 ---
