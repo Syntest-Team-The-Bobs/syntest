@@ -12,6 +12,7 @@ class MusicPlayer {
     this.audioContext = null;
     this.instruments = {}; // Cache loaded instruments
     this.currentNotes = []; // Track playing notes for cleanup
+    this.activeOscillators = []; // Track sine wave oscillators
   }
 
   /**
@@ -54,7 +55,6 @@ class MusicPlayer {
   getSoundfontInstrument(testInstrument) {
     const mapping = {
       'piano': 'acoustic_grand_piano',
-      'sine': 'acoustic_grand_piano', // Fallback to piano for sine
       'string': 'string_ensemble_1',
       'flute': 'flute',
       'clarinet': 'clarinet',
@@ -68,6 +68,31 @@ class MusicPlayer {
       'bassoon': 'bassoon'
     };
     return mapping[testInstrument] || 'acoustic_grand_piano';
+  }
+
+  /**
+   * Convert note to frequency (Hz)
+   */
+  noteToFreq(note) {
+    const notes = { 'C': -9, 'D': -7, 'E': -5, 'F': -4, 'G': -2, 'A': 0, 'B': 2 };
+    const octave = parseInt(note.slice(-1));
+    const key = note.slice(0, -1);
+    const semitone = notes[key[0]] + (key[1] === '#' ? 1 : key[1] === 'b' ? -1 : 0);
+    return 440 * Math.pow(2, (octave - 4) + semitone / 12);
+  }
+
+  /**
+   * Play sine wave
+   */
+  playSine(note, duration) {
+    const osc = this.audioContext.createOscillator();
+    const gain = this.audioContext.createGain();
+    osc.frequency.value = this.noteToFreq(note);
+    osc.connect(gain).connect(this.audioContext.destination);
+    gain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+    osc.start();
+    osc.stop(this.audioContext.currentTime + duration);
+    this.activeOscillators.push(osc);
   }
 
   /**
@@ -91,15 +116,20 @@ class MusicPlayer {
   async play(stimulus, duration = 2) {
     try {
       const { notes, instrument } = this.parseStimulus(stimulus);
-      const soundfontInstrument = this.getSoundfontInstrument(instrument);
       
-      // Load instrument if not cached
-      const player = await this.loadInstrument(soundfontInstrument);
-      
-      // Stop any currently playing notes
+      await this.init();
       this.stop();
       
-      // Play all notes simultaneously (for dyads)
+      // Use sine wave for 'sine' instrument
+      if (instrument === 'sine') {
+        notes.forEach(note => this.playSine(note, duration));
+        return true;
+      }
+      
+      // Use Soundfont for other instruments
+      const soundfontInstrument = this.getSoundfontInstrument(instrument);
+      const player = await this.loadInstrument(soundfontInstrument);
+      
       this.currentNotes = notes.map(note => 
         player.play(note, this.audioContext.currentTime, { duration })
       );
@@ -121,6 +151,11 @@ class MusicPlayer {
       }
     });
     this.currentNotes = [];
+    
+    this.activeOscillators.forEach(osc => {
+      try { osc.stop(); } catch (e) {}
+    });
+    this.activeOscillators = [];
   }
 
   /**
