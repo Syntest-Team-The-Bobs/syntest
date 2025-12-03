@@ -1,12 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import TestIntro from "./TestIntro";
 import TestComplete from "./TestComplete";
 import TestLayout from "./TestLayout";
 import { useColorTest } from "../../hooks/useColorTest";
-import { useColorTestAPI } from "../../hooks/useColorTestAPI";  // ← ADD THIS IMPORT
-import { colorService } from "../../services/color";
-import { musicPlayer } from "../../services/audioPlayer";
+import { useColorTestAPI } from "../../hooks/useColorTestAPI";
+import { useMusicPlayer } from "../../hooks/useMusicPlayer";
 
 /**
  * BaseColorTest - Main orchestrator for color synesthesia tests
@@ -17,12 +16,12 @@ import { musicPlayer } from "../../services/audioPlayer";
  * - Manages navigation between test phases
  * - Delegates state management to useColorTest hook
  * - Delegates UI rendering to presentational components
- * - Handles audio playback for music tests
+ * - Delegates audio playback to useMusicPlayer hook
  */
 export default function BaseColorTest({ testType, stimuli, practiceStimuli, title, introConfig }) {
   const navigate = useNavigate();
   
-  // ← ADD THIS: Get API submission function
+  // Get API submission function
   const { submitBatch, isSubmitting, error } = useColorTestAPI();
   
   /**
@@ -31,12 +30,10 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
    */
   async function handleTestComplete(finalResponses) {
     try {
-      // Use the new API hook instead of colorService
       await submitBatch(finalResponses, testType);
       console.log('✅ Test results saved successfully!');
     } catch (e) {
       console.error("❌ Error submitting results:", e);
-      // Optionally show an error message to the user
     }
   }
 
@@ -56,30 +53,8 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
     handleNext
   } = useColorTest(stimuli, practiceStimuli, handleTestComplete);
 
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      if (testType === 'music') {
-        musicPlayer.stop();
-      }
-    };
-  }, [testType]);
-
-  // Auto-play music stimulus when it changes
-  useEffect(() => {
-    if (testType === 'music' && current && phase !== 'intro' && phase !== 'done') {
-      musicPlayer.play(current.stimulus);
-    }
-  }, [testType, current, phase]);
-
-  /**
-   * Handle replay button for music tests
-   */
-  const handleReplay = () => {
-    if (testType === 'music' && current) {
-      musicPlayer.play(current.stimulus);
-    }
-  };
+  // Delegate music playback to dedicated hook
+  const { handleReplay } = useMusicPlayer(testType, current, phase);
 
   /**
    * Calculates responsive font size based on stimulus type and length
