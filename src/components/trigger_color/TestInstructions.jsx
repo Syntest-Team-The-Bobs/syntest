@@ -28,14 +28,14 @@ export default function TestInstructions({ testType }) {
         margin: 0 
       }}>
         <li style={{ marginBottom: "0.75rem" }}>
-          Read the {testType} on the right.
+          {testType === 'music' ? 'Hear the music on the right.' : `Read the ${testType} on the right.`}
         </li>
         <li style={{ marginBottom: "0.75rem" }}>
           <strong>Click and hold</strong> on the wheel, then <strong>drag</strong> to preview and adjust.
         </li>
         <li style={{ marginBottom: "0.75rem" }}>
-          Release or single-click to <strong>lock</strong> the color — the small circle turns{' '}
-          <span style={{ color: "#dc2626", fontWeight: "bold" }}>red</span> when locked. Click again to unlock.
+          Release or single-click to <strong>lock</strong> the color — a{' '}
+          <strong>lock icon</strong> appears when locked. Click again to unlock.
         </li>
         <li>
           Press <strong>Next</strong> to save.

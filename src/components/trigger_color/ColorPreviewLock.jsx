@@ -1,4 +1,5 @@
 import React from "react";
+import { Lock, Unlock } from "lucide-react";
 
 /**
  * ColorPreviewLock - Displays selected color preview with lock indicator
@@ -6,8 +7,8 @@ import React from "react";
  * Responsibilities:
  * - Shows a 200x200px square displaying the selected color
  * - Displays hex code in center with contrasting text color
- * - Renders lock/unlock indicator circle below preview
- * - Visual feedback: circle turns red when locked
+ * - Renders lock/unlock icon below preview
+ * - Visual feedback: lock icon changes between locked/unlocked states
  */
 
 export default function ColorPreviewLock({ selected, locked, onToggle }) {
@@ -37,24 +38,33 @@ export default function ColorPreviewLock({ selected, locked, onToggle }) {
         {selected ? selected.hex : "———"}
       </div>
 
-      {/* Lock/unlock indicator circle */}
+      {/* Lock/unlock icon indicator - CENTERED */}
       <div
         onClick={onToggle}
         style={{
           position: "absolute",
-          bottom: "-14px",
-          left: "50%",
+          bottom: "-18px",
+          left: "100px",
           transform: "translateX(-50%)",
-          width: "18px",
-          height: "18px",
+          width: "32px",
+          height: "32px",
           borderRadius: "50%",
-          border: "2px solid",
-          borderColor: locked ? "#dc2626" : "#000",
-          backgroundColor: locked ? "#dc2626" : "white",
+          backgroundColor: "white",
+          border: "2px solid #000",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           cursor: selected ? "pointer" : "default",
+          opacity: selected ? 1 : 0.5,
         }}
         title={locked ? "Click to unlock" : "Click to lock"}
-      />
+      >
+        {locked ? (
+          <Lock size={16} color="#000" strokeWidth={2.5} />
+        ) : (
+          <Unlock size={16} color="#000" strokeWidth={2.5} />
+        )}
+      </div>
     </div>
   );
 }

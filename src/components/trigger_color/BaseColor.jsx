@@ -4,20 +4,25 @@ import TestIntro from "./TestIntro";
 import TestComplete from "./TestComplete";
 import TestLayout from "./TestLayout";
 import { useColorTest } from "../../hooks/useColorTest";
-import { colorService } from "../../services/color";
+import { useColorTestAPI } from "../../hooks/useColorTestAPI";
+import { useMusicPlayer } from "../../hooks/useMusicPlayer";
 
 /**
  * BaseColorTest - Main orchestrator for color synesthesia tests
  * 
  * Responsibilities:
  * - Coordinates test flow (intro → test → complete)
- * - Handles test submission via colorService
+ * - Handles test submission via useColorTestAPI hook
  * - Manages navigation between test phases
  * - Delegates state management to useColorTest hook
  * - Delegates UI rendering to presentational components
+ * - Delegates audio playback to useMusicPlayer hook
  */
 export default function BaseColorTest({ testType, stimuli, practiceStimuli, title, introConfig }) {
   const navigate = useNavigate();
+  
+  // Get API submission function
+  const { submitBatch, isSubmitting, error } = useColorTestAPI();
   
   /**
    * Submits test results to backend when test is complete
@@ -25,15 +30,10 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
    */
   async function handleTestComplete(finalResponses) {
     try {
-      await colorService.submitColorTest({
-        testType: `color-${testType}`,
-        participantId: null,
-        trials: finalResponses,
-        completedAt: new Date().toISOString(),
-        metadata: colorService.calculateMetadata(finalResponses),
-      });
+      await submitBatch(finalResponses, testType);
+      console.log('✅ Test results saved successfully!');
     } catch (e) {
-      console.error("Error submitting results:", e);
+      console.error("❌ Error submitting results:", e);
     }
   }
 
@@ -42,14 +42,19 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
     phase,
     selected,
     locked,
+    noExperience,
     deck,
     idx,
     current,
     onPick,
     toggleLock,
+    toggleNoExperience,
     startTest,
     handleNext
   } = useColorTest(stimuli, practiceStimuli, handleTestComplete);
+
+  // Delegate music playback to dedicated hook
+  const { handleReplay } = useMusicPlayer(testType, current, phase);
 
   /**
    * Calculates responsive font size based on stimulus type and length
@@ -104,10 +109,13 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
       itemsPerTrial={itemsPerTrial}
       locked={locked}
       selected={selected}
+      noExperience={noExperience}
       progressValue={idx / total}
       onPick={onPick}
       onToggleLock={toggleLock}
+      onToggleNoExperience={toggleNoExperience}
       onNext={handleNext}
+      onReplay={testType === 'music' ? handleReplay : undefined}
       getFontSize={getFontSize}
     />
   );

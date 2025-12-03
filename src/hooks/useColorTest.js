@@ -1,4 +1,4 @@
- import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useDeck, buildDeck } from "../services/useDeck";
 
 /**
@@ -18,6 +18,7 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
   // Color selection state
   const [selected, setSelected] = useState(null);  // {r, g, b, hex, canvasX, canvasY}
   const [locked, setLocked] = useState(false);
+  const [noExperience, setNoExperience] = useState(false);
   
   // Response tracking
   const [responses, setResponses] = useState([]);
@@ -65,12 +66,20 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
   }
 
   /**
+   * Toggles no synesthetic experience state
+   */
+  function toggleNoExperience() {
+    setNoExperience(v => !v);
+  }
+
+  /**
    * Prepares for next stimulus presentation
    * Resets selection state and starts reaction timer
    */
   function present() {
     setSelected(null);
     setLocked(false);
+    setNoExperience(false);
     start();
   }
 
@@ -99,7 +108,7 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
    * Advances to next trial or completes test
    * 
    * Flow:
-   * 1. Validates selection is locked
+   * 1. Validates selection is locked OR no experience is checked
    * 2. Records response (if in testing phase)
    * 3. Either advances to next stimulus or completes test
    * 4. Invokes onComplete callback with final responses
@@ -107,13 +116,14 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
    * @returns {Object} - Status object with shouldContinue and optional finalResponses
    */
   async function handleNext() {
-    // Require locked selection before proceeding
-    if (!selected || !locked) return { shouldContinue: true };
+    // Require locked selection OR no experience before proceeding
+    if (!noExperience && (!selected || !locked)) return { shouldContinue: true };
 
     // Build trial data object
     const trial = {
       stimulus: current.stimulus,
-      selectedColor: selected,
+      selectedColor: noExperience ? null : selected,
+      noSynestheticExperience: noExperience,
       reactionTime: reactionMs()
     };
 
@@ -123,6 +133,7 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
     // Reset selection state for next trial
     setSelected(null);
     setLocked(false);
+    setNoExperience(false);
 
     // Check if more stimuli remain in deck
     if (idx < deck.length - 1) {
@@ -146,6 +157,7 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
     setPhase,
     selected,
     locked,
+    noExperience,
     responses,
     deck,
     idx,
@@ -156,6 +168,7 @@ export function useColorTest(stimuli, practiceStimuli, onComplete) {
     // Actions
     onPick,
     toggleLock,
+    toggleNoExperience,
     startTest,
     handleNext
   };

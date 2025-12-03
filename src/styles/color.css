@@ -83,6 +83,11 @@
   text-align: center;
 }
 
+.no-experience-container {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 1024px) {
   .cct-grid {
     grid-template-columns: 1fr;
