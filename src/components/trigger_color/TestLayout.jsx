@@ -3,6 +3,7 @@ import TestProgress from './TestProgress';
 import TestInstructions from './TestInstructions';
 import ColorWheel from './ColorWheel';
 import StimulusDisplay from './StimulusDisplay';
+import MusicPlayButton from './MusicPlayButton';
 import ColorPreviewLock from './ColorPreviewLock';
 import ProgressBar from '../ui/ProgressBar';
 
@@ -13,6 +14,7 @@ import ProgressBar from '../ui/ProgressBar';
  * - Orchestrates layout of all test UI components in a 3-column grid
  * - Displays title, instructions, and progress information
  * - Manages visual hierarchy and spacing of test elements
+ * - Routes between MusicPlayButton (music tests) and StimulusDisplay (text tests)
  */
 export default function TestLayout({
   title,
@@ -121,12 +123,16 @@ export default function TestLayout({
             gap: "1.5rem",
             width: "280px"
           }}>
-            <StimulusDisplay 
-              stimulus={stimulus}
-              testType={testType}
-              getFontSize={getFontSize}
-              onReplay={onReplay}
-            />
+            {/* Conditional rendering: MusicPlayButton for music, StimulusDisplay for text */}
+            {testType === 'music' && onReplay ? (
+              <MusicPlayButton stimulus={stimulus} onReplay={onReplay} />
+            ) : (
+              <StimulusDisplay 
+                stimulus={stimulus}
+                testType={testType}
+                getFontSize={getFontSize}
+              />
+            )}
 
             <ColorPreviewLock 
               selected={selected}
