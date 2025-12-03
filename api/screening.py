@@ -2,10 +2,16 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 from models import (
-    db, Participant,
-    ScreeningSession, ScreeningHealth, ScreeningDefinition,
-    ScreeningPainEmotion, ScreeningTypeChoice,
-    YesNo, YesNoMaybe, Frequency
+    db,
+    Participant,
+    ScreeningSession,
+    ScreeningHealth,
+    ScreeningDefinition,
+    ScreeningPainEmotion,
+    ScreeningTypeChoice,
+    YesNo,
+    YesNoMaybe,
+    Frequency,
 )
 
 # Expose this Blueprint as `api_screening` for app.py to import
@@ -25,11 +31,11 @@ def _current_participant_id():
         # Try to use authenticated user_id (consistent with dashboard and auth endpoints)
         user_id = session.get("user_id")
         user_role = session.get("user_role")
-        
+
         # If user is authenticated and is a participant, use their ID
         if user_id and user_role == "participant":
             return user_id
-        
+
         # For testing/development: create demo participant if not authenticated
         # TODO: In production, require authentication
         pid = session.get("pid")  # Legacy fallback
@@ -37,7 +43,7 @@ def _current_participant_id():
             # Verify participant still exists
             if Participant.query.get(pid):
                 return pid
-        
+
         # Create a new demo participant
         p = Participant(
             name="Demo User",
@@ -54,6 +60,7 @@ def _current_participant_id():
         db.session.rollback()
         print(f"Error in _current_participant_id: {str(e)}")
         import traceback
+
         traceback.print_exc()
         raise
 
@@ -62,8 +69,7 @@ def _get_or_create_session():
     try:
         pid = _current_participant_id()
         s = (
-            ScreeningSession.query
-            .filter_by(participant_id=pid, status="in_progress")
+            ScreeningSession.query.filter_by(participant_id=pid, status="in_progress")
             .order_by(ScreeningSession.started_at.desc())
             .first()
         )
@@ -76,6 +82,7 @@ def _get_or_create_session():
         db.session.rollback()
         print(f"Error in _get_or_create_session: {str(e)}")
         import traceback
+
         traceback.print_exc()
         raise
 
@@ -96,6 +103,7 @@ def save_consent():
         db.session.rollback()
         print(f"Error in save_consent: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return jsonify(error=f"Server error: {str(e)}"), 500
 
@@ -159,8 +167,8 @@ def save_step4():
     # Only set Frequency enum if value is provided and valid
     try:
         tc.grapheme = Frequency(j.get("grapheme")) if j.get("grapheme") else None
-        tc.music    = Frequency(j.get("music"))    if j.get("music")    else None
-        tc.lexical  = Frequency(j.get("lexical"))  if j.get("lexical")  else None
+        tc.music = Frequency(j.get("music")) if j.get("music") else None
+        tc.lexical = Frequency(j.get("lexical")) if j.get("lexical") else None
         tc.sequence = Frequency(j.get("sequence")) if j.get("sequence") else None
     except ValueError as e:
         return jsonify(error=f"Invalid frequency value: {str(e)}"), 400

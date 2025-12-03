@@ -35,9 +35,9 @@ def get_researcher_dashboard():
 
         # Active participants within last 7 days
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
-        active_participants = (
-            Participant.query.filter(Participant.last_login >= seven_days_ago).count()
-        )
+        active_participants = Participant.query.filter(
+            Participant.last_login >= seven_days_ago
+        ).count()
 
         # Total stimuli
         total_stimuli = ColorStimulus.query.count()
@@ -50,9 +50,9 @@ def get_researcher_dashboard():
             {
                 "name": p.name,
                 "email": p.email,
-                "created_at": p.created_at.strftime("%Y-%m-%d %H:%M")
-                if p.created_at
-                else "N/A",
+                "created_at": (
+                    p.created_at.strftime("%Y-%m-%d %H:%M") if p.created_at else "N/A"
+                ),
             }
             for p in recent_participants
         ]
@@ -67,9 +67,9 @@ def get_researcher_dashboard():
             {
                 "description": s.description or "N/A",
                 "family": s.family or "N/A",
-                "created_at": s.created_at.strftime("%Y-%m-%d %H:%M")
-                if s.created_at
-                else "N/A",
+                "created_at": (
+                    s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "N/A"
+                ),
             }
             for s in recent_stimuli
         ]
@@ -95,5 +95,3 @@ def get_researcher_dashboard():
 
         traceback.print_exc()
         return jsonify({"error": f"Server error: {str(e)}"}), 500
-
-

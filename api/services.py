@@ -2,14 +2,20 @@
 # Separates business logic from data models following SOLID principles
 
 from models import (
-    ScreeningSession, ScreeningHealth, ScreeningTypeChoice,
-    YesNo, YesNoMaybe, Frequency, Test, ScreeningRecommendedTest
+    ScreeningSession,
+    ScreeningHealth,
+    ScreeningTypeChoice,
+    YesNo,
+    YesNoMaybe,
+    Frequency,
+    Test,
+    ScreeningRecommendedTest,
 )
 
 
 class TypeSelectionService:
     """Service for computing selected types from type choices."""
-    
+
     @staticmethod
     def compute_selected_types(session):
         """
@@ -34,7 +40,7 @@ class TypeSelectionService:
 
 class EligibilityService:
     """Service for computing eligibility and exit codes."""
-    
+
     @staticmethod
     def compute_eligibility_and_exit(session):
         """
@@ -46,7 +52,11 @@ class EligibilityService:
           - Else eligible = True
         """
         # Health (step 1)
-        if session.health and (session.health.drug_use or session.health.neuro_condition or session.health.medical_treatment):
+        if session.health and (
+            session.health.drug_use
+            or session.health.neuro_condition
+            or session.health.medical_treatment
+        ):
             session.eligible = False
             session.exit_code = "BC"
             return
@@ -78,7 +88,7 @@ class EligibilityService:
 
 class RecommendationService:
     """Service for generating test recommendations."""
-    
+
     @staticmethod
     def compute_recommendations(session):
         """
@@ -107,12 +117,13 @@ class RecommendationService:
                 test_id=test_row.id if test_row else None,
             )
             session.recs.append(rec)
-            results.append({
-                "position": idx + 1,
-                "name": base_name,
-                "reason": reason,
-                "test_id": test_row.id if test_row else None
-            })
+            results.append(
+                {
+                    "position": idx + 1,
+                    "name": base_name,
+                    "reason": reason,
+                    "test_id": test_row.id if test_row else None,
+                }
+            )
 
         session.recommended_tests = results
-

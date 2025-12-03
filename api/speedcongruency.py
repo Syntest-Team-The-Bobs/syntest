@@ -10,6 +10,7 @@ bp = Blueprint("speed_congruency", __name__, url_prefix="/api/speed-congruency")
 # AUTH / PARTICIPANT HELPER
 # =====================================
 
+
 def _require_participant():
     """
     Ensure the current session belongs to a logged-in participant.
@@ -29,6 +30,7 @@ def _require_participant():
 # POOL BUILDER: which associations do we test?
 # =====================================
 
+
 def _get_speed_congruency_pool(participant: Participant):
     """
     Build the list of TestData rows to use as trials for this participant.
@@ -42,26 +44,20 @@ def _get_speed_congruency_pool(participant: Participant):
     # Often this will be str(participant.id) OR participant.participant_id.
     user_key = str(participant.id)
 
-    q = (
-        TestData.query
-        .filter(TestData.user_id == user_key)
-        .filter(TestData.family == "color")
+    q = TestData.query.filter(TestData.user_id == user_key).filter(
+        TestData.family == "color"
     )
 
     # If you want to REQUIRE the participant to be a synesthete
     # (i.e., they passed some consistency threshold), keep this filter:
-    q = q.filter(
-        (TestData.cct_valid == 1) |
-        (TestData.cct_pass.is_(True))
-    )
+    q = q.filter((TestData.cct_valid == 1) | (TestData.cct_pass.is_(True)))
 
     rows = q.order_by(TestData.created_at.asc()).all()
 
     # Fallback: if your color pipeline used participant.participant_id instead
     if not rows and participant.participant_id:
         rows = (
-            TestData.query
-            .filter(TestData.user_id == participant.participant_id)
+            TestData.query.filter(TestData.user_id == participant.participant_id)
             .filter(TestData.family == "color")
             .order_by(TestData.created_at.asc())
             .all()
@@ -74,15 +70,25 @@ def _get_speed_congruency_pool(participant: Participant):
 # CHOICE BUILDER: create 4 color boxes
 # =====================================
 
+
 def _build_color_options(cue_label: str, expected_hex: str):
     """
     Given a trigger label and its expected color hex (#rrggbb),
     build 4 options: 1 correct + 3 distractors.
     """
     base_palette = [
-        "#7ED957", "#FFB347", "#4D9FFF", "#FFB3E6",
-        "#FDD835", "#AB47BC", "#29B6F6", "#66BB6A",
-        "#EF4444", "#0EA5E9", "#F97316", "#22C55E",
+        "#7ED957",
+        "#FFB347",
+        "#4D9FFF",
+        "#FFB3E6",
+        "#FDD835",
+        "#AB47BC",
+        "#29B6F6",
+        "#66BB6A",
+        "#EF4444",
+        "#0EA5E9",
+        "#F97316",
+        "#22C55E",
     ]
 
     # Remove the correct colour from the distractor palette
@@ -91,9 +97,9 @@ def _build_color_options(cue_label: str, expected_hex: str):
     distractors = palette[:3]
 
     def _hex_to_rgb(hex_code: str):
-        h = hex_code.lstrip('#')
+        h = hex_code.lstrip("#")
         if len(h) == 3:
-            h = ''.join([c*2 for c in h])
+            h = "".join([c * 2 for c in h])
         try:
             r = int(h[0:2], 16)
             g = int(h[2:4], 16)
@@ -105,7 +111,7 @@ def _build_color_options(cue_label: str, expected_hex: str):
     # include r,g,b and hex in each option to match frontend expectations
     options = [
         {
-            "id": "correct",          # we will use this to decide matched=True
+            "id": "correct",  # we will use this to decide matched=True
             "label": cue_label,
             "color": expected_hex,
             "hex": expected_hex,
@@ -117,15 +123,17 @@ def _build_color_options(cue_label: str, expected_hex: str):
 
     for i, hex_code in enumerate(distractors, start=1):
         r, g, b = _hex_to_rgb(hex_code)
-        options.append({
-            "id": f"opt{i}",
-            "label": cue_label,
-            "color": hex_code,
-            "hex": hex_code,
-            "r": r,
-            "g": g,
-            "b": b,
-        })
+        options.append(
+            {
+                "id": f"opt{i}",
+                "label": cue_label,
+                "color": hex_code,
+                "hex": hex_code,
+                "r": r,
+                "g": g,
+                "b": b,
+            }
+        )
 
     random.shuffle(options)
     return options
@@ -134,6 +142,7 @@ def _build_color_options(cue_label: str, expected_hex: str):
 # =====================================
 # GET /api/speed-congruency/next
 # =====================================
+
 
 @bp.get("/next")
 def api_speed_congruency_next():
@@ -161,29 +170,44 @@ def api_speed_congruency_next():
 
     if total == 0:
         # No strong associations → no speed test
-        return jsonify({
-            "error": "no_color_data",
-            "message": "No valid color-test associations found for this participant.",
-            "totalTrials": 0,
-        }), 404
+        return (
+            jsonify(
+                {
+                    "error": "no_color_data",
+                    "message": "No valid color-test associations found for this participant.",
+                    "totalTrials": 0,
+                }
+            ),
+            404,
+        )
 
     if index < 0 or index >= total:
         # We ran out of trials
-        return jsonify({
-            "done": True,
-            "totalTrials": total,
-        }), 200
+        return (
+            jsonify(
+                {
+                    "done": True,
+                    "totalTrials": total,
+                }
+            ),
+            200,
+        )
 
     td: TestData = pool[index]
     stim: ColorStimulus | None = td.stimulus
 
     if not stim:
         # Shouldn't usually happen; skip to next if needed.
-        return jsonify({
-            "error": "missing_stimulus",
-            "message": "This association does not have a linked stimulus.",
-            "totalTrials": total,
-        }), 500
+        return (
+            jsonify(
+                {
+                    "error": "missing_stimulus",
+                    "message": "This association does not have a linked stimulus.",
+                    "totalTrials": total,
+                }
+            ),
+            500,
+        )
 
     # Trigger text: letter/number/word, etc.
     cue_word = stim.description or f"Stimulus {stim.id}"
@@ -199,29 +223,35 @@ def api_speed_congruency_next():
     # - .options[]
     # - .totalTrials
     # - .index (or trialIndex)
-    return jsonify({
-        "id": index,                         # trial id (we use index)
-        "participantId": str(participant.id),
-        "trigger": cue_word,
-        "options": options,
-        "totalTrials": total,
-        "index": index,
-        # extra data to send back on submit:
-        "stimulusId": stim.id,
-        "testDataId": td.id,
-        "expectedColor": {
-            "r": expected_r,
-            "g": expected_g,
-            "b": expected_b,
-            "hex": expected_hex,
-        },
-        "cue_type": td.stimulus_type or "word",
-    }), 200
+    return (
+        jsonify(
+            {
+                "id": index,  # trial id (we use index)
+                "participantId": str(participant.id),
+                "trigger": cue_word,
+                "options": options,
+                "totalTrials": total,
+                "index": index,
+                # extra data to send back on submit:
+                "stimulusId": stim.id,
+                "testDataId": td.id,
+                "expectedColor": {
+                    "r": expected_r,
+                    "g": expected_g,
+                    "b": expected_b,
+                    "hex": expected_hex,
+                },
+                "cue_type": td.stimulus_type or "word",
+            }
+        ),
+        200,
+    )
 
 
 # =====================================
 # POST /api/speed-congruency/submit
 # =====================================
+
 
 @bp.post("/submit")
 def api_speed_congruency_submit():
@@ -245,22 +275,26 @@ def api_speed_congruency_submit():
 
     data = request.get_json(force=True) or {}
 
-    trial_index   = data.get("trialIndex")
-    trigger       = data.get("trigger")
-    test_data_id  = data.get("testDataId")
-    stimulus_id   = data.get("stimulusId")
-    reaction_ms   = data.get("reactionTimeMs")
-    selected_id   = data.get("selectedOptionId")
+    trial_index = data.get("trialIndex")
+    trigger = data.get("trigger")
+    test_data_id = data.get("testDataId")
+    stimulus_id = data.get("stimulusId")
+    reaction_ms = data.get("reactionTimeMs")
+    selected_id = data.get("selectedOptionId")
 
     # Determine expected color from TestData / ColorStimulus (for logging)
     expected_r = expected_g = expected_b = None
     if test_data_id:
         td = TestData.query.get(test_data_id)
         if td and td.stimulus:
-            expected_r, expected_g, expected_b = td.stimulus.r, td.stimulus.g, td.stimulus.b
+            expected_r, expected_g, expected_b = (
+                td.stimulus.r,
+                td.stimulus.g,
+                td.stimulus.b,
+            )
 
     # Simple correctness rule: if they picked the option whose id == "correct"
-    matched = (selected_id == "correct")
+    matched = selected_id == "correct"
 
     row = SpeedCongruency(
         participant_id=str(participant.id),
@@ -271,7 +305,7 @@ def api_speed_congruency_submit():
         expected_r=expected_r,
         expected_g=expected_g,
         expected_b=expected_b,
-        chosen_name=selected_id,    # we are only storing which option they chose
+        chosen_name=selected_id,  # we are only storing which option they chose
         chosen_r=None,
         chosen_g=None,
         chosen_b=None,
