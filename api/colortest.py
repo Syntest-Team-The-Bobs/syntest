@@ -24,7 +24,7 @@ def save_color_trial():
         # Create trial record
         trial = ColorTrial(
             participant_id=participant.participant_id,  # Use the string participant_id
-            stimulus_id=data.get("stimulus_id"),
+            # stimulus_id removed - stimulus info is stored in meta_json
             trial_index=data.get("trial_index"),
             selected_r=data.get("selected_r"),
             selected_g=data.get("selected_g"),
@@ -71,7 +71,7 @@ def save_color_trials_batch():
         for trial_data in trials_data:
             trial = ColorTrial(
                 participant_id=participant.participant_id,
-                stimulus_id=trial_data.get("stimulus_id"),
+                # stimulus_id removed - stimulus info is stored in meta_json
                 trial_index=trial_data.get("trial_index"),
                 selected_r=trial_data.get("selected_r"),
                 selected_g=trial_data.get("selected_g"),
