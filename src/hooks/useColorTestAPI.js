@@ -25,9 +25,9 @@ export const useColorTestAPI = () => {
         credentials: 'include', // Important for session cookies
         body: JSON.stringify({
           trial_index: trialData.trial_index,
-          selected_r: trialData.selected_color?.r,
-          selected_g: trialData.selected_color?.g,
-          selected_b: trialData.selected_color?.b,
+          selected_r: trialData.selected_color?.r ?? null,
+          selected_g: trialData.selected_color?.g ?? null,
+          selected_b: trialData.selected_color?.b ?? null,
           response_ms: trialData.response_ms,
           meta_json: {
             test_type: trialData.test_type,
@@ -63,9 +63,9 @@ export const useColorTestAPI = () => {
     try {
       const formattedTrials = trials.map((trial, index) => ({
         trial_index: index,
-        selected_r: trial.selectedColor?.r,
-        selected_g: trial.selectedColor?.g,
-        selected_b: trial.selectedColor?.b,
+        selected_r: trial.selectedColor?.r ?? null,
+        selected_g: trial.selectedColor?.g ?? null,
+        selected_b: trial.selectedColor?.b ?? null,
         response_ms: trial.reactionTime,
         meta_json: {
           test_type: testType,
