@@ -156,17 +156,17 @@ const MUSIC_STIMULI = [
 
   // ===== DYADS (30 total) =====
 
-  // Piano dyads (10) - Perfect fifth intervals
+  // Piano dyads (10) - Perfect fifth intervals (changed last dyad from Eb6+Bb6 to Ab5+Eb6)
   'C1+G1-piano', 'G1+D2-piano', 'D2+A2-piano', 'A2+E3-piano', 'E3+B3-piano',
-  'B3+F#4-piano', 'F#4+Db5-piano', 'Db5+Ab5-piano', 'Ab5+Eb6-piano', 'Eb6+Bb6-piano',
+  'B3+F#4-piano', 'F#4+Db5-piano', 'Db5+Ab5-piano', 'Ab5+Eb6-piano', 'Ab5+Eb6-piano',
 
-  // Pure sine dyads (10) - Same intervals as piano
+  // Pure sine dyads (10) - Same intervals as piano (changed last dyad from Eb6+Bb6 to Ab5+Eb6)
   'C1+G1-sine', 'G1+D2-sine', 'D2+A2-sine', 'A2+E3-sine', 'E3+B3-sine',
-  'B3+F#4-sine', 'F#4+Db5-sine', 'Db5+Ab5-sine', 'Ab5+Eb6-sine', 'Eb6+Bb6-sine',
+  'B3+F#4-sine', 'F#4+Db5-sine', 'Db5+Ab5-sine', 'Ab5+Eb6-sine', 'Ab5+Eb6-sine',
 
-  // String dyads (10) - Same intervals as piano
+  // String dyads (10) - Same intervals as piano (changed last dyad from Eb6+Bb6 to Ab5+Eb6)
   'C1+G1-string', 'G1+D2-string', 'D2+A2-string', 'A2+E3-string', 'E3+B3-string',
-  'B3+F#4-string', 'F#4+Db5-string', 'Db5+Ab5-string', 'Ab5+Eb6-string', 'Eb6+Bb6-string'
+  'B3+F#4-string', 'F#4+Db5-string', 'Db5+Ab5-string', 'Ab5+Eb6-string', 'Ab5+Eb6-string'
 ];
 
 /**
