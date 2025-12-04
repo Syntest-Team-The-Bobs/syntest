@@ -49,9 +49,10 @@ def get_dashboard_data():
             )
 
             # Check if screening is completed (either from participant flag or latest screening session)
-            screening_completed = (
-                user.screening_completed
-                or (latest_screening and latest_screening.status == "completed" and latest_screening.eligible)
+            screening_completed = user.screening_completed or (
+                latest_screening
+                and latest_screening.status == "completed"
+                and latest_screening.eligible
             )
 
             if latest_screening:
