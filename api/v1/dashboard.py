@@ -8,10 +8,10 @@ from models import (
     Test,
 )
 
-bp = Blueprint("dashboard", __name__, url_prefix="/api/participant")
+bp = Blueprint("dashboard", __name__)
 
 
-@bp.route("/dashboard", methods=["GET"])
+@bp.route("", methods=["GET"])
 def get_dashboard_data():
     try:
         # Fetch current user data directly

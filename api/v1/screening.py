@@ -15,8 +15,7 @@ from models import (
 )
 
 # Expose this Blueprint as `api_screening` for app.py to import
-bp = Blueprint("screening", __name__, url_prefix="/api/screening")
-
+bp = Blueprint("screening", __name__)
 
 # ---------------------------
 # Helpers (dev-safe stubs)

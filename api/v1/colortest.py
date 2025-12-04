@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, session
 from models import db, ColorTrial, ColorStimulus, Participant
 from datetime import datetime
 
-bp = Blueprint("colortest", __name__, url_prefix="/api/color-test")
+bp = Blueprint("colortest", __name__)
 
 
 @bp.route("/trial", methods=["POST"])

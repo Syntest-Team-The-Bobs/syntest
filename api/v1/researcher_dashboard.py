@@ -3,14 +3,13 @@ from flask import Blueprint, jsonify, session
 from models import Participant, Researcher, TestResult, ColorStimulus
 
 
-researcher_bp = Blueprint(
+bp = Blueprint(
     "researcher_dashboard",
     __name__,
-    url_prefix="/api/researcher",
 )
 
 
-@researcher_bp.route("/dashboard", methods=["GET"])
+@bp.route("", methods=["GET"])
 def get_researcher_dashboard():
     """
     Researcher dashboard endpoint used by the current frontend.

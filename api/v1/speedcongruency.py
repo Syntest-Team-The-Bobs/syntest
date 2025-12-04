@@ -3,7 +3,7 @@ import random
 
 from models import db, Participant, TestData, SpeedCongruency, ColorStimulus
 
-bp = Blueprint("speed_congruency", __name__, url_prefix="/api/speed-congruency")
+bp = Blueprint("speed_congruency", __name__)
 
 
 # =====================================
