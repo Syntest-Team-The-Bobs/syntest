@@ -26,6 +26,8 @@ jobs:
         version: "0.9.15"
         enable-cache: true
     - name: Install the project and dependencies
-      run: uv pip install -r requirements.txt
+      run: | 
+        uv pip install -r requirements.txt
+        uv pip install -r dev-requirements.txt
     - name: Run tests
       run: uv run pytest tests
