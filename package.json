@@ -13,7 +13,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "test": "vitest run. --coverage",
+    "test": "vitest run --coverage",
     "api": "cd api && python app.py",
     "init-db": "cd api && python init_db.py"
   },
