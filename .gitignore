@@ -89,6 +89,7 @@ out/
 *.temp
 cookies.txt
 *.lock
+!package-lock.json
 start.bat
 start.sh
 
