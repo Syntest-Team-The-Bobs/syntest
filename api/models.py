@@ -40,7 +40,7 @@ class Participant(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.participant_id:
-            self.participant_id = f"P{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+            self.participant_id = f"P{uuid4().hex[:12]}"
 
     def __repr__(self):
         return f"<Participant {self.participant_id}>"
