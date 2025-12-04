@@ -18,11 +18,11 @@ from .speedcongruency import bp as speedcongruency_bp
 # =====================================
 # REGISTERING ENDPOINTS
 # =====================================
-bp_v1.register_blueprint(dashboard_bp, url_prefix="participant/dashboard")
-bp_v1.register_blueprint(colortest_bp, url_prefix="/tests/color/")
+bp_v1.register_blueprint(dashboard_bp, url_prefix="/participant/dashboard/")
+bp_v1.register_blueprint(colortest_bp, url_prefix="/color-test/")
 bp_v1.register_blueprint(screening_bp, url_prefix="/screening/")
-bp_v1.register_blueprint(researcher_dashboard_bp, url_prefix="/researcher/dashboard")
-bp_v1.register_blueprint(speedcongruency_bp, url_prefix="/speedcongruency")
+bp_v1.register_blueprint(researcher_dashboard_bp, url_prefix="/researcher/dashboard/")
+bp_v1.register_blueprint(speedcongruency_bp, url_prefix="/speedcongruency/")
 
 # =====================================
 # AUTHENTICATION ENDPOINTS
