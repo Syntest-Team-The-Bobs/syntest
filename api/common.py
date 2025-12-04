@@ -9,6 +9,7 @@ from models import (
     Researcher,
 )
 
+
 def api_signup():
     try:
         print(f"Signup request from origin: {request.headers.get('Origin')}")
