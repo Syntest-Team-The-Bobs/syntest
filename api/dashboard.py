@@ -39,12 +39,19 @@ def get_dashboard_data():
 
         # Get recommended tests from latest completed screening session
         recommended_tests = []
+        screening_completed = False
         if role == "participant":
             # Find the latest completed screening session
             latest_screening = (
                 ScreeningSession.query.filter_by(participant_id=user_id, eligible=True)
                 .order_by(ScreeningSession.completed_at.desc())
                 .first()
+            )
+
+            # Check if screening is completed (either from participant flag or latest screening session)
+            screening_completed = (
+                user.screening_completed
+                or (latest_screening and latest_screening.status == "completed" and latest_screening.eligible)
             )
 
             if latest_screening:
@@ -114,6 +121,7 @@ def get_dashboard_data():
             "tests_pending": tests_pending,
             "completion_percentage": completion_percentage,
             "recommended_tests": recommended_tests,
+            "screening_completed": screening_completed,
         }
         return jsonify(data)
     except Exception as e:

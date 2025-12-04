@@ -184,6 +184,13 @@ def finalize_screening():
     s = _get_or_create_session()
     # Uses services through finalize() method
     s.finalize()
+    
+    # Update participant's screening_completed flag if eligible
+    if s.eligible and s.status == "completed":
+        participant = Participant.query.get(s.participant_id)
+        if participant:
+            participant.screening_completed = True
+    
     db.session.commit()
     return jsonify(
         ok=True,
