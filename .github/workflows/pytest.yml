@@ -30,4 +30,6 @@ jobs:
         uv pip install -r requirements.txt
         uv pip install -r dev-requirements.txt
     - name: Run tests
-      run: uv run pytest tests
+      run: | 
+        cd api 
+        uv run pytest tests
