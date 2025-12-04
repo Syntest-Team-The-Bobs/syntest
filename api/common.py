@@ -1,7 +1,7 @@
 # Cmon API functions
 from flask import Flask, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 
 from models import (
     db,
@@ -105,7 +105,7 @@ def api_login():
         )
 
         if user and check_password_hash(user.password_hash, password):
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             db.session.commit()
 
             session["user_id"] = user.id

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from flask import Blueprint, jsonify, session
 from models import Participant, Researcher, TestResult, ColorStimulus
 
@@ -33,7 +33,7 @@ def get_researcher_dashboard():
         completed_tests = TestResult.query.filter_by(status="completed").count()
 
         # Active participants within last 7 days
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         active_participants = Participant.query.filter(
             Participant.last_login >= seven_days_ago
         ).count()
