@@ -285,7 +285,7 @@ def index():
 
 @app.errorhandler(404)
 def not_found(e):
-    if os.path.startswith("api/"):
+    if request.path.startswith("/api/"):
         return jsonify({"error": "Not found"}), 404
     return app.send_static_file("index.html")
 
