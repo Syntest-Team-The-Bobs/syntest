@@ -6,6 +6,8 @@ export default function ChoiceCard({
   variant = 'default',
   selected,
   onClick,
+  disabled = false,
+  compact = false,
   ...props
 }) {
   const className = (selected ? 'selected ' : '') + (variant === 'negative' ? 'choice-negative' : 'choice-card');
@@ -14,8 +16,12 @@ export default function ChoiceCard({
 
   const content = (
     <>
-      <div className={titleClass}>{title}</div>
-      <div className={subClass}>{subtitle}</div>
+      <div className={titleClass} style={{ 
+        fontSize: compact ? '1.125rem' : '1.5rem', 
+        fontWeight: 700, 
+        marginBottom: compact ? '0.25rem' : '0.5rem' 
+      }}>{title}</div>
+      <div className={subClass} style={{ fontSize: compact ? '0.875rem' : '1.125rem' }}>{subtitle}</div>
     </>
   );
 
@@ -25,9 +31,15 @@ export default function ChoiceCard({
       className={className}
       onClick={(event) => {
         event.preventDefault();
-        if (onClick) {
+        if (onClick && !disabled) {
           onClick(event);
         }
+      }}
+      style={{ 
+        opacity: disabled ? 0.6 : 1, 
+        pointerEvents: disabled ? 'none' : 'auto', 
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        padding: compact ? '0.75rem 1rem' : '1.5rem',
       }}
       {...props}
     >

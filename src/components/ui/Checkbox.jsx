@@ -7,16 +7,17 @@ export default function Checkbox({
   className,
   ...props
 }) {
-  const classes = `checkbox-group ${className}`.trim();
+  const classes = `checkbox-group ${className || ''}`.trim();
   return (
-    <label className={classes}>
+    <label className={classes} style={{ fontSize: '1.375rem', display: 'flex', alignItems: 'flex-start', gap: '1.125rem', marginBottom: '1.25rem', cursor: 'pointer' }}>
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
+        style={{ width: '26px', height: '26px', marginTop: '4px', flexShrink: 0, cursor: 'pointer' }}
         {...props}
       />
-      <span>{children}</span>
+      <span style={{ lineHeight: 1.5 }}>{children}</span>
     </label>
   );
 }
