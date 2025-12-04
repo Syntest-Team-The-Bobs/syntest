@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "npm",
   "scripts": {
     "dev": "vite",
     "dev:frontend": "vite",
@@ -12,7 +13,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "api": "cd api && python app.py",
     "init-db": "cd api && python init_db.py"
   },
@@ -32,6 +33,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.0.15",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",
