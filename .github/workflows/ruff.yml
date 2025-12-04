@@ -1,0 +1,15 @@
+name: Lint
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "--version"
+          src: "./api"
+      - run: ruff check --fix --target-version py311
+      - run: ruff format --check --target-version py311
