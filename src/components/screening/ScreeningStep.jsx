@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import Progress from '../ui/Progress';
+import ProgressBar from '../ui/ProgressBar';
 import '../../styles/app.css';
 
 export default function ScreeningStep({
@@ -42,7 +42,7 @@ export default function ScreeningStep({
   return (
     <div className="container container-centered container-md">
       {step > 0 && (
-        <Progress current={step} total={totalSteps} />
+        <ProgressBar current={step} total={totalSteps} />
       )}
 
       <Card chip={chip} title={title}>
