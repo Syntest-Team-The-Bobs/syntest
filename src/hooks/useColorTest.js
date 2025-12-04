@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { useDeck, buildDeck } from "../services/useDeck";
+import { useDeck } from "./useDeck";
+import { buildDeck } from "../services/deck";
 
 /**
  * useColorTest - Custom hook for managing color synesthesia test state and logic
