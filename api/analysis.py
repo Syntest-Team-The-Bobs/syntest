@@ -12,7 +12,12 @@ from collections import defaultdict
 from statistics import mean, median, pstdev
 from flask import Blueprint, request, jsonify, session
 
-from api.models import db, Participant, ColorTrial, TestData, AnalyzedTestData
+try:
+  # When imported as package (e.g., `import api.analysis`) use package import
+  from api.models import db, Participant, ColorTrial, TestData, AnalyzedTestData
+except Exception:
+  # Fallback for when running modules directly from the `api/` directory
+  from models import db, Participant, ColorTrial, TestData, AnalyzedTestData
 
 bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
@@ -83,6 +88,56 @@ def rgb255_to_luv(rgb):
   return xyz_to_luv(X, Y, Z)
 
 
+def hex_to_rgb(hexstr):
+  """Convert a hex color like '#ff00aa' or 'f0a' to an (r,g,b) tuple or None."""
+  if not hexstr:
+    return None
+  s = str(hexstr).lstrip('#')
+  if len(s) == 3:
+    s = ''.join([c * 2 for c in s])
+  if len(s) != 6:
+    return None
+  try:
+    return (int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
+  except Exception:
+    return None
+
+
+def trial_rgb_or_none(t):
+  """Return an (r,g,b) tuple for a ColorTrial if available, else None.
+
+  This is tolerant: it first prefers explicit selected_r/g/b, then
+  checks common meta_json fields such as 'selected_hex' or a nested
+  'selected_color' dict so the analysis accepts slightly different
+  client payload shapes.
+  """
+  # direct columns
+  if all(v is not None for v in [t.selected_r, t.selected_g, t.selected_b]):
+    return (int(t.selected_r), int(t.selected_g), int(t.selected_b))
+
+  meta = t.meta_json or {}
+  # common hex fields
+  hexc = meta.get('selected_hex') or meta.get('color_hex') or meta.get('hex') or meta.get('selectedColorHex')
+  if hexc:
+    rgb = hex_to_rgb(hexc)
+    if rgb:
+      return rgb
+
+  # nested selected_color or selectedColor objects
+  sc = meta.get('selected_color') or meta.get('selectedColor') or meta.get('color')
+  if isinstance(sc, dict):
+    try:
+      r = sc.get('r') if sc.get('r') is not None else sc.get('R') if sc.get('R') is not None else sc.get('red')
+      g = sc.get('g') if sc.get('g') is not None else sc.get('G') if sc.get('G') is not None else sc.get('green')
+      b = sc.get('b') if sc.get('b') is not None else sc.get('B') if sc.get('B') is not None else sc.get('blue')
+      if r is not None and g is not None and b is not None:
+        return (int(r), int(g), int(b))
+    except Exception:
+      pass
+
+  return None
+
+
 def luv_distance(a, b):
   """Euclidean distance between two Luv triples."""
   return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
@@ -102,22 +157,28 @@ def mean_pairwise_distance(triples):
   return (d12 + d23 + d31) / 3.0, dict(d12=d12, d23=d23, d31=d31)
 
 
-def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggregate_method="mean"):
+def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggregate_method="mean", test_type=None):
   """Run analysis for a single participant and persist results to DB.
 
   - participant_str_id: string ID stored in ColorTrial.participant_id (e.g., 'P2025...')
   - min_triggers: minimum number of valid triggers required to compute a participant score
   - cutoff: threshold for classification (lower is more consistent)
   - aggregate_method: 'mean' or 'median'
+  - test_type: optional test type (letter, number, word, music) to filter trials; if None, analyzes all
 
   Returns: dict with per-trigger details and participant summary.
   """
   # Fetch trials for this participant
-  trials = (
-    ColorTrial.query.filter_by(participant_id=participant_str_id)
-    .order_by(ColorTrial.stimulus_id.asc(), ColorTrial.trial_index.asc())
-    .all()
-  )
+  query = ColorTrial.query.filter_by(participant_id=participant_str_id)
+  
+  # Fetch all trials, then filter by test_type in Python (SQLite JSON queries are complex)
+  all_trials = query.order_by(ColorTrial.stimulus_id.asc(), ColorTrial.trial_index.asc()).all()
+  
+  if test_type:
+    # Filter trials by meta_json.test_type in memory
+    trials = [t for t in all_trials if (t.meta_json or {}).get('test_type') == test_type]
+  else:
+    trials = all_trials
 
   if not trials:
     return {"error": "no_trials"}
@@ -125,7 +186,9 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
   # Group by stimulus_id (if present) else by a fallback key from meta_json
   groups = defaultdict(list)
   for t in trials:
-    key = t.stimulus_id if t.stimulus_id is not None else (t.meta_json or {}).get("trigger", "__unknown__")
+    meta = t.meta_json or {}
+    # prefer explicit stimulus_id, fall back to meta.trigger then meta.stimulus
+    key = t.stimulus_id if t.stimulus_id is not None else meta.get("trigger") or meta.get("stimulus") or "__unknown__"
     groups[key].append(t)
 
   per_trigger = {}
@@ -142,15 +205,12 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
     # Consider only the first three ordered by trial_index
     trs_sorted = sorted(trs, key=lambda x: x.trial_index or 0)[:3]
 
-    # Check no_color: treat as no_color if selected_r/g/b are all None
-    has_no_color = any(
-      not all(v is not None for v in [t.selected_r, t.selected_g, t.selected_b])
-      for t in trs_sorted
-    )
-
-    if has_no_color:
+    # Check no_color: treat as no_color if any trial lacks an RGB sample.
+    # Use trial_rgb_or_none which also checks meta_json for hex or nested color objects.
+    missing_rgb_trials = [t.id for t in trs_sorted if trial_rgb_or_none(t) is None]
+    if missing_rgb_trials:
       none_counts += 1
-      per_trigger[str(key)] = {"status": "no_color_present", "n_trials": len(trs_sorted)}
+      per_trigger[str(key)] = {"status": "no_color_present", "n_trials": len(trs_sorted), "missing_trial_ids": missing_rgb_trials}
       continue
 
     # Convert to Luv
@@ -158,15 +218,15 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
     # also compute mean RGB for a representative association
     mean_r = mean_g = mean_b = 0
     for t in trs_sorted:
-      rgb = (t.selected_r, t.selected_g, t.selected_b)
+      rgb = trial_rgb_or_none(t)
       luv = rgb255_to_luv(rgb)
       luvs.append(luv)
       if t.response_ms is not None:
         rt_list.append(t.response_ms)
       # accumulate RGB (they are ints)
-      mean_r += (t.selected_r or 0)
-      mean_g += (t.selected_g or 0)
-      mean_b += (t.selected_b or 0)
+      mean_r += (rgb[0] if rgb is not None else 0)
+      mean_g += (rgb[1] if rgb is not None else 0)
+      mean_b += (rgb[2] if rgb is not None else 0)
 
     mean_d, pairwise = mean_pairwise_distance(luvs)
     per_trigger[str(key)] = {
@@ -239,7 +299,8 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
   # Persist TestData
   td = TestData(
     user_id=participant_str_id,
-    test_type="color_cct",
+    test_type=test_type or "color_cct",  # Use passed test_type or default
+    test_id=None,
     cct_cutoff=cutoff,
     cct_triggers=len(groups),
     cct_trials_per_trigger=3,
@@ -261,7 +322,7 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
   if participant:
     atd = AnalyzedTestData(
       user_id=participant.id,
-      test_type="color_cct",
+      test_type=test_type or "color_cct",  # Use passed test_type or default
       diagnosis=diagnosis,
     )
     db.session.add(atd)  # type: ignore[attr-defined]
@@ -270,9 +331,14 @@ def analyze_participant(participant_str_id, min_triggers=1, cutoff=135.0, aggreg
   return {"per_trigger": per_trigger, "participant": participant_summary}
 
 
-@bp.route("/run", methods=["POST"])
+@bp.route("/run", methods=["GET", "POST"])
 def run_analysis():
-  data = request.get_json(force=True) or {}
+  # Support both GET (no body) and POST (JSON body) clients.
+  if request.method == 'POST':
+    data = request.get_json(force=True) or {}
+  else:
+    # GET: read from query parameters
+    data = {k: v for k, v in request.args.items()}
   participant_str_id = data.get("participant_id")
   # If participant_id not passed, try to infer from session user
   if not participant_str_id:

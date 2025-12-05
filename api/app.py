@@ -37,6 +37,7 @@ from dashboard import bp as dashboard
 from speedcongruency import bp as speedcongruency_bp
 from researcher_dashboard import researcher_bp
 from colortest import bp as colortest_bp
+from analysis import bp as analysis_bp
 
 # Set instance path for Flask (where database will be stored)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -104,6 +105,7 @@ app.register_blueprint(dashboard)
 app.register_blueprint(speedcongruency_bp)
 app.register_blueprint(researcher_bp)
 app.register_blueprint(colortest_bp)
+app.register_blueprint(analysis_bp)
 
 # =====================================
 # AUTHENTICATION ENDPOINTS
@@ -288,6 +290,15 @@ def not_found(e):
     if request.path.startswith("/api/"):
         return jsonify({"error": "Not found"}), 404
     return app.send_static_file("index.html")
+
+
+# Return JSON for uncaught server errors on API routes to make debugging easier
+@app.errorhandler(500)
+def handle_500(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": str(e)}), 500
+    # For non-API routes fall back to default behavior
+    return app.send_static_file("index.html"), 500
 
 
 # =====================================
