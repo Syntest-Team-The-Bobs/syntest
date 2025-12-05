@@ -29,9 +29,9 @@ jobs:
         uv pip install -r dev-requirements.txt
     - name: Run tests with coverage
       run: |
-        cd api
+        # Run pytest for the backend tests located in api/tests
         uv pip install pytest-cov
-        uv run pytest --cov=. --cov-report=xml --cov-report=html tests
+        uv run pytest api/tests --cov=api --cov-report=xml --cov-report=html
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
