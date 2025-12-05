@@ -1,5 +1,8 @@
-name: reviewdog
-on: [pull_request]
+name: Biome NodeJS Linter
+on: 
+  pull_request:
+    paths-ignore: 
+      - 'api/**'
 jobs:
   biome:
     name: runner / Biome
