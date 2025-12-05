@@ -1,5 +1,5 @@
 # views.py
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, session
 from models import (
     db,
@@ -15,7 +15,7 @@ from models import (
 )
 
 # Expose this Blueprint as `api_screening` for app.py to import
-bp = Blueprint("screening", __name__, url_prefix="/api/screening")
+bp = Blueprint("screening", __name__)
 
 
 # ---------------------------
@@ -47,7 +47,7 @@ def _current_participant_id():
         # Create a new demo participant
         p = Participant(
             name="Demo User",
-            email=f"demo{datetime.utcnow().timestamp()}@example.com",
+            email=f"demo{datetime.now(timezone.utc).timestamp()}@example.com",
             password_hash="dev",
             age=None,
             country=None,

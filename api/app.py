@@ -1,42 +1,21 @@
 # app.py
 import os
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 
 # -----------------------------
 # Models (must exist in models.py)
 # -----------------------------
 from models import (
     db,
-    Participant,
-    Researcher,
-    Test,
-    TestResult,
-    ScreeningResponse,
-    ColorStimulus,
-    ColorTrial,
-    SpeedCongruency,
-    TestData,
-    # Screening models (needed for db.create_all() to create tables)
-    ScreeningSession,
-    ScreeningHealth,
-    ScreeningDefinition,
-    ScreeningPainEmotion,
-    ScreeningTypeChoice,
-    ScreeningEvent,
-    ScreeningRecommendedTest,
 )
 
 # -----------------------------
-# Screening API blueprint (expects views/api_screening.py to expose `bp`)
+# Versioned API Blueprints
 # -----------------------------
-from screening import bp as screening
-from dashboard import bp as dashboard
-from speedcongruency import bp as speedcongruency_bp
-from researcher_dashboard import researcher_bp
-from colortest import bp as colortest_bp
+from v1 import bp_v1
+
+# from v2 import bp_v2
 
 # Set instance path for Flask (where database will be stored)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -98,180 +77,9 @@ except Exception as e:
 
     traceback.print_exc()
 
-# Register blueprints
-app.register_blueprint(screening)
-app.register_blueprint(dashboard)
-app.register_blueprint(speedcongruency_bp)
-app.register_blueprint(researcher_bp)
-app.register_blueprint(colortest_bp)
-
-# =====================================
-# AUTHENTICATION ENDPOINTS
-# =====================================
-
-
-@app.route("/api/auth/signup", methods=["POST"])
-def api_signup():
-    try:
-        print(f"Signup request from origin: {request.headers.get('Origin')}")
-        data = request.get_json(force=True)
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        name = data.get("name")
-        email = data.get("email")
-        password = data.get("password")
-        confirm_password = data.get("confirmPassword")
-        role = data.get("role", "participant")
-
-        if password != confirm_password:
-            return jsonify({"error": "Passwords do not match"}), 400
-
-        existing_user = (
-            Participant.query.filter_by(email=email).first()
-            if role == "participant"
-            else Researcher.query.filter_by(email=email).first()
-        )
-        if existing_user:
-            return jsonify({"error": "Email already registered"}), 400
-
-        password_hash = generate_password_hash(password)
-
-        if role == "participant":
-            # Handle age - convert empty string to None, or try to convert to int
-            age = data.get("age")
-            if age == "" or age is None:
-                age = None
-            else:
-                try:
-                    age = int(age) if age else None
-                except (ValueError, TypeError):
-                    age = None
-
-            new_user = Participant(
-                name=name,
-                email=email,
-                password_hash=password_hash,
-                age=age,
-                country=data.get("country", "Spain") or "Spain",
-            )
-        else:
-            access_code = data.get("accessCode")
-            if access_code != "RESEARCH2025":
-                return jsonify({"error": "Invalid researcher access code"}), 400
-            new_user = Researcher(
-                name=name,
-                email=email,
-                password_hash=password_hash,
-                institution=data.get("institution"),
-            )
-
-        db.session.add(new_user)
-        db.session.commit()
-        print(f"User created successfully: {email}")
-        return jsonify({"success": True, "message": "Account created successfully"})
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error creating account: {str(e)}")
-        import traceback
-
-        traceback.print_exc()
-        error_message = str(e)
-        # Make error message more user-friendly
-        if "UNIQUE constraint" in error_message or "unique" in error_message.lower():
-            return jsonify({"error": "Email already registered"}), 400
-        if "NOT NULL constraint" in error_message:
-            return jsonify({"error": "Missing required fields"}), 400
-        return jsonify({"error": f"Error creating account: {error_message}"}), 500
-
-
-@app.route("/api/auth/login", methods=["POST"])
-def api_login():
-    try:
-        data = request.get_json(force=True)
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        email = data.get("email")
-        password = data.get("password")
-        role = data.get("role", "participant")
-
-        if not email or not password:
-            return jsonify({"error": "Email and password are required"}), 400
-
-        user = (
-            Participant.query.filter_by(email=email).first()
-            if role == "participant"
-            else Researcher.query.filter_by(email=email).first()
-        )
-
-        if user and check_password_hash(user.password_hash, password):
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-
-            session["user_id"] = user.id
-            session["user_role"] = role
-            session["user_name"] = user.name
-
-            return jsonify(
-                {
-                    "success": True,
-                    "user": {
-                        "id": user.id,
-                        "name": user.name,
-                        "email": user.email,
-                        "role": role,
-                    },
-                }
-            )
-        else:
-            return jsonify({"error": "Invalid email or password"}), 401
-
-    except Exception as e:
-        print(f"Exception in login: {str(e)}")
-        import traceback
-
-        traceback.print_exc()
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
-
-
-@app.route("/api/auth/logout", methods=["POST"])
-def api_logout():
-    session.clear()
-    return jsonify({"success": True})
-
-
-@app.route("/api/auth/me", methods=["GET"])
-def api_get_current_user():
-    try:
-        if "user_id" not in session:
-            return jsonify({"error": "Not authenticated"}), 401
-
-        user_id = session["user_id"]
-        role = session.get("user_role")
-
-        if role == "participant":
-            user = Participant.query.get(user_id)
-        elif role == "researcher":
-            user = Researcher.query.get(user_id)
-        else:
-            # Invalid role, clear session and return error
-            session.clear()
-            return jsonify({"error": "Invalid role"}), 400
-
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        return jsonify(
-            {"id": user.id, "name": user.name, "email": user.email, "role": role}
-        )
-    except Exception as e:
-        print(f"Exception in api_get_current_user: {str(e)}")
-        import traceback
-
-        traceback.print_exc()
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
+# Register versioned blueprints
+app.register_blueprint(bp_v1, url_prefix="/api/v1")
+# app.register_blueprint(bp_v2, url_prefix="/api/v2")
 
 
 # =====================================

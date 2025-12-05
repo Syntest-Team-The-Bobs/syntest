@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, ColorTrial, ColorStimulus, Participant
-from datetime import datetime
+from datetime import datetime, timezone
 
-bp = Blueprint("colortest", __name__, url_prefix="/api/color-test")
+bp = Blueprint("colortest", __name__)
 
 
 @bp.route("/trial", methods=["POST"])
@@ -17,7 +17,7 @@ def save_color_trial():
 
         # Get participant info
         user_id = session["user_id"]
-        participant = Participant.query.get(user_id)
+        participant = db.session.get(Participant, user_id)
         if not participant:
             return jsonify({"error": "Participant not found"}), 404
 
@@ -63,7 +63,7 @@ def save_color_trials_batch():
 
         # Get participant info
         user_id = session["user_id"]
-        participant = Participant.query.get(user_id)
+        participant = db.session.get(Participant, user_id)
         if not participant:
             return jsonify({"error": "Participant not found"}), 404
 
@@ -112,7 +112,7 @@ def start_test_session():
             return jsonify({"error": "Not authenticated"}), 401
 
         user_id = session["user_id"]
-        participant = Participant.query.get(user_id)
+        participant = db.session.get(Participant, user_id)
         if not participant:
             return jsonify({"error": "Participant not found"}), 404
 
@@ -126,7 +126,7 @@ def start_test_session():
                     "session": {
                         "participant_id": participant.participant_id,
                         "test_type": test_type,
-                        "started_at": datetime.utcnow().isoformat(),
+                        "started_at": datetime.now(timezone.utc).isoformat(),
                     },
                 }
             ),

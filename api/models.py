@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 import enum
 from sqlalchemy import CheckConstraint, Index
 import math
+from uuid import uuid4
 
 db = SQLAlchemy()
 
@@ -28,7 +29,7 @@ class Participant(db.Model):
     synesthesia_type = db.Column(db.String(100))
     status = db.Column(db.String(50), default="active")
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     last_login = db.Column(db.DateTime)
 
     # Relationships
@@ -39,7 +40,7 @@ class Participant(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.participant_id:
-            self.participant_id = f"P{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+            self.participant_id = f"P{uuid4().hex[:12]}"
 
     def __repr__(self):
         return f"<Participant {self.participant_id}>"
@@ -56,7 +57,7 @@ class Researcher(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     institution = db.Column(db.String(200))
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     last_login = db.Column(db.DateTime)
 
     def __repr__(self):
@@ -117,7 +118,7 @@ class ScreeningResponse(db.Model):
     responses = db.Column(db.JSON)
     eligible = db.Column(db.Boolean)
     recommended_tests = db.Column(db.JSON)
-    completed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningResponse {self.participant_id}>"
@@ -180,7 +181,7 @@ class ScreeningSession(db.Model):
         db.JSON, nullable=True
     )  # list of dicts: {name, reason, test_id?}
 
-    started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
     completed_at = db.Column(db.DateTime)
 
     # relationships (backref creates participant.screening_sessions)
@@ -258,7 +259,7 @@ class ScreeningSession(db.Model):
         else:
             self.status = "exited"
         if not self.completed_at:
-            self.completed_at = datetime.utcnow()
+            self.completed_at = datetime.now(timezone.utc)
 
 
 class ScreeningHealth(db.Model):
@@ -275,7 +276,7 @@ class ScreeningHealth(db.Model):
     neuro_condition = db.Column(db.Boolean, default=False, nullable=False)
     medical_treatment = db.Column(db.Boolean, default=False, nullable=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningHealth S={self.session_id} drug={self.drug_use} neuro={self.neuro_condition} med={self.medical_treatment}>"
@@ -293,7 +294,7 @@ class ScreeningDefinition(db.Model):
 
     answer = db.Column(db.Enum(YesNoMaybe, name="screening_def_enum"), nullable=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningDefinition S={self.session_id} answer={self.answer.value}>"
@@ -311,7 +312,7 @@ class ScreeningPainEmotion(db.Model):
 
     answer = db.Column(db.Enum(YesNo, name="screening_pe_enum"), nullable=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningPainEmotion S={self.session_id} answer={self.answer.value}>"
@@ -334,7 +335,7 @@ class ScreeningTypeChoice(db.Model):
     sequence = db.Column(db.Enum(Frequency, name="screening_freq_enum"), nullable=True)
     other = db.Column(db.String(255), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningTypeChoice S={self.session_id}>"
@@ -356,7 +357,7 @@ class ScreeningEvent(db.Model):
     )  # e.g., 'consent_checked', 'continue', 'exit'
     details = db.Column(db.JSON, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     def __repr__(self):
         return f"<ScreeningEvent S={self.session_id} step={self.step} {self.event}>"
@@ -383,7 +384,7 @@ class ScreeningRecommendedTest(db.Model):
     )
     test = db.relationship("Test", lazy="joined")
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<ScreeningRecommendedTest S={self.session_id} {self.suggested_name} pos={self.position}>"
@@ -422,9 +423,11 @@ class ColorStimulus(db.Model):
     b = db.Column(db.Integer, nullable=False)
     trigger_type = db.Column(db.String(64), nullable=True, index=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
     )
 
     # Relationships to other tables
@@ -521,7 +524,7 @@ class ColorTrial(db.Model):
     # Metadata (device info, browser, etc.)
     meta_json = db.Column(db.JSON, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     def __repr__(self):
         return f"<ColorTrial id={self.id} P={self.participant_id} trial={self.trial_index}>"
@@ -636,7 +639,7 @@ class TestData(db.Model):
     family = db.Column(db.String(16), nullable=False, default="color", index=True)
     locale = db.Column(db.String(16), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     # Trial information
     trial = db.Column(db.Integer, nullable=True)
@@ -730,7 +733,7 @@ class ScreeningTestData(db.Model):
     likelihood_score = db.Column(db.Float)
     recommendation = db.Column(db.String(255))
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     def __repr__(self):
         return f"<ScreeningTestData user_id={self.user_id} test={self.test_code}>"
@@ -814,7 +817,7 @@ class SpeedCongruency(db.Model):
     # Free-form context (device info, run id, version, etc.)
     meta_json = db.Column(db.JSON, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     def to_dict(self):
         return {
@@ -901,7 +904,7 @@ class AnalyzedTestData(db.Model):
     # Diagnostic outcome - True indicates positive diagnosis for synesthesia
     diagnosis = db.Column(db.Boolean, nullable=True, index=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
 
     def __repr__(self):
         return f"<AnalyzedTestData id={self.id} user={self.user_id} test={self.test_type} diagnosis={self.diagnosis}>"
