@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, ColorTrial, Participant
 from datetime import datetime, timezone
+from analysis import analyze_participant
 
 bp = Blueprint("colortest", __name__)
 
@@ -52,7 +53,7 @@ def save_color_trial():
 
 @bp.route("/batch", methods=["POST"])
 def save_color_trials_batch():
-    """Save multiple trials at once"""
+    """Save multiple trials at once and automatically trigger analysis"""
     try:
         # Check authentication
         if "user_id" not in session:
@@ -68,7 +69,13 @@ def save_color_trials_batch():
             return jsonify({"error": "Participant not found"}), 404
 
         trials = []
+        test_type = None  # Infer from meta_json if not explicitly provided
+
         for trial_data in trials_data:
+            # Extract test_type from first trial's meta_json
+            if test_type is None and trial_data.get("meta_json"):
+                test_type = trial_data.get("meta_json", {}).get("test_type")
+
             trial = ColorTrial(
                 participant_id=participant.participant_id,
                 # stimulus_id removed - stimulus info is stored in meta_json
@@ -84,12 +91,23 @@ def save_color_trials_batch():
 
         db.session.commit()
 
+        # Automatically run analysis for this participant (groups all trials by stimulus/trigger)
+        analysis_result = None
+        try:
+            analysis_result = analyze_participant(
+                participant.participant_id, test_type=test_type
+            )
+        except Exception as e:
+            print(f"Warning: Analysis failed after batch save: {str(e)}")
+            # Don't fail the batch save if analysis fails; just log it
+
         return (
             jsonify(
                 {
                     "success": True,
                     "count": len(trials),
                     "trial_ids": [t.id for t in trials],
+                    "analysis": analysis_result,  # Include analysis result in response
                 }
             ),
             201,

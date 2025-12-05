@@ -24,14 +24,22 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
   // Get API submission function
   const { submitBatch, isSubmitting, error } = useColorTestAPI();
   
+  // State to store analysis result from batch submission
+  const [analysisResult, setAnalysisResult] = React.useState(null);
+  
   /**
    * Submits test results to backend when test is complete
    * Called by useColorTest hook when final trial is submitted
+   * Captures analysis result returned from endpoint
    */
   async function handleTestComplete(finalResponses) {
     try {
-      await submitBatch(finalResponses, testType);
+      const result = await submitBatch(finalResponses, testType);
       console.log('✅ Test results saved successfully!');
+      // Capture analysis result if returned in batch response
+      if (result && result.analysis) {
+        setAnalysisResult(result.analysis);
+      }
     } catch (e) {
       console.error("❌ Error submitting results:", e);
     }
@@ -82,7 +90,8 @@ export default function BaseColorTest({ testType, stimuli, practiceStimuli, titl
     return (
       <TestComplete 
         isDone={true}
-        onNext={() => navigate("/speed-congruency/instructions")} 
+        analysisResult={analysisResult}
+        onNext={() => navigate("/tests/color/speed-congruency")} 
       />
     );
   }
