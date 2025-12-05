@@ -3,6 +3,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { speedCongruencyService } from '../../services/speedCongruency';
+import { musicPlayer } from '../../services/audioPlayer';
 
 /**
   * Speed Congruency Test Configuration
@@ -13,10 +14,9 @@ const SPEED_CONFIG = {
   description:
     'In this test, you will see a trigger (letter/number/word). Choose the color you most strongly associate with it as quickly and accurately as possible.',
   instructions: [
-    'You will see a trigger briefly, then four color choices.',
-    'Click the color that matches your automatic association.',
+    'You will see a trigger briefly, then the trigger will appear in a color',
+    'Click the "Yes" if that color matches your association, or "No" if it does not.',
     'We record reaction time and accuracy.',
-    'Try to respond quickly, but don’t guess wildly.',
   ],
   estimatedTime: '2-4 minutes',
 };
@@ -58,6 +58,31 @@ const DUMMY_TRIALS = [
       { id: 'o2', label: 'MONDAY', color: '#FF2D55' },
       { id: 'o3', label: 'MONDAY', color: '#64D2FF' },
       { id: 'o4', label: 'MONDAY', color: '#BF5AF2' },
+    ],
+  },
+  {
+    id: 't4',
+    trigger: 'NEON',
+    expectedOptionId: 'o1',
+    options: [
+      { id: 'o1', label: 'NEON', color: '#39FF14' },
+      { id: 'o2', label: 'NEON', color: '#FF5A5F' },
+      { id: 'o3', label: 'NEON', color: '#0A84FF' },
+      { id: 'o4', label: 'NEON', color: '#FFFF66' },
+    ],
+  },
+  // Music example: plays a short piano note 3 times before showing the color box
+  // Requires a user gesture (Begin) to unlock audio in most browsers.
+  {
+    id: 't5',
+    trigger: 'SOUND',
+    stimulus: 'C4-piano',
+    expectedOptionId: 'o1',
+    options: [
+      { id: 'o1', label: 'SOUND', color: '#AF52DE' },
+      { id: 'o2', label: 'SOUND', color: '#34C759' },
+      { id: 'o3', label: 'SOUND', color: '#007AFF' },
+      { id: 'o4', label: 'SOUND', color: '#FF3B30' },
     ],
   },
 ];
@@ -126,10 +151,57 @@ function SpeedCongruencyTestFlow({
   const totalTrials = deck.length;
   const currentTrial = deck[trialIndex] || null;
 
-  // Start countdown when entering stimulus phase
+  // Start stimulus behavior when entering stimulus phase
+  // - For visual/text triggers: run a countdown (seconds)
+  // - For music triggers (currentTrial.stimulus present): play the audio 3 times
+  //   with a 2s gap between plays, then advance to choices.
   useEffect(() => {
     if (phase !== 'stimulus' || !currentTrial) return;
 
+    // If the trial contains an audio stimulus string (music test), play it
+    if (currentTrial.stimulus) {
+      let cancelled = false;
+      // we show a small play-countdown (3 -> 0) in the UI
+      setCountdown(3);
+
+      (async () => {
+        try {
+          const playMs = 2000; // play duration in ms
+          for (let i = 0; i < 3; i++) {
+            if (cancelled) break;
+            // start playing (musicPlayer.play does not block for duration)
+            try {
+              musicPlayer.play(currentTrial.stimulus, playMs / 1000);
+            } catch (err) {
+              console.error('Failed to start play:', err);
+            }
+            // wait for the play duration
+            await new Promise((r) => setTimeout(r, playMs));
+            if (cancelled) break;
+            // decrement visible countdown (plays remaining)
+            setCountdown((prev) => Math.max(0, prev - 1));
+            // 2 second gap between plays (only between plays)
+            if (i < 2) await new Promise((r) => setTimeout(r, 2000));
+          }
+        } catch (e) {
+          console.error('Error during music playback loop:', e);
+        }
+
+        if (!cancelled) {
+          setPhase('choices');
+          choiceStartRef.current = performance.now();
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        try {
+          musicPlayer.stop();
+        } catch (e) {}
+      };
+    }
+
+    // Fallback: visual/text countdown (existing behavior)
     setCountdown(countdownSeconds);
     const timerId = setInterval(() => {
       setCountdown((prev) => {
@@ -189,14 +261,29 @@ function SpeedCongruencyTestFlow({
       ? performance.now() - choiceStartRef.current
       : null;
 
-    const isCorrect = selectedOptionId === currentTrial.expectedOptionId;
+    // Determine displayed vs expected colour. For the current inline deck
+    // we display the expected colour. We compute correctness by comparing
+    // the user's Yes/No choice to whether the displayed colour matches the
+    // expected association.
+    const expectedOption = currentTrial.options.find(
+      (o) => o.id === currentTrial.expectedOptionId
+    );
+    const expectedHex = expectedOption ? (expectedOption.color || '').toLowerCase() : null;
+    // Since the UI shows the expected colour, displayedHex === expectedHex.
+    const displayedMatchesExpected = !!expectedHex;
+
+    const isCorrect = (selectedOptionId === 'yes') === displayedMatchesExpected;
+
+    // Map yes/no to a backend-friendly selected id: 'correct' for matching,
+    // otherwise something else (backend treats anything !== 'correct' as wrong).
+    const backendSelectedId = selectedOptionId === 'yes' ? 'correct' : 'incorrect';
 
     const payload = {
       testType: 'speedCongruency',
       mode, // practice or main
       trialId: currentTrial.id,
       trigger: currentTrial.trigger,
-      selectedOptionId,
+      selectedOptionId: backendSelectedId,
       expectedOptionId: currentTrial.expectedOptionId,
       isCorrect,
       reactionTimeMs,
@@ -261,10 +348,11 @@ function SpeedCongruencyTestFlow({
   const triggerBoxStyle = {
     border: '2px solid #ccc',
     borderRadius: '8px',
-    padding: '40px 24px',
-    fontSize: '1.5rem',
+    padding: '56px 32px',
+    fontSize: '3.5rem',
+    fontWeight: 700,
     margin: '0 auto 32px',
-    maxWidth: '320px',
+    maxWidth: '420px',
   };
 
   const timerCircleStyle = {
@@ -302,6 +390,22 @@ function SpeedCongruencyTestFlow({
     userSelect: 'none',
   };
 
+  // helper: compute luminance to pick contrasting text/background
+  function hexToLuminance(hex) {
+    try {
+      const h = hex.replace('#', '');
+      const r = parseInt(h.substring(0, 2), 16) / 255;
+      const g = parseInt(h.substring(2, 4), 16) / 255;
+      const b = parseInt(h.substring(4, 6), 16) / 255;
+      const a = [r, g, b].map((c) => {
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    } catch (e) {
+      return 1; // assume light
+    }
+  }
+
   // ---- Render ----
   if (phase === 'done') {
     return (
@@ -327,13 +431,13 @@ function SpeedCongruencyTestFlow({
     return (
       <div style={pageStyle}>
         <Card style={cardStyle} title={title}>
-          <p style={{ marginBottom: '10px' }}>{introConfig.description}</p>
+          <p style={{ marginBottom: '10px', fontSize: '1.15rem' }}>{introConfig.description}</p>
 
           <div style={{ textAlign: 'left', margin: '18px auto', maxWidth: 560 }}>
             <strong>Instructions</strong>
             <ul>
               {introConfig.instructions.map((line) => (
-                <li key={line} style={{ marginTop: 6 }}>
+                <li key={line} style={{ marginTop: 8, fontSize: '1.05rem' }}>
                   {line}
                 </li>
               ))}
@@ -350,6 +454,8 @@ function SpeedCongruencyTestFlow({
             Begin {mode === 'practice' ? 'Practice' : 'Test'}
           </Button>
 
+          
+
           <p style={{ marginTop: 12, fontSize: '0.85rem', color: '#777' }}>
             Trial count: {totalTrials}
           </p>
@@ -359,75 +465,124 @@ function SpeedCongruencyTestFlow({
   }
 
   if (phase === 'stimulus') {
+    // adjust the Card background when the associated colour is near-white/neon
+    const expectedOptionStim = currentTrial.options.find(
+      (o) => o.id === currentTrial.expectedOptionId
+    );
+    const displayedColorStim = expectedOptionStim ? expectedOptionStim.color : '#000000';
+    const lumStim = hexToLuminance(displayedColorStim.replace('#', ''));
+    const cardBgStim = lumStim > 0.6 ? '#111' : '#fff';
+    const cardTextColorStim = lumStim > 0.6 ? '#fff' : '#000';
+
     return (
       <div style={pageStyle}>
-        <Card style={cardStyle} title={title}>
-          <div style={triggerBoxStyle}>{currentTrial.trigger}</div>
+        <Card style={{ ...cardStyle, backgroundColor: cardBgStim }} title={title}>
+          <div style={{ ...triggerBoxStyle, color: displayedColorStim, backgroundColor: 'transparent' }}>
+            {currentTrial.trigger}
+          </div>
           <div style={timerCircleStyle}>{countdown}</div>
 
-          <p style={{ marginTop: '16px', color: '#777' }}>
-            Get ready to choose the matching colour…
+          <p style={{ marginTop: '16px', color: cardTextColorStim === '#000' ? '#777' : '#ddd', fontSize: '1.15rem' }}>
+            {currentTrial.stimulus ? `Playing sound — plays remaining: ${countdown}` : 'Get ready to choose the matching colour…'}
           </p>
-          <p style={{ marginTop: '8px', fontSize: '0.85rem', color: '#999' }}>
+          <p style={{ marginTop: '8px', fontSize: '0.95rem', color: cardTextColorStim === '#000' ? '#999' : '#ccc' }}>
             {mode === 'practice' ? 'Practice' : 'Main'} — Trial {trialIndex + 1} of {totalTrials}
           </p>
         </Card>
       </div>
     );
   }
+  // choices: show the trigger rendered in the (expected) associated colour
+  // and present Yes / No buttons. Clicking either records RT and submits.
+  const expectedOption = currentTrial.options.find(
+    (o) => o.id === currentTrial.expectedOptionId
+  );
 
-  // choices
+  const displayedColor = expectedOption ? expectedOption.color : '#000000';
+  const lum = hexToLuminance(displayedColor.replace('#', ''));
+    // The trigger text should be rendered in the associated colour itself
+  const triggerTextColor = displayedColor;
+
+  // Do not change the whole page background; we'll change the Card background instead
+  const choicePageStyle = { ...pageStyle };
+
+  const colouredTriggerStyle = {
+    borderRadius: 12,
+    padding: '36px 24px',
+    fontSize: '5rem',
+    lineHeight: 1,
+    fontWeight: 800,
+    backgroundColor: 'transparent',
+    color: triggerTextColor,
+    display: 'inline-block',
+    minWidth: 220,
+    textAlign: 'center',
+    margin: '12px auto',
+  };
+
+  const isMusic = !!currentTrial.stimulus;
+
+  const colorBoxStyle = {
+    width: 220,
+    height: 220,
+    borderRadius: 12,
+    backgroundColor: displayedColor,
+    display: 'inline-block',
+    margin: '12px auto',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+    border: '3px solid rgba(0,0,0,0.08)'
+  };
+
+  const yesNoRowStyle = {
+    display: 'flex',
+    gap: 12,
+    justifyContent: 'center',
+    marginTop: 20,
+  };
+
+  const handleYesNo = async (choice) => {
+    if (isSubmitting) return;
+    setSelectedOptionId(choice);
+    await submitAndNext();
+  };
+
+  const cardBg = lum > 0.6 ? '#111' : '#fff';
+  const cardTextColor = lum > 0.6 ? '#fff' : '#000';
+  const buttonVariant = lum > 0.6 ? 'secondary' : 'primary';
+
   return (
-    <div style={pageStyle}>
-      <Card style={cardStyle} title={title}>
-        <h2>Pick the correct association</h2>
-        <p>Choose the colour that best matches your automatic association.</p>
+    <div style={choicePageStyle}>
+      <Card style={{ ...cardStyle, backgroundColor: cardBg }} title={title}>
+        <h2 style={{ fontSize: '1.25rem', color: cardTextColor }}>Speed Congruency</h2>
+        <p style={{ fontSize: '1.15rem', color: cardTextColor }}>Does this colour match your automatic association for the trigger?</p>
 
         <div style={{ marginTop: '16px', marginBottom: '8px' }}>
-          <strong>{currentTrial.trigger}</strong>
+          {isMusic ? (
+            <div style={colorBoxStyle} aria-label="color-box" />
+          ) : (
+            <div style={colouredTriggerStyle}>{currentTrial.trigger}</div>
+          )}
         </div>
 
-        <div style={optionsGridStyle}>
-          {currentTrial.options.map((option) => {
-            const isSelected = option.id === selectedOptionId;
+        <div style={yesNoRowStyle}>
+          <Button
+            variant={buttonVariant}
+            onClick={() => handleYesNo('yes')}
+            disabled={isSubmitting}
+            style={{ minWidth: 140 }}
+          >
+            Yes
+          </Button>
 
-            const optionStyle = {
-              ...optionBoxBaseStyle,
-              backgroundColor: option.color,
-              borderColor: isSelected ? '#000' : 'transparent',
-              boxShadow: isSelected ? '0 0 0 2px rgba(0, 0, 0, 0.35)' : 'none',
-            };
-
-            return (
-              <div
-                key={option.id}
-                style={optionStyle}
-                onClick={() => !isSubmitting && setSelectedOptionId(option.id)}
-              >
-                {option.label}
-              </div>
-            );
-          })}
+          <Button
+            variant={buttonVariant}
+            onClick={() => handleYesNo('no')}
+            disabled={isSubmitting}
+            style={{ minWidth: 140 }}
+          >
+            No
+          </Button>
         </div>
-
-        <Button
-          onClick={submitAndNext}
-          disabled={!selectedOptionId || isSubmitting}
-          style={{ width: '100%' }}
-        >
-          {
-            // If we're at the last trial in practice and there is a main deck,
-            // prompt the user to start the main test. Otherwise show 'Finish'
-            // on the last main trial, or 'Next' for intermediate trials.
-            mode === 'practice' && trialIndex + 1 === totalTrials
-              ? stimuli.length > 0
-                ? 'Start Main Test'
-                : 'Finish'
-              : mode === 'main' && trialIndex + 1 === totalTrials
-              ? 'Finish'
-              : 'Next'
-          }
-        </Button>
 
         {errorMessage && (
           <p style={{ marginTop: 12, color: '#b00020' }}>{errorMessage}</p>
@@ -443,9 +598,6 @@ function SpeedCongruencyTestFlow({
 
 /**
  * SpeedCongruencyTest - Page component
- * Responsibilities (matches your other tests):
- * - define config and stimuli decks
- * - delegate the actual test flow to a base component
  */
 export default function SpeedCongruencyTest() {
   const { stimuli, practiceStimuli } = useMemo(() => buildSpeedCongruencyDecks(), []);
@@ -459,3 +611,4 @@ export default function SpeedCongruencyTest() {
     />
   );
 }
+
