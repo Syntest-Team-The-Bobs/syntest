@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseColorTest from '../../components/trigger_color/BaseColor';
-import { buildMusicDecks } from '../../services/useDeck';
+import { buildMusicDecks } from '../../services/deck';
 
 /**
  * Music-Color Synesthesia Test Configuration

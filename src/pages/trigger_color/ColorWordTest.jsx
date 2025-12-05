@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseColorTest from '../../components/trigger_color/BaseColor';
-import { buildWordDecks } from '../../hooks/useDeck';
+import { buildWordDecks } from '../../services/deck';
 
 /**
  * Word-Color Synesthesia Test Configuration
