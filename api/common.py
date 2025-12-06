@@ -1,5 +1,5 @@
 # Cmon API functions
-from flask import Flask, request, session, jsonify
+from flask import request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 

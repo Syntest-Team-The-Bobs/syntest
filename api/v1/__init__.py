@@ -2,11 +2,6 @@ from flask import Blueprint
 import common
 
 # =====================================
-# Setup blueprint
-# =====================================
-bp_v1 = Blueprint("api_v1", __name__)
-
-# =====================================
 # IMPORTING ENDPOINTS
 # =====================================
 from .dashboard import bp as dashboard_bp
@@ -14,6 +9,12 @@ from .colortest import bp as colortest_bp
 from .screening import bp as screening_bp
 from .researcher_dashboard import bp as researcher_dashboard_bp
 from .speedcongruency import bp as speedcongruency_bp
+
+# =====================================
+# Setup blueprint
+# =====================================
+bp_v1 = Blueprint("api_v1", __name__)
+
 
 # =====================================
 # REGISTERING ENDPOINTS
