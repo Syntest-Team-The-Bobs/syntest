@@ -468,7 +468,6 @@ class TestErrorHandling:
         import models
         
         # Mock db.session.commit to raise an exception
-        original_commit = models.db.session.commit
         def mock_commit():
             raise Exception("Database error")
         

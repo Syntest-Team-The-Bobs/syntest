@@ -99,7 +99,6 @@ def sample_participant(app):
         
         # Refresh to get the ID
         db.session.refresh(participant)
-        participant_id = participant.id
         
         yield participant
         
