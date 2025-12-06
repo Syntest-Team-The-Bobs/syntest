@@ -2,8 +2,8 @@ name: Pytest
 
 on: 
   pull_request: 
-    paths: 
-      - "**.py"
+    paths-ignore: 
+      - "src/**"
 
 permissions:
   contents: read
