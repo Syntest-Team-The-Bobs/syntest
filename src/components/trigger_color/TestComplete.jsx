@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 /**
  * TestComplete - Completion screen displayed after test finishes
@@ -12,16 +12,10 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
   const [analysisResult, setAnalysisResult] = useState(initialResult);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // If analysis result already provided (from batch endpoint), don't fetch again
-    if (analysisResult) {
-      setLoading(false);
-      return;
-    }
-
-    // Fallback: fetch analysis from endpoint (for manual/re-run cases)
+  const fetchAnalysis = useCallback(() => {
     let mounted = true;
     setLoading(true);
+    setError(null);
     fetch('/api/analysis/run', {
       method: 'GET',
       credentials: 'include',
@@ -35,6 +29,8 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
             setError(j.error || `Analysis failed (status ${res.status})`);
           } else if (j && j.__json_error) {
             setError(`Invalid JSON from server: ${j.__json_error}`);
+          } else if (!j || !j.participant) {
+            setError('Analysis did not return participant data. Please try again.');
           } else {
             setAnalysisResult(j);
           }
@@ -54,7 +50,19 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
       .finally(() => mounted && setLoading(false));
 
     return () => (mounted = false);
-  }, [analysisResult]);
+  }, []);
+
+  useEffect(() => {
+    // If analysis result already provided (from batch endpoint), don't fetch again
+    if (analysisResult) {
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: fetch analysis from endpoint (for manual/re-run cases)
+    const cleanup = fetchAnalysis();
+    return cleanup;
+  }, [analysisResult, fetchAnalysis]);
 
   // Render diagnosis and associations
   const renderResults = () => {
@@ -173,7 +181,7 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
           renderResults()
         )}
 
-        <div style={{ marginTop: '2.5rem' }}>
+        <div style={{ marginTop: '2.5rem', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={onNext}
             style={{
@@ -190,6 +198,25 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
           >
             Proceed to Speed Congruency Test
           </button>
+
+          {!loading && (
+            <button
+              onClick={fetchAnalysis}
+              style={{
+                background: '#374151',
+                color: 'white',
+                padding: '0.875rem 1.75rem',
+                border: 'none',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                borderRadius: 4
+              }}
+            >
+              Retry Analysis
+            </button>
+          )}
         </div>
       </div>
     </div>
