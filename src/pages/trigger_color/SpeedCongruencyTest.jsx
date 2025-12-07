@@ -15,7 +15,7 @@ const SPEED_CONFIG = {
     'In this test, you will see a trigger (letter/number/word). Choose the color you most strongly associate with it as quickly and accurately as possible.',
   instructions: [
     'You will see a trigger briefly, then the trigger will appear in a color',
-    'Click the "Yes" if that color matches your association, or "No" if it does not.',
+    'Click "Yes" if that color matches your association, or "No" if it does not.',
     'We record reaction time and accuracy.',
   ],
   estimatedTime: '2-4 minutes',
@@ -145,6 +145,10 @@ function SpeedCongruencyTestFlow({
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Track which color is displayed and whether it matches the expected association
+  const [displayedOptionId, setDisplayedOptionId] = useState(null);
+  const [isCongruent, setIsCongruent] = useState(null);
+
   const choiceStartRef = useRef(null);
 
   const deck = mode === 'practice' ? practiceStimuli : stimuli;
@@ -157,6 +161,29 @@ function SpeedCongruencyTestFlow({
   //   with a 2s gap between plays, then advance to choices.
   useEffect(() => {
     if (phase !== 'stimulus' || !currentTrial) return;
+
+    // Initialize congruency for this trial if not already set
+    if (isCongruent === null) {
+      const congruent = Math.random() < 0.5;
+      setIsCongruent(congruent);
+      
+      if (congruent) {
+        setDisplayedOptionId(currentTrial.expectedOptionId);
+      } else {
+        const otherOptions = currentTrial.options.filter(
+          (o) => o.id !== currentTrial.expectedOptionId
+        );
+        if (otherOptions.length > 0) {
+          const randomOther = otherOptions[Math.floor(Math.random() * otherOptions.length)];
+          setDisplayedOptionId(randomOther.id);
+        } else {
+          setDisplayedOptionId(currentTrial.expectedOptionId);
+          setIsCongruent(true);
+        }
+      }
+      // Return early so countdown starts after congruency is set
+      return;
+    }
 
     // If the trial contains an audio stimulus string (music test), play it
     if (currentTrial.stimulus) {
@@ -216,7 +243,7 @@ function SpeedCongruencyTestFlow({
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [phase, currentTrial, countdownSeconds]);
+  }, [phase, currentTrial, countdownSeconds, isCongruent, displayedOptionId]);
 
   const resetForTrial = () => {
     setSelectedOptionId(null);
@@ -225,11 +252,37 @@ function SpeedCongruencyTestFlow({
     // remain disabled if a previous submission failed or was interrupted.
     setIsSubmitting(false);
     choiceStartRef.current = null;
+    setDisplayedOptionId(null);
+    setIsCongruent(null);
   };
 
   const begin = () => {
     if (!currentTrial) return;
     resetForTrial();
+    
+    // Set up congruency for this trial: randomly decide 50/50 whether to show
+    // the expected color (congruent) or a different color (incongruent)
+    const congruent = Math.random() < 0.5;
+    setIsCongruent(congruent);
+    
+    if (congruent) {
+      // Show the expected/associated color
+      setDisplayedOptionId(currentTrial.expectedOptionId);
+    } else {
+      // Show a different color (random from non-expected options)
+      const otherOptions = currentTrial.options.filter(
+        (o) => o.id !== currentTrial.expectedOptionId
+      );
+      if (otherOptions.length > 0) {
+        const randomOther = otherOptions[Math.floor(Math.random() * otherOptions.length)];
+        setDisplayedOptionId(randomOther.id);
+      } else {
+        // Fallback: if no other options, show expected
+        setDisplayedOptionId(currentTrial.expectedOptionId);
+        setIsCongruent(true);
+      }
+    }
+    
     setPhase('stimulus');
   };
 
@@ -254,29 +307,25 @@ function SpeedCongruencyTestFlow({
     setPhase('done');
   };
 
-  const submitAndNext = async () => {
-    if (!currentTrial || !selectedOptionId) return;
+  const submitAndNext = async (choiceParam = null) => {
+    // Use the provided choice parameter or fall back to selectedOptionId
+    const choice = choiceParam !== null ? choiceParam : selectedOptionId;
+    if (!currentTrial || !choice || isCongruent === null) return;
 
     const reactionTimeMs = choiceStartRef.current
       ? performance.now() - choiceStartRef.current
       : null;
 
-    // Determine displayed vs expected colour. For the current inline deck
-    // we display the expected colour. We compute correctness by comparing
-    // the user's Yes/No choice to whether the displayed colour matches the
-    // expected association.
-    const expectedOption = currentTrial.options.find(
-      (o) => o.id === currentTrial.expectedOptionId
-    );
-    const expectedHex = expectedOption ? (expectedOption.color || '').toLowerCase() : null;
-    // Since the UI shows the expected colour, displayedHex === expectedHex.
-    const displayedMatchesExpected = !!expectedHex;
-
-    const isCorrect = (selectedOptionId === 'yes') === displayedMatchesExpected;
+    // Congruency test: user's Yes/No response should match whether displayed color
+    // is congruent (matches expected association) or incongruent (does not match).
+    // - If congruent: correct answer is "Yes" (it matches)
+    // - If incongruent: correct answer is "No" (it doesn't match)
+    const userSaidYes = choice === 'yes';
+    const isCorrect = userSaidYes === isCongruent;
 
     // Map yes/no to a backend-friendly selected id: 'correct' for matching,
     // otherwise something else (backend treats anything !== 'correct' as wrong).
-    const backendSelectedId = selectedOptionId === 'yes' ? 'correct' : 'incorrect';
+    const backendSelectedId = isCorrect ? 'correct' : 'incorrect';
 
     const payload = {
       testType: 'speedCongruency',
@@ -285,6 +334,8 @@ function SpeedCongruencyTestFlow({
       trigger: currentTrial.trigger,
       selectedOptionId: backendSelectedId,
       expectedOptionId: currentTrial.expectedOptionId,
+      displayedOptionId: displayedOptionId,
+      isCongruent,
       isCorrect,
       reactionTimeMs,
       trialIndex,
@@ -470,7 +521,7 @@ function SpeedCongruencyTestFlow({
       (o) => o.id === currentTrial.expectedOptionId
     );
     const displayedColorStim = expectedOptionStim ? expectedOptionStim.color : '#000000';
-    const lumStim = hexToLuminance(displayedColorStim.replace('#', ''));
+    const lumStim = hexToLuminance(displayedColorStim);
     const cardBgStim = lumStim > 0.6 ? '#111' : '#fff';
     const cardTextColorStim = lumStim > 0.6 ? '#fff' : '#000';
 
@@ -499,7 +550,7 @@ function SpeedCongruencyTestFlow({
   );
 
   const displayedColor = expectedOption ? expectedOption.color : '#000000';
-  const lum = hexToLuminance(displayedColor.replace('#', ''));
+  const lum = hexToLuminance(displayedColor);
     // The trigger text should be rendered in the associated colour itself
   const triggerTextColor = displayedColor;
 
@@ -542,8 +593,7 @@ function SpeedCongruencyTestFlow({
 
   const handleYesNo = async (choice) => {
     if (isSubmitting) return;
-    setSelectedOptionId(choice);
-    await submitAndNext();
+    await submitAndNext(choice);
   };
 
   const cardBg = lum > 0.6 ? '#111' : '#fff';
@@ -585,10 +635,10 @@ function SpeedCongruencyTestFlow({
         </div>
 
         {errorMessage && (
-          <p style={{ marginTop: 12, color: '#b00020' }}>{errorMessage}</p>
+          <p style={{ marginTop: 12, color: cardTextColor === '#000' ? '#b00020' : '#ff6b6b' }}>{errorMessage}</p>
         )}
 
-        <p style={{ marginTop: 12, fontSize: '0.9rem', color: '#777' }}>
+        <p style={{ marginTop: 12, fontSize: '0.9rem', color: cardTextColor === '#000' ? '#777' : '#ccc' }}>
           {mode === 'practice' ? 'Practice' : 'Main'} — Trial {trialIndex + 1} of {totalTrials}
         </p>
       </Card>
