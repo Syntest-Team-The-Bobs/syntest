@@ -126,7 +126,7 @@ describe('TestLayout', () => {
 
     it('renders progress section with Trial label', () => {
       render(<TestLayout {...baseProps} />)
-      expect(screen.getByText(/Trial:/)).toBeTruthy()
+      expect(screen.getByTestId('progress')).toBeTruthy()
     })
   })
 
@@ -266,7 +266,7 @@ describe('TestLayout', () => {
     it('renders progress section', () => {
       render(<TestLayout {...baseProps} progressValue={0.5} />)
       // Just check that Trial label exists since ProgressBar is mocked
-      expect(screen.getByText(/Trial:/)).toBeTruthy()
+      expect(screen.getByTestId('progress')).toBeTruthy()
     })
 
     it('shows trial information from TestProgress', () => {

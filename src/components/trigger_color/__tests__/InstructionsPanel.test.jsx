@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import InstructionsPanel from '../InstructionsPanel.jsx'
+import InstructionsPanel from '../InstructionsPanel' 
 
 describe('InstructionsPanel', () => {
     it('renders heading', () => {
