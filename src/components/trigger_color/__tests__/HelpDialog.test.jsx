@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import HelpDialog from '../HelpDialog'
+import HelpDialog from '../HelpDialog.jsx'
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = vi.fn()
