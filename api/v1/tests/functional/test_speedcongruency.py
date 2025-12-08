@@ -10,9 +10,8 @@ Comprehensive route and functional testing for speedcongruency.py
 
 Target: 95%+ coverage for speedcongruency.py
 """
-import pytest
 
-from models import db, Participant, TestData, SpeedCongruency, ColorStimulus
+from models import db, TestData, SpeedCongruency, ColorStimulus
 
 
 class TestSpeedCongruencyHelpers:
@@ -56,7 +55,9 @@ class TestSpeedCongruencyHelpers:
         data = response.get_json()
         assert "Participant not found" in data["error"]
 
-    def test_get_speed_congruency_pool_with_numeric_id(self, client, app, sample_participant):
+    def test_get_speed_congruency_pool_with_numeric_id(
+        self, client, app, sample_participant
+    ):
         """Pool using str(participant.id) path"""
         with app.app_context():
             td = TestData(
@@ -75,7 +76,9 @@ class TestSpeedCongruencyHelpers:
         response = client.get("/api/v1/speedcongruency/next?index=0")
         assert response.status_code == 500  # missing stimulus
 
-    def test_get_speed_congruency_pool_with_participant_id(self, client, app, sample_participant):
+    def test_get_speed_congruency_pool_with_participant_id(
+        self, client, app, sample_participant
+    ):
         """Pool fallback using participant.participant_id"""
         with app.app_context():
             td = TestData(
@@ -94,7 +97,9 @@ class TestSpeedCongruencyHelpers:
         response = client.get("/api/v1/speedcongruency/next?index=0")
         assert response.status_code == 500  # missing stimulus
 
-    def test_get_speed_congruency_pool_filters_color_family(self, client, app, sample_participant, sample_researcher):
+    def test_get_speed_congruency_pool_filters_color_family(
+        self, client, app, sample_participant, sample_researcher
+    ):
         """Pool only includes color family tests"""
         with app.app_context():
             td1 = TestData(
@@ -135,7 +140,9 @@ class TestSpeedCongruencyHelpers:
         data = response.get_json()
         assert data["totalTrials"] == 1
 
-    def test_build_color_options_structure(self, client, app, sample_participant, sample_researcher):
+    def test_build_color_options_structure(
+        self, client, app, sample_participant, sample_researcher
+    ):
         """Options structure includes required fields"""
         with app.app_context():
             stimulus = ColorStimulus(
@@ -180,7 +187,9 @@ class TestSpeedCongruencyHelpers:
         correct_options = [opt for opt in data["options"] if opt["id"] == "correct"]
         assert len(correct_options) == 1
 
-    def test_build_color_options_excludes_expected_color(self, client, app, sample_participant, sample_researcher):
+    def test_build_color_options_excludes_expected_color(
+        self, client, app, sample_participant, sample_researcher
+    ):
         """Distractors exclude expected color"""
         with app.app_context():
             stimulus = ColorStimulus(
@@ -213,7 +222,9 @@ class TestSpeedCongruencyHelpers:
         data = response.get_json()
 
         expected_hex = "#ef4444"
-        color_counts = sum(1 for opt in data["options"] if opt["hex"].lower() == expected_hex)
+        color_counts = sum(
+            1 for opt in data["options"] if opt["hex"].lower() == expected_hex
+        )
         assert color_counts == 1
 
 
@@ -269,7 +280,9 @@ class TestSpeedCongruencyNextEndpoint:
         assert "expectedColor" in data
         assert data["expectedColor"]["r"] == 77
 
-    def test_next_trial_index_parameter(self, client, app, sample_participant, sample_researcher):
+    def test_next_trial_index_parameter(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             for i, desc in enumerate(["ONE", "TWO"]):
                 stimulus = ColorStimulus(
@@ -303,7 +316,9 @@ class TestSpeedCongruencyNextEndpoint:
         assert data["index"] == 1
         assert data["trigger"] == "TWO"
 
-    def test_next_invalid_index(self, client, app, sample_participant, sample_researcher):
+    def test_next_invalid_index(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="A",
@@ -335,7 +350,9 @@ class TestSpeedCongruencyNextEndpoint:
         data = response.get_json()
         assert data["index"] == 0
 
-    def test_next_index_out_of_bounds(self, client, app, sample_participant, sample_researcher):
+    def test_next_index_out_of_bounds(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="B",
@@ -368,7 +385,9 @@ class TestSpeedCongruencyNextEndpoint:
         assert data["done"] is True
         assert data["totalTrials"] == 1
 
-    def test_next_negative_index(self, client, app, sample_participant, sample_researcher):
+    def test_next_negative_index(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="C",
@@ -421,7 +440,9 @@ class TestSpeedCongruencyNextEndpoint:
         data = response.get_json()
         assert data["error"] == "missing_stimulus"
 
-    def test_next_response_structure(self, client, app, sample_participant, sample_researcher):
+    def test_next_response_structure(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="GREEN",
@@ -468,7 +489,9 @@ class TestSpeedCongruencyNextEndpoint:
 class TestSpeedCongruencySubmitEndpoint:
     """Test POST /api/v1/speedcongruency/submit"""
 
-    def test_submit_correct_answer(self, client, app, sample_participant, sample_researcher):
+    def test_submit_correct_answer(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="RED",
@@ -521,7 +544,9 @@ class TestSpeedCongruencySubmitEndpoint:
             assert record.matched is True
             assert record.response_ms == 842
 
-    def test_submit_incorrect_answer(self, client, app, sample_participant, sample_researcher):
+    def test_submit_incorrect_answer(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="BLUE",
@@ -599,10 +624,14 @@ class TestSpeedCongruencySubmitEndpoint:
         assert data["ok"] is True
 
         with app.app_context():
-            record = SpeedCongruency.query.filter_by(participant_id=str(sample_participant.id)).first()
+            record = SpeedCongruency.query.filter_by(
+                participant_id=str(sample_participant.id)
+            ).first()
             assert record.response_ms is None
 
-    def test_submit_with_meta_json(self, client, app, sample_participant, sample_researcher):
+    def test_submit_with_meta_json(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="Y",
@@ -644,7 +673,9 @@ class TestSpeedCongruencySubmitEndpoint:
         assert response.status_code == 200
 
         with app.app_context():
-            record = SpeedCongruency.query.filter_by(participant_id=str(sample_participant.id)).first()
+            record = SpeedCongruency.query.filter_by(
+                participant_id=str(sample_participant.id)
+            ).first()
             assert record.meta_json is not None
             assert record.meta_json["test_data_id"] == test_data_id
 
@@ -668,10 +699,14 @@ class TestSpeedCongruencySubmitEndpoint:
             assert response.status_code == 200
 
         with app.app_context():
-            records = SpeedCongruency.query.filter_by(participant_id=str(sample_participant.id)).all()
+            records = SpeedCongruency.query.filter_by(
+                participant_id=str(sample_participant.id)
+            ).all()
             assert len(records) == 3
 
-    def test_submit_expected_color_from_stimulus(self, client, app, sample_participant, sample_researcher):
+    def test_submit_expected_color_from_stimulus(
+        self, client, app, sample_participant, sample_researcher
+    ):
         with app.app_context():
             stimulus = ColorStimulus(
                 description="ORANGE",
@@ -713,7 +748,9 @@ class TestSpeedCongruencySubmitEndpoint:
         assert response.status_code == 200
 
         with app.app_context():
-            record = SpeedCongruency.query.filter_by(participant_id=str(sample_participant.id)).first()
+            record = SpeedCongruency.query.filter_by(
+                participant_id=str(sample_participant.id)
+            ).first()
             assert record.expected_r == 255
             assert record.expected_g == 179
             assert record.expected_b == 71
@@ -738,5 +775,7 @@ class TestSpeedCongruencySubmitEndpoint:
         assert response.status_code == 200
 
         with app.app_context():
-            record = SpeedCongruency.query.filter_by(participant_id=str(sample_participant.id)).first()
+            record = SpeedCongruency.query.filter_by(
+                participant_id=str(sample_participant.id)
+            ).first()
             assert record.cue_type == "word"

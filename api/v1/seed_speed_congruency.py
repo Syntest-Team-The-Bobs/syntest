@@ -19,8 +19,9 @@ def seed(app=None):
     # If no app provided, import the default one
     if app is None:
         from app import app as default_app
+
         app = default_app
-        
+
     with app.app_context():
         # -------------------------------------------------
         # 1) Create / get a test participant

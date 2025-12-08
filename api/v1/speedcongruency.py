@@ -45,8 +45,10 @@ def _get_speed_congruency_pool(participant: Participant):
     # Often this will be str(participant.id) OR participant.participant_id.
     user_key = str(participant.id)
 
-    stmt = select(TestData).filter(TestData.user_id == user_key).filter(
-        TestData.family == "color"
+    stmt = (
+        select(TestData)
+        .filter(TestData.user_id == user_key)
+        .filter(TestData.family == "color")
     )
 
     # If you want to REQUIRE the participant to be a synesthete
@@ -57,7 +59,12 @@ def _get_speed_congruency_pool(participant: Participant):
 
     # Fallback: if your color pipeline used participant.participant_id instead
     if not rows and participant.participant_id:
-        stmt = select(TestData).filter(TestData.user_id == participant.participant_id).filter(TestData.family == "color").order_by(TestData.created_at.asc())
+        stmt = (
+            select(TestData)
+            .filter(TestData.user_id == participant.participant_id)
+            .filter(TestData.family == "color")
+            .order_by(TestData.created_at.asc())
+        )
         rows = db.session.execute(stmt).scalars().all()
 
     return rows

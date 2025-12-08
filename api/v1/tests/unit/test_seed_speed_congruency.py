@@ -9,12 +9,15 @@ Following teammate's pattern from test_colortest_routes.py:
 
 Target: 95%+ coverage for seed_speed_congruency.py
 """
+
 import pytest
 import sys
 import os
 
 # Add parent directories to path to access api modules
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+)
 
 from flask import Flask
 from models import db, Participant, ColorStimulus, TestData
@@ -157,7 +160,9 @@ class TestSeedSpeedCongruency:
             seed(app)
 
             # Verify no duplicate created
-            sun_stimuli = ColorStimulus.query.filter_by(description="SUN", r=255, g=223, b=0).all()
+            sun_stimuli = ColorStimulus.query.filter_by(
+                description="SUN", r=255, g=223, b=0
+            ).all()
             assert len(sun_stimuli) == 1
             assert sun_stimuli[0].id == original_id
 
