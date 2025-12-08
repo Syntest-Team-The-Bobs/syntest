@@ -6,7 +6,6 @@ the /api/color-test/batch endpoint which internally calls analyze_participant.
 """
 
 import pytest
-import json
 
 
 @pytest.fixture
@@ -332,12 +331,6 @@ class TestAnalyzeParticipantThroughEndpoints:
     def test_batch_high_cutoff_synesthete(self, auth_client, app):
         """Test classification with high cutoff (exercises diagnosis logic)."""
         with app.app_context():
-            from models import Participant
-            from models import db
-
-            # Add some existing trials
-            p = Participant.query.filter_by(participant_id="test_auth").first()
-
             # Add batch
             result = auth_client.post(
                 "/api/color-test/batch",
