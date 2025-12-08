@@ -1,4 +1,4 @@
-"""
+ api/"""
 Comprehensive testing for seed_speed_congruency.py
 
 Following teammate's pattern from test_colortest_routes.py:
@@ -57,7 +57,7 @@ class TestSeedSpeedCongruency:
                 db.session.commit()
 
             # Run seed
-            seed()
+            seed(app)
 
             # Verify participant created
             participant = Participant.query.filter_by(
@@ -89,7 +89,7 @@ class TestSeedSpeedCongruency:
             from seed_speed_congruency import seed
 
             # Run seed (should not create duplicate)
-            seed()
+            seed(app)
 
             # Verify only one participant exists with same ID
             participants = Participant.query.filter_by(
@@ -109,7 +109,7 @@ class TestSeedSpeedCongruency:
 
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             # Verify all 4 stimuli created
             sun = ColorStimulus.query.filter_by(description="SUN").first()
@@ -154,7 +154,7 @@ class TestSeedSpeedCongruency:
 
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             # Verify no duplicate created
             sun_stimuli = ColorStimulus.query.filter_by(description="SUN", r=255, g=223, b=0).all()
@@ -170,7 +170,7 @@ class TestSeedSpeedCongruency:
 
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             # Get participant
             participant = Participant.query.filter_by(
@@ -195,7 +195,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -218,8 +218,8 @@ class TestSeedSpeedCongruency:
             from seed_speed_congruency import seed
 
             # Run seed twice
-            seed()
-            seed()
+            seed(app)
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -240,7 +240,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -260,7 +260,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -278,7 +278,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -301,7 +301,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             stimuli = ColorStimulus.query.filter(
                 ColorStimulus.description.in_(["SUN", "MOON", "MUSIC", "MONDAY"])
@@ -317,9 +317,9 @@ class TestSeedSpeedCongruency:
             from seed_speed_congruency import seed
 
             # Run seed 3 times
-            seed()
-            seed()
-            seed()
+            seed(app)
+            seed(app)
+            seed(app)
 
             # Should still have exactly 1 participant
             participants = Participant.query.filter_by(
@@ -344,7 +344,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -357,7 +357,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             stimuli = ColorStimulus.query.filter(
                 ColorStimulus.description.in_(["SUN", "MOON", "MUSIC", "MONDAY"])
@@ -372,7 +372,7 @@ class TestSeedSpeedCongruency:
         with app.app_context():
             from seed_speed_congruency import seed
 
-            seed()
+            seed(app)
 
             participant = Participant.query.filter_by(
                 email="speedtest@example.com"
@@ -392,7 +392,7 @@ class TestSeedSpeedCongruency:
 
             # Even if some data exists, seed should complete
             try:
-                seed()
+                seed(app)
                 assert True  # Seed completed without exception
             except Exception as e:
                 pytest.fail(f"Seed should not raise exception: {e}")

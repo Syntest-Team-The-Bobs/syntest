@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, session
 import random
 
 from models import db, Participant, TestData, SpeedCongruency, ColorStimulus
+from sqlalchemy import select
 
 bp = Blueprint("speed_congruency", __name__)
 
@@ -19,7 +20,7 @@ def _require_participant():
     if "user_id" not in session or session.get("user_role") != "participant":
         return None, (jsonify({"error": "Not authenticated as participant"}), 401)
 
-    participant = Participant.query.get(session["user_id"])
+    participant = db.session.get(Participant, session["user_id"])
     if not participant:
         return None, (jsonify({"error": "Participant not found"}), 404)
 
@@ -44,24 +45,20 @@ def _get_speed_congruency_pool(participant: Participant):
     # Often this will be str(participant.id) OR participant.participant_id.
     user_key = str(participant.id)
 
-    q = TestData.query.filter(TestData.user_id == user_key).filter(
+    stmt = select(TestData).filter(TestData.user_id == user_key).filter(
         TestData.family == "color"
     )
 
     # If you want to REQUIRE the participant to be a synesthete
     # (i.e., they passed some consistency threshold), keep this filter:
-    q = q.filter((TestData.cct_valid == 1) | (TestData.cct_pass.is_(True)))
+    stmt = stmt.filter((TestData.cct_valid == 1) | (TestData.cct_pass.is_(True)))
 
-    rows = q.order_by(TestData.created_at.asc()).all()
+    rows = db.session.execute(stmt).scalars().all()
 
     # Fallback: if your color pipeline used participant.participant_id instead
     if not rows and participant.participant_id:
-        rows = (
-            TestData.query.filter(TestData.user_id == participant.participant_id)
-            .filter(TestData.family == "color")
-            .order_by(TestData.created_at.asc())
-            .all()
-        )
+        stmt = select(TestData).filter(TestData.user_id == participant.participant_id).filter(TestData.family == "color").order_by(TestData.created_at.asc())
+        rows = db.session.execute(stmt).scalars().all()
 
     return rows
 
@@ -285,7 +282,7 @@ def api_speed_congruency_submit():
     # Determine expected color from TestData / ColorStimulus (for logging)
     expected_r = expected_g = expected_b = None
     if test_data_id:
-        td = TestData.query.get(test_data_id)
+        td = db.session.get(TestData, test_data_id)
         if td and td.stimulus:
             expected_r, expected_g, expected_b = (
                 td.stimulus.r,

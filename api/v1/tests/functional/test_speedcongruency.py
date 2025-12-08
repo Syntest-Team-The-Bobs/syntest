@@ -33,7 +33,7 @@ def app():
     app.config["SECRET_KEY"] = "test-secret-key"
 
     db.init_app(app)
-    app.register_blueprint(bp)
+    app.register_blueprint(bp, url_prefix="/speedcongruency/")
 
     with app.app_context():
         db.create_all()

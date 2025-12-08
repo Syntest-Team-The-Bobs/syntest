@@ -12,11 +12,15 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash
 
-from app import app  # uses same db + config as your main API
 from models import db, Participant, ColorStimulus, TestData
 
 
-def seed():
+def seed(app=None):
+    # If no app provided, import the default one
+    if app is None:
+        from app import app as default_app
+        app = default_app
+        
     with app.app_context():
         # -------------------------------------------------
         # 1) Create / get a test participant
