@@ -16,7 +16,7 @@ export default function TestComplete({ onNext, isDone = false, analysisResult: i
     let mounted = true;
     setLoading(true);
     setError(null);
-    fetch('/api/analysis/run', {
+    fetch('/api/v1/analysis/run', {
       method: 'GET',
       credentials: 'include',
     })

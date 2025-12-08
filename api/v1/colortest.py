@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, ColorTrial, Participant
 from datetime import datetime, timezone
-from analysis import analyze_participant
+from .analysis import analyze_participant
 
 bp = Blueprint("colortest", __name__)
 
@@ -73,8 +73,10 @@ def save_color_trials_batch():
 
         for trial_data in trials_data:
             # Extract test_type from first trial's meta_json
-            if test_type is None and trial_data.get("meta_json"):
-                test_type = trial_data.get("meta_json", {}).get("test_type")
+            if test_type is None:
+                meta = trial_data.get("meta_json", {})
+                if meta:
+                    test_type = meta.get("test_type")
 
             trial = ColorTrial(
                 participant_id=participant.participant_id,
@@ -98,7 +100,12 @@ def save_color_trials_batch():
                 participant.participant_id, test_type=test_type
             )
         except Exception as e:
+            import traceback
+
+            if isinstance(e, (KeyboardInterrupt, SystemExit, GeneratorExit)):
+                raise
             print(f"Warning: Analysis failed after batch save: {str(e)}")
+            traceback.print_exc()
             # Don't fail the batch save if analysis fails; just log it
 
         return (

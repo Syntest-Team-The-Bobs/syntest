@@ -15,7 +15,7 @@ sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 )
 
-from analysis_core import (
+from v1.analysis_core import (
     srgb_channel_to_linear,
     rgb255_to_linear,
     linear_rgb_to_xyz,

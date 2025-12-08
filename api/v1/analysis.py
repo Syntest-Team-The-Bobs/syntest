@@ -13,39 +13,22 @@ The pure analysis logic is in analysis_core.py and achieves 100% test coverage.
 """
 
 from flask import Blueprint, request, jsonify, session
+from sqlalchemy import select
+from models import db, Participant, ColorTrial, TestData, AnalyzedTestData
+from .analysis_core import (
+    srgb_channel_to_linear,
+    rgb255_to_linear,
+    linear_rgb_to_xyz,
+    xyz_to_luv,
+    rgb255_to_luv,
+    hex_to_rgb,
+    trial_rgb_or_none,
+    luv_distance,
+    mean_pairwise_distance,
+    analyze_participant_logic,
+)
 
-try:
-    # When imported as package (e.g., `import api.analysis`) use package import
-    from api.models import db, Participant, ColorTrial, TestData, AnalyzedTestData
-    from api.analysis_core import (
-        srgb_channel_to_linear,
-        rgb255_to_linear,
-        linear_rgb_to_xyz,
-        xyz_to_luv,
-        rgb255_to_luv,
-        hex_to_rgb,
-        trial_rgb_or_none,
-        luv_distance,
-        mean_pairwise_distance,
-        analyze_participant_logic,
-    )
-except Exception:
-    # Fallback for when running modules directly from the `api/` directory
-    from models import db, Participant, ColorTrial, TestData, AnalyzedTestData
-    from analysis_core import (
-        srgb_channel_to_linear,
-        rgb255_to_linear,
-        linear_rgb_to_xyz,
-        xyz_to_luv,
-        rgb255_to_luv,
-        hex_to_rgb,
-        trial_rgb_or_none,
-        luv_distance,
-        mean_pairwise_distance,
-        analyze_participant_logic,
-    )
-
-bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
+bp = Blueprint("analysis", __name__)
 
 
 def analyze_participant(
@@ -73,10 +56,12 @@ def analyze_participant(
       dict with per-trigger details and participant summary
     """
     # Step 1: Fetch trials from database
-    query = ColorTrial.query.filter_by(participant_id=participant_str_id)
-    all_trials = query.order_by(
-        ColorTrial.stimulus_id.asc(), ColorTrial.trial_index.asc()
-    ).all()
+    stmt = (
+        select(ColorTrial)
+        .filter(ColorTrial.participant_id == participant_str_id)
+        .order_by(ColorTrial.stimulus_id.asc(), ColorTrial.trial_index.asc())
+    )
+    all_trials = db.session.execute(stmt).scalars().all()
 
     # Filter by test_type if specified
     if test_type:
@@ -151,7 +136,8 @@ def analyze_participant(
     db.session.commit()  # type: ignore[attr-defined]
 
     # Persist AnalyzedTestData (diagnosis record)
-    participant = Participant.query.filter_by(participant_id=participant_str_id).first()
+    stmt = select(Participant).filter(Participant.participant_id == participant_str_id)
+    participant = db.session.execute(stmt).scalar_one_or_none()
     if participant:
         atd = AnalyzedTestData(
             user_id=participant.id,
@@ -178,7 +164,7 @@ def run_analysis():
         try:
             user_id = session.get("user_id")
             if user_id:
-                participant = Participant.query.get(user_id)
+                participant = db.session.get(Participant, user_id)
                 if participant:
                     participant_str_id = participant.participant_id
         except Exception:

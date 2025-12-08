@@ -14,7 +14,7 @@ def app():
     """Flask app for testing"""
     from flask import Flask
     from models import db
-    from colortest import bp as colortest_bp
+    from v1.colortest import bp as colortest_bp
 
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
@@ -23,7 +23,7 @@ def app():
     app.config["SECRET_KEY"] = "test-secret"
 
     db.init_app(app)
-    app.register_blueprint(colortest_bp)
+    app.register_blueprint(colortest_bp, url_prefix="/api/color-test")
 
     with app.app_context():
         db.create_all()
