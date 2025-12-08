@@ -16,15 +16,6 @@ from flask import Blueprint, request, jsonify, session
 from sqlalchemy import select
 from models import db, Participant, ColorTrial, TestData, AnalyzedTestData
 from .analysis_core import (
-    srgb_channel_to_linear,
-    rgb255_to_linear,
-    linear_rgb_to_xyz,
-    xyz_to_luv,
-    rgb255_to_luv,
-    hex_to_rgb,
-    trial_rgb_or_none,
-    luv_distance,
-    mean_pairwise_distance,
     analyze_participant_logic,
 )
 
@@ -176,7 +167,7 @@ def run_analysis():
     try:
         result = analyze_participant(participant_str_id)
         return jsonify(result)
-    except Exception as e:
+    except Exception:
         db.session.rollback()  # type: ignore[attr-defined]
         import traceback
 

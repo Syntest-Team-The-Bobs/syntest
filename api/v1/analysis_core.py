@@ -7,7 +7,7 @@ This module contains all testable analysis functions that can achieve 100% cover
 
 from math import pow, sqrt
 from collections import defaultdict
-from statistics import mean, median, pstdev
+from statistics import mean, median
 
 
 # ---------------------- Color conversions ----------------------
