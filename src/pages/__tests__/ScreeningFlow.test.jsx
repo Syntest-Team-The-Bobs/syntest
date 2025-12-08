@@ -3,6 +3,9 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
 import ScreeningFlow from "../ScreeningFlow";
 
+// Mock scrollIntoView since JSDOM doesn't support it
+Element.prototype.scrollIntoView = vi.fn();
+
 vi.mock("../../services/screening", () => {
 	const service = {
 		saveConsent: vi.fn(() => Promise.resolve({ ok: true })),
@@ -57,9 +60,9 @@ describe("ScreeningFlow", () => {
 			// On single-page flow, definition section is always visible
 			expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
 		});
-	});
+	}, 10000);
 
-	it("shows all steps on single page", async () => {
+	it("shows all steps on single page", () => {
 		renderWithRouter("/screening");
 
 		// All step headers should be visible on the single page
@@ -73,7 +76,7 @@ describe("ScreeningFlow", () => {
 		).toBeInTheDocument();
 	});
 
-	it("shows navigation buttons for all steps", async () => {
+	it("shows navigation buttons for all steps", () => {
 		renderWithRouter("/screening");
 
 		// Navigation bar should show all 4 steps

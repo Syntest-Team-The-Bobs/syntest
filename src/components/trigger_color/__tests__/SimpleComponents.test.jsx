@@ -43,6 +43,25 @@ describe("MusicPlayButton", () => {
 		// We don't care about exact color string here; just that code ran without crashing
 		expect(true).toBe(true);
 	});
+
+	it("runs focus handlers to change background color", () => {
+		render(<MusicPlayButton stimulus="C4" />);
+		const button = screen.getByLabelText("Play sound");
+
+		// Trigger focus event - should change background color
+		fireEvent.focus(button);
+		expect(button.style.backgroundColor).toBe("rgb(243, 244, 246)");
+	});
+
+	it("runs blur handlers to reset background color", () => {
+		render(<MusicPlayButton stimulus="C4" />);
+		const button = screen.getByLabelText("Play sound");
+
+		// Trigger focus then blur
+		fireEvent.focus(button);
+		fireEvent.blur(button);
+		expect(button.style.backgroundColor).toBe("white");
+	});
 });
 
 describe("StimulusDisplay", () => {
