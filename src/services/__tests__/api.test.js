@@ -119,9 +119,11 @@ describe("api service", () => {
 		};
 
 		await expect(errorHandler(error)).rejects.toBe(error);
-		expect(consoleSpy).toHaveBeenCalledWith("API Error:", "Something went wrong");
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"API Error:",
+			"Something went wrong",
+		);
 
 		consoleSpy.mockRestore();
 	});
 });
-

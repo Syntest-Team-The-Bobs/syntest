@@ -268,13 +268,11 @@ describe("BaseColorTest", () => {
 
 	describe("handleTestComplete", () => {
 		it("calls submitBatch on test completion", async () => {
-			const consoleSpy = vi
-				.spyOn(console, "log")
-				.mockImplementation(() => {});
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 			// We need to capture the callback passed to useColorTest
 			let capturedCallback;
-			useColorTest.mockImplementation((stimuli, practice, onComplete) => {
+			useColorTest.mockImplementation((_stimuli, _practice, onComplete) => {
 				capturedCallback = onComplete;
 				return baseHooks;
 			});
@@ -311,7 +309,7 @@ describe("BaseColorTest", () => {
 				.mockImplementation(() => {});
 
 			let capturedCallback;
-			useColorTest.mockImplementation((stimuli, practice, onComplete) => {
+			useColorTest.mockImplementation((_stimuli, _practice, onComplete) => {
 				capturedCallback = onComplete;
 				return baseHooks;
 			});
