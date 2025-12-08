@@ -1,9 +1,12 @@
-name: Node.js
+name: Node.js 
 
-on: [pull_request]
+on: 
+  pull_request: 
+    paths-ignore: 
+      - "api/**"
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
