@@ -9,6 +9,7 @@ from .colortest import bp as colortest_bp
 from .screening import bp as screening_bp
 from .researcher_dashboard import bp as researcher_dashboard_bp
 from .speedcongruency import bp as speedcongruency_bp
+from .analysis import bp as analysis_bp
 
 # =====================================
 # Setup blueprint
@@ -24,6 +25,7 @@ bp_v1.register_blueprint(colortest_bp, url_prefix="/color-test/")
 bp_v1.register_blueprint(screening_bp, url_prefix="/screening/")
 bp_v1.register_blueprint(researcher_dashboard_bp, url_prefix="/researcher/dashboard/")
 bp_v1.register_blueprint(speedcongruency_bp, url_prefix="/speedcongruency/")
+bp_v1.register_blueprint(analysis_bp, url_prefix="/analysis/")
 
 # =====================================
 # AUTHENTICATION ENDPOINTS

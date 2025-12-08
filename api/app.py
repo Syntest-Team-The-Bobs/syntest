@@ -98,6 +98,15 @@ def not_found(e):
     return app.send_static_file("index.html")
 
 
+# Return JSON for uncaught server errors on API routes to make debugging easier
+@app.errorhandler(500)
+def handle_500(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": str(e)}), 500
+    # For non-API routes fall back to default behavior
+    return app.send_static_file("index.html"), 500
+
+
 # =====================================
 # RUN DEVELOPMENT SERVER
 # =====================================
