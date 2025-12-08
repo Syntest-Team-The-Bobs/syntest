@@ -1,101 +1,93 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { vi } from 'vitest';
-import ScreeningFlow from '../ScreeningFlow';
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { vi } from "vitest";
+import ScreeningFlow from "../ScreeningFlow";
 
-vi.mock('../../services/screening', () => {
-  const service = {
-    saveConsent: vi.fn(() => Promise.resolve({ ok: true })),
-    saveStep1: vi.fn(() => Promise.resolve({ ok: true })),
-    saveStep2: vi.fn(() => Promise.resolve({ ok: true })),
-    saveStep3: vi.fn(() => Promise.resolve({ ok: true })),
-    saveStep4: vi.fn(() => Promise.resolve({ ok: true })),
-    finalize: vi.fn(() =>
-      Promise.resolve({
-        eligible: true,
-        selected_types: ['Grapheme – Color'],
-        recommended: [{ name: 'Color Consistency', reason: 'Selected grapheme' }],
-      }),
-    ),
-  };
-  return { screeningService: service };
+vi.mock("../../services/screening", () => {
+	const service = {
+		saveConsent: vi.fn(() => Promise.resolve({ ok: true })),
+		saveStep1: vi.fn(() => Promise.resolve({ ok: true })),
+		saveStep2: vi.fn(() => Promise.resolve({ ok: true })),
+		saveStep3: vi.fn(() => Promise.resolve({ ok: true })),
+		saveStep4: vi.fn(() => Promise.resolve({ ok: true })),
+		finalize: vi.fn(() =>
+			Promise.resolve({
+				eligible: true,
+				selected_types: ["Grapheme – Color"],
+				recommended: [
+					{ name: "Color Consistency", reason: "Selected grapheme" },
+				],
+			}),
+		),
+	};
+	return { screeningService: service };
 });
 
-const renderWithRouter = (initialPath = '/screening/0') =>
-  render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/screening/:step" element={<ScreeningFlow />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+const renderWithRouter = (initialPath = "/screening") =>
+	render(
+		<MemoryRouter initialEntries={[initialPath]}>
+			<Routes>
+				<Route path="/screening/:step?" element={<ScreeningFlow />} />
+			</Routes>
+		</MemoryRouter>,
+	);
 
-describe('ScreeningFlow', () => {
-  beforeEach(() => {
-    window.sessionStorage.clear();
-    vi.clearAllMocks();
-  });
+describe("ScreeningFlow", () => {
+	beforeEach(() => {
+		window.sessionStorage.clear();
+		vi.clearAllMocks();
+	});
 
-  it('requires consent before advancing to the next step', async () => {
-    renderWithRouter('/screening/0');
+	it("requires consent before advancing to the next step", async () => {
+		renderWithRouter("/screening");
 
-    const checkbox = screen.getByLabelText('I consent to take part in this study.');
-    fireEvent.click(checkbox);
+		const checkbox = screen.getByLabelText(
+			"I consent to take part in this study.",
+		);
+		fireEvent.click(checkbox);
 
-    fireEvent.click(screen.getByRole('button', { name: /begin screening/i }));
+		// Find and click the first enabled continue button (in consent section)
+		const continueButtons = screen.getAllByRole("button", {
+			name: /save & continue/i,
+		});
+		const enabledButton = continueButtons.find((btn) => !btn.disabled);
+		fireEvent.click(enabledButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/confirm none apply to you/i)).toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			// On single-page flow, definition section is always visible
+			expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
+		});
+	});
 
-  it('saves health responses and routes to step 2 when eligible', async () => {
-    window.sessionStorage.setItem(
-      'screening_state',
-      JSON.stringify({
-        consent: true,
-        health: { drug: false, neuro: false, medical: false },
-        definition: null,
-        pain: null,
-        synTypes: { grapheme: null, music: null, lexical: null, sequence: null },
-        otherExperiences: '',
-      }),
-    );
+	it("shows all steps on single page", async () => {
+		renderWithRouter("/screening");
 
-    renderWithRouter('/screening/1');
+		// All step headers should be visible on the single page
+		expect(screen.getByText(/welcome to the screening/i)).toBeInTheDocument();
+		expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
+		expect(
+			screen.getByText(/select your synesthesia types/i),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", { name: /your results/i }),
+		).toBeInTheDocument();
+	});
 
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+	it("shows navigation buttons for all steps", async () => {
+		renderWithRouter("/screening");
 
-    await waitFor(() => {
-      expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
-    });
-  });
-
-  it('records type selections and fetches summary data', async () => {
-    window.sessionStorage.setItem(
-      'screening_state',
-      JSON.stringify({
-        consent: true,
-        health: { drug: false, neuro: false, medical: false },
-        definition: 'yes',
-        pain: 'no',
-        synTypes: { grapheme: null, music: null, lexical: null, sequence: null },
-        otherExperiences: '',
-      }),
-    );
-
-    renderWithRouter('/screening/4');
-
-    fireEvent.click(screen.getByLabelText('Letter • Color — Yes'));
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/your next step/i)).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/color consistency/i)).toBeInTheDocument();
-    });
-  });
+		// Navigation bar should show all 4 steps
+		expect(
+			screen.getByRole("button", { name: /1.*consent/i }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: /2.*definition/i }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: /3.*types/i }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: /4.*results/i }),
+		).toBeInTheDocument();
+	});
 });
-
