@@ -23,12 +23,6 @@ vi.mock('../ColorPreviewLock', () => ({
   )
 }))
 
-vi.mock('../InstructionsPanel', () => ({
-  default: ({ testType }) => (
-    <div data-testid="instructions">Instructions for {testType}</div>
-  )
-}))
-
 vi.mock('../TestProgress', () => ({
   default: ({ stimulus, currentTrial, progressInTrial, itemsPerTrial }) => (
     <div data-testid="progress">
