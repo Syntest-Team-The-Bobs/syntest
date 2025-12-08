@@ -1,8 +1,7 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
 	"formatter": {
-		"enabled": true,
-		"lineEnding": "crlf"
+		"enabled": true
 	},
 	"linter": {
 		"enabled": true
