@@ -1,5 +1,5 @@
 // src/pages/trigger_color/SpeedCongruencyTest.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { musicPlayer } from "../../services/audioPlayer";
@@ -225,7 +225,7 @@ function SpeedCongruencyTestFlow({
 				cancelled = true;
 				try {
 					musicPlayer.stop();
-				} catch (e) {}
+				} catch (_e) {}
 			};
 		}
 
@@ -244,7 +244,7 @@ function SpeedCongruencyTestFlow({
 		}, 1000);
 
 		return () => clearInterval(timerId);
-	}, [phase, currentTrial, countdownSeconds, isCongruent, displayedOptionId]);
+	}, [phase, currentTrial, countdownSeconds, isCongruent]);
 
 	const resetForTrial = () => {
 		setSelectedOptionId(null);
@@ -420,29 +420,6 @@ function SpeedCongruencyTestFlow({
 		fontSize: "1.25rem",
 	};
 
-	const optionsGridStyle = {
-		display: "grid",
-		gridTemplateColumns: "repeat(2, 1fr)",
-		gap: "32px",
-		justifyItems: "center",
-		marginTop: "24px",
-		marginBottom: "24px",
-	};
-
-	const optionBoxBaseStyle = {
-		width: "140px",
-		height: "140px",
-		borderRadius: "12px",
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		fontSize: "1rem",
-		cursor: "pointer",
-		border: "3px solid transparent",
-		color: "#000",
-		userSelect: "none",
-	};
-
 	// helper: compute luminance to pick contrasting text/background
 	function hexToLuminance(hex) {
 		try {
@@ -454,7 +431,7 @@ function SpeedCongruencyTestFlow({
 				return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 			});
 			return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-		} catch (e) {
+		} catch (_e) {
 			return 1; // assume light
 		}
 	}
@@ -643,7 +620,7 @@ function SpeedCongruencyTestFlow({
 
 				<div style={{ marginTop: "16px", marginBottom: "8px" }}>
 					{isMusic ? (
-						<div style={colorBoxStyle} aria-label="color-box" />
+						<div style={colorBoxStyle} />
 					) : (
 						<div style={colouredTriggerStyle}>{currentTrial.trigger}</div>
 					)}
