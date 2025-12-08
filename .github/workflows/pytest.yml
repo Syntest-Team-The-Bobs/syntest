@@ -33,10 +33,10 @@ jobs:
         uv pip install -r requirements.txt
         uv pip install -r dev-requirements.txt
     - name: Run tests 
-      run: PYTHONPATH="./api" uv run pytest --cov-report=html
+      run: PYTHONPATH="./api" uv run pytest --cov=api --cov-report=html
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: api/htmlcov/
+        path: htmlcov/
 
