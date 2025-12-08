@@ -2,9 +2,6 @@
 # Separates business logic from data models following SOLID principles
 
 from models import (
-    ScreeningSession,
-    ScreeningHealth,
-    ScreeningTypeChoice,
     YesNo,
     YesNoMaybe,
     Frequency,

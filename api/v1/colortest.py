@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from models import db, ColorTrial, ColorStimulus, Participant
+from models import db, ColorTrial, Participant
 from datetime import datetime, timezone
 
 bp = Blueprint("colortest", __name__)

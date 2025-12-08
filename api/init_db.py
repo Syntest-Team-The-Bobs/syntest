@@ -4,24 +4,6 @@ Run this if you get errors about missing tables.
 """
 
 from app import app, db
-from models import (
-    Participant,
-    Researcher,
-    Test,
-    TestResult,
-    ScreeningResponse,
-    ColorStimulus,
-    ColorTrial,
-    SpeedCongruency,
-    TestData,
-    ScreeningSession,
-    ScreeningHealth,
-    ScreeningDefinition,
-    ScreeningPainEmotion,
-    ScreeningTypeChoice,
-    ScreeningEvent,
-    ScreeningRecommendedTest,
-)
 
 with app.app_context():
     print("Creating all database tables...")

@@ -248,7 +248,6 @@ class ScreeningSession(db.Model):
         from services import (
             EligibilityService,
             RecommendationService,
-            TypeSelectionService,
         )
 
         # Use services instead of direct method calls
