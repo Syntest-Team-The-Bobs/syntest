@@ -6,10 +6,15 @@ import TestLayout from "../TestLayout";
 vi.mock("../ColorWheel", () => ({
 	default: ({ onPick, onToggleLock, lock }) => (
 		<div data-testid="color-wheel">
-			<button type="button" onClick={() => onPick?.({ r: 255, g: 0, b: 0, hex: "FF0000" })}>
+			<button
+				type="button"
+				onClick={() => onPick?.({ r: 255, g: 0, b: 0, hex: "FF0000" })}
+			>
 				Pick Color
 			</button>
-			<button type="button" onClick={onToggleLock}>Toggle Lock</button>
+			<button type="button" onClick={onToggleLock}>
+				Toggle Lock
+			</button>
 			<div>Lock: {lock ? "true" : "false"}</div>
 		</div>
 	),
@@ -20,7 +25,9 @@ vi.mock("../ColorPreviewLock", () => ({
 		<div data-testid="color-preview-lock">
 			<div>Color: {selected?.hex || "none"}</div>
 			<div>Locked: {locked ? "yes" : "no"}</div>
-			<button type="button" onClick={onToggle}>Toggle</button>
+			<button type="button" onClick={onToggle}>
+				Toggle
+			</button>
 		</div>
 	),
 }));
@@ -37,14 +44,14 @@ vi.mock("../TestProgress", () => ({
 
 vi.mock("../MusicPlayButton", () => ({
 	default: ({ stimulus, onReplay }) => (
-		<button data-testid="music-play" onClick={onReplay}>
+		<button type="button" data-testid="music-play" onClick={onReplay}>
 			Play {stimulus}
 		</button>
 	),
 }));
 
 vi.mock("../StimulusDisplay", () => ({
-	default: ({ stimulus, testType, getFontSize }) => (
+	default: ({ stimulus, getFontSize }) => (
 		<div data-testid="stimulus-display" style={{ fontSize: getFontSize() }}>
 			{stimulus}
 		</div>

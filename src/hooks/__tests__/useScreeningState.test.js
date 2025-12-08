@@ -363,10 +363,12 @@ describe("useScreeningState", () => {
 
 			// State should be reset
 			expect(result.current.state).toEqual(defaultScreeningState());
-			
+
 			// Note: After clearState, the default state is written back to session storage
 			// So we check that state is default, not that storage is empty
-			const stored = JSON.parse(sessionStorage.getItem(SCREENING_STORAGE_KEY) || "{}");
+			const stored = JSON.parse(
+				sessionStorage.getItem(SCREENING_STORAGE_KEY) || "{}",
+			);
 			expect(stored.consent).toBe(false);
 		});
 
@@ -721,7 +723,7 @@ describe("useScreeningState", () => {
 		it("should handle special characters in otherExperiences", () => {
 			const { result } = renderHook(() => useScreeningState());
 
-			const specialText = 'Test with "quotes", \'apostrophes\', and <tags>';
+			const specialText = "Test with \"quotes\", 'apostrophes', and <tags>";
 
 			act(() => {
 				result.current.updateState({ otherExperiences: specialText });

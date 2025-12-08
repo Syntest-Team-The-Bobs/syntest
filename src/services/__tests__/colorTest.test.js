@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { colorTestService } from "../colorTest";
 import api from "../api";
+import { colorTestService } from "../colorTest";
 
 vi.mock("../api");
 

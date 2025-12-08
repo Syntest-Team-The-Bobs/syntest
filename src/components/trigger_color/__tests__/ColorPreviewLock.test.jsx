@@ -61,11 +61,11 @@ describe("ColorPreviewLock", () => {
 			<ColorPreviewLock selected={selected} onToggle={onToggle} />,
 		);
 
-		// Click the lock container div directly
-		const lockContainer = container.querySelector(
-			'div[style*="position: absolute"]',
+		// Click the lock button directly
+		const lockButton = container.querySelector(
+			'button[style*="position: absolute"]',
 		);
-		fireEvent.click(lockContainer);
+		fireEvent.click(lockButton);
 
 		expect(onToggle).toHaveBeenCalled();
 	});

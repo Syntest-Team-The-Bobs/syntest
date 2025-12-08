@@ -144,7 +144,7 @@ describe("useColorTestAPI", () => {
 			await act(async () => {
 				try {
 					await result.current.submitTrial({ stimulus: "C4" });
-				} catch (e) {
+				} catch (_e) {
 					// Expected
 				}
 			});
@@ -170,7 +170,7 @@ describe("useColorTestAPI", () => {
 			await act(async () => {
 				try {
 					await result.current.submitTrial({ stimulus: "C4" });
-				} catch (e) {
+				} catch (_e) {
 					// Expected
 				}
 			});
@@ -296,7 +296,7 @@ describe("useColorTestAPI", () => {
 			await act(async () => {
 				try {
 					await result.current.submitBatch(trials, testType);
-				} catch (e) {
+				} catch (_e) {
 					// Expected
 				}
 			});
@@ -322,7 +322,7 @@ describe("useColorTestAPI", () => {
 			await act(async () => {
 				try {
 					await result.current.submitBatch([{ stimulus: "C4" }], "music");
-				} catch (e) {
+				} catch (_e) {
 					// Expected
 				}
 			});
@@ -346,7 +346,7 @@ describe("useColorTestAPI", () => {
 			await act(async () => {
 				try {
 					await result.current.submitTrial({ stimulus: "C4" });
-				} catch (e) {
+				} catch (_e) {
 					// Expected
 				}
 			});

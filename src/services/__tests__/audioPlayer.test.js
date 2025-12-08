@@ -1,17 +1,19 @@
+import Soundfont from "soundfont-player";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { musicPlayer } from "../audioPlayer";
-import Soundfont from "soundfont-player";
 
 vi.mock("soundfont-player", () => ({
 	default: {
-		instrument: vi.fn(() => Promise.resolve({
-			play: vi.fn(() => ({ stop: vi.fn() })),
-		})),
+		instrument: vi.fn(() =>
+			Promise.resolve({
+				play: vi.fn(() => ({ stop: vi.fn() })),
+			}),
+		),
 	},
 }));
 
 describe("MusicPlayer", () => {
-	let ctxStart, ctxStop;
+	let _ctxStart, _ctxStop;
 	beforeEach(() => {
 		vi.clearAllMocks();
 		musicPlayer.audioContext = {
@@ -46,7 +48,9 @@ describe("MusicPlayer", () => {
 
 	it("returns correct mapped instrument names", () => {
 		expect(musicPlayer.getSoundfontInstrument("violin")).toBe("violin");
-		expect(musicPlayer.getSoundfontInstrument("unknown")).toBe("acoustic_grand_piano");
+		expect(musicPlayer.getSoundfontInstrument("unknown")).toBe(
+			"acoustic_grand_piano",
+		);
 	});
 
 	it("converts note to frequency correctly", () => {
@@ -55,7 +59,10 @@ describe("MusicPlayer", () => {
 	});
 
 	it("parses single and dyad stimuli", () => {
-		expect(musicPlayer.parseStimulus("C4-piano")).toEqual({ notes: ["C4"], instrument: "piano" });
+		expect(musicPlayer.parseStimulus("C4-piano")).toEqual({
+			notes: ["C4"],
+			instrument: "piano",
+		});
 		expect(musicPlayer.parseStimulus("C4+E4-piano").notes).toHaveLength(2);
 	});
 
@@ -71,7 +78,9 @@ describe("MusicPlayer", () => {
 
 	it("handles Soundfont load failure gracefully", async () => {
 		Soundfont.instrument.mockRejectedValueOnce(new Error("load fail"));
-		await expect(musicPlayer.loadInstrument("broken")).rejects.toThrow("load fail");
+		await expect(musicPlayer.loadInstrument("broken")).rejects.toThrow(
+			"load fail",
+		);
 	});
 
 	it("stops active notes and oscillators", () => {
