@@ -71,7 +71,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_role"] = "participant"
 
         # This test validates the pattern - we'll test through endpoints
-        response = client.get("/api/speed-congruency/next")
+        response = client.get("/speedcongruency/next")
         # Should return 404 (no color data) not 401 (auth error)
         assert response.status_code == 404
         data = response.get_json()
@@ -79,7 +79,7 @@ class TestSpeedCongruencyHelpers:
 
     def test_require_participant_no_session(self, client, app):
         """Test _require_participant without session"""
-        response = client.get("/api/speed-congruency/next")
+        response = client.get("/speedcongruency/next")
         assert response.status_code == 401
         data = response.get_json()
         assert "Not authenticated" in data["error"]
@@ -102,7 +102,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "researcher"  # Wrong role
 
-        response = client.get("/api/speed-congruency/next")
+        response = client.get("/speedcongruency/next")
         assert response.status_code == 401
 
     def test_require_participant_not_found(self, client, app):
@@ -111,7 +111,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = 99999  # Non-existent
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next")
+        response = client.get("/speedcongruency/next")
         assert response.status_code == 404
         data = response.get_json()
         assert "Participant not found" in data["error"]
@@ -144,7 +144,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         # Will fail due to missing stimulus, but auth passes
         assert response.status_code == 500
 
@@ -177,7 +177,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         # Will fail due to missing stimulus, but fallback works
         assert response.status_code == 500
 
@@ -227,7 +227,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         # Should return the color test
         assert response.status_code == 200
         data = response.get_json()
@@ -273,7 +273,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 200
         data = response.get_json()
 
@@ -332,7 +332,7 @@ class TestSpeedCongruencyHelpers:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 200
         data = response.get_json()
 
@@ -345,7 +345,7 @@ class TestSpeedCongruencyHelpers:
 
 
 class TestSpeedCongruencyNextEndpoint:
-    """Test GET /api/speed-congruency/next endpoint"""
+    """Test GET /speedcongruency/next endpoint"""
 
     def test_next_no_color_data(self, client, app):
         """Test /next with participant who has no color tests"""
@@ -365,7 +365,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 404
         data = response.get_json()
         assert data["error"] == "no_color_data"
@@ -411,7 +411,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 200
         data = response.get_json()
         assert data["trigger"] == "BLUE"
@@ -463,7 +463,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_role"] = "participant"
 
         # Test with trialIndex parameter
-        response = client.get("/api/speed-congruency/next?trialIndex=1")
+        response = client.get("/speedcongruency/next?trialIndex=1")
         assert response.status_code == 200
         data = response.get_json()
         assert data["index"] == 1
@@ -504,7 +504,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_role"] = "participant"
 
         # Test with non-numeric index (should default to 0)
-        response = client.get("/api/speed-congruency/next?index=invalid")
+        response = client.get("/speedcongruency/next?index=invalid")
         assert response.status_code == 200
         data = response.get_json()
         assert data["index"] == 0
@@ -544,7 +544,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_role"] = "participant"
 
         # Request index 5 when only 1 trial exists
-        response = client.get("/api/speed-congruency/next?index=5")
+        response = client.get("/speedcongruency/next?index=5")
         assert response.status_code == 200
         data = response.get_json()
         assert data["done"] is True
@@ -584,7 +584,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=-1")
+        response = client.get("/speedcongruency/next?index=-1")
         assert response.status_code == 200
         data = response.get_json()
         assert data["done"] is True
@@ -618,7 +618,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 500
         data = response.get_json()
         assert data["error"] == "missing_stimulus"
@@ -663,7 +663,7 @@ class TestSpeedCongruencyNextEndpoint:
             sess["user_id"] = user_id
             sess["user_role"] = "participant"
 
-        response = client.get("/api/speed-congruency/next?index=0")
+        response = client.get("/speedcongruency/next?index=0")
         assert response.status_code == 200
         data = response.get_json()
 
@@ -681,7 +681,7 @@ class TestSpeedCongruencyNextEndpoint:
 
 
 class TestSpeedCongruencySubmitEndpoint:
-    """Test POST /api/speed-congruency/submit endpoint"""
+    """Test POST /speedcongruency/submit endpoint"""
 
     def test_submit_correct_answer(self, client, app):
         """Test submitting a correct answer"""
@@ -725,7 +725,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "RED",
@@ -791,7 +791,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "BLUE",
@@ -810,7 +810,7 @@ class TestSpeedCongruencySubmitEndpoint:
     def test_submit_no_authentication(self, client, app):
         """Test submitting without authentication"""
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "TEST",
@@ -840,7 +840,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "TEST",
@@ -897,7 +897,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "Y",
@@ -939,7 +939,7 @@ class TestSpeedCongruencySubmitEndpoint:
         # Submit 3 trials
         for i in range(3):
             response = client.post(
-                "/api/speed-congruency/submit",
+                "/speedcongruency/submit",
                 json={
                     "trialIndex": i,
                     "trigger": f"TRIGGER_{i}",
@@ -999,7 +999,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "ORANGE",
@@ -1040,7 +1040,7 @@ class TestSpeedCongruencySubmitEndpoint:
             sess["user_role"] = "participant"
 
         response = client.post(
-            "/api/speed-congruency/submit",
+            "/speedcongruency/submit",
             json={
                 "trialIndex": 0,
                 "trigger": "TEST",
