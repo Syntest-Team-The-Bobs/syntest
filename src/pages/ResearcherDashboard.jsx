@@ -7,6 +7,10 @@ import ParticipantGrowthChart from "../components/dashboard/ParticipantGrowthCha
 import TestCompletionChart from "../components/dashboard/TestCompletionChart";
 import PopularTestsChart from "../components/dashboard/PopularTestsChart";
 import StimulusBreakdownChart from "../components/dashboard/StimulusBreakdownChart";
+import ParticipantDetailModal from "../components/dashboard/ParticipantDetailModal";
+import ActivityHeatmap from "../components/dashboard/ActivityHeatmap";
+import ConsistencyTrendsChart from "../components/dashboard/ConsistencyTrendsChart";
+import CompletionTrendsChart from "../components/dashboard/CompletionTrendsChart";
 import { dashboardService } from "../services/dashboard";
 import "../styles/researcherdashboard.css";
 
@@ -18,6 +22,9 @@ export default function ResearcherDashboard() {
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("30"); // Default 30 days
   const [alerts, setAlerts] = useState([]);
+  const [selectedParticipantId, setSelectedParticipantId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "researcher")) {
@@ -60,7 +67,7 @@ export default function ResearcherDashboard() {
       newAlerts.push({
         type: "warning",
         message: `Only ${data.summary.active_participants} active participants in the last 7 days`,
-        icon: "⚠️"
+        icon: "⚠️",
       });
     }
 
@@ -69,7 +76,7 @@ export default function ResearcherDashboard() {
       newAlerts.push({
         type: "error",
         message: `Test completion rate is ${data.insights.completion_rate}% - below target`,
-        icon: "🚨"
+        icon: "🚨",
       });
     }
 
@@ -78,7 +85,7 @@ export default function ResearcherDashboard() {
       newAlerts.push({
         type: "info",
         message: "No new participants in the last 30 days",
-        icon: "ℹ️"
+        icon: "ℹ️",
       });
     }
 
@@ -87,7 +94,7 @@ export default function ResearcherDashboard() {
       newAlerts.push({
         type: "success",
         message: `Excellent screening conversion rate: ${data.insights.screening_conversion}%`,
-        icon: "🎉"
+        icon: "🎉",
       });
     }
 
@@ -95,8 +102,9 @@ export default function ResearcherDashboard() {
     if (data.summary?.tests_completed === 0) {
       newAlerts.push({
         type: "warning",
-        message: "No tests completed yet - encourage participants to start testing",
-        icon: "📊"
+        message:
+          "No tests completed yet - encourage participants to start testing",
+        icon: "📊",
       });
     }
 
@@ -109,6 +117,33 @@ export default function ResearcherDashboard() {
 
   function dismissAlert(index) {
     setAlerts(alerts.filter((_, i) => i !== index));
+  }
+
+  function handleParticipantClick(participantId) {
+    setSelectedParticipantId(participantId);
+  }
+
+  function handleCloseModal() {
+    setSelectedParticipantId(null);
+  }
+
+  async function handleExport(format, type) {
+    try {
+      setIsExporting(true);
+      const blob = await dashboardService.exportData(format, type);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const timestamp = new Date().toISOString().split("T")[0];
+      a.download = `${type}_${timestamp}.${format}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export data. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   if (authLoading || loading) {
@@ -167,20 +202,40 @@ export default function ResearcherDashboard() {
             </p>
             <p className="text-sm text-gray-500">{researcherInfo?.email}</p>
           </div>
-          <div className="date-range-filter">
-            <label htmlFor="dateRange">Time Range:</label>
-            <select
-              id="dateRange"
-              value={dateRange}
-              onChange={(e) => handleDateRangeChange(e.target.value)}
-              className="date-range-select"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="180">Last 6 months</option>
-              <option value="365">Last year</option>
-            </select>
+          <div className="dashboard-actions">
+            <div className="date-range-filter">
+              <label htmlFor="dateRange">Time Range:</label>
+              <select
+                id="dateRange"
+                value={dateRange}
+                onChange={(e) => handleDateRangeChange(e.target.value)}
+                className="date-range-select"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="180">Last 6 months</option>
+                <option value="365">Last year</option>
+              </select>
+            </div>
+            <div className="export-buttons">
+              <button
+                className="btn-export"
+                onClick={() => handleExport("csv", "participants")}
+                disabled={isExporting}
+                title="Export participants as CSV"
+              >
+                {isExporting ? "Exporting..." : "📥 Export Participants (CSV)"}
+              </button>
+              <button
+                className="btn-export"
+                onClick={() => handleExport("csv", "test_results")}
+                disabled={isExporting}
+                title="Export test results as CSV"
+              >
+                {isExporting ? "Exporting..." : "📥 Export Tests (CSV)"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -214,10 +269,12 @@ export default function ResearcherDashboard() {
         <DashboardStatCard
           label="Active (7 days)"
           value={summary?.active_participants || 0}
-          progressBar={summary?.total_participants ? 
-            (summary.active_participants / summary.total_participants * 100) : 0
+          progressBar={
+            summary?.total_participants
+              ? (summary.active_participants / summary.total_participants) * 100
+              : 0
           }
-          progressLabel={`${Math.round((summary?.active_participants || 0) / (summary?.total_participants || 1) * 100)}% of total`}
+          progressLabel={`${Math.round(((summary?.active_participants || 0) / (summary?.total_participants || 1)) * 100)}% of total`}
         />
         <DashboardStatCard
           label="Total Stimuli"
@@ -239,13 +296,26 @@ export default function ResearcherDashboard() {
             label="Completion Rate"
             value={`${insights.completion_rate}%`}
             progressBar={insights.completion_rate}
-            progressColor={insights.completion_rate > 70 ? "green" : insights.completion_rate > 40 ? "orange" : "red"}
+            progressColor={
+              insights.completion_rate > 70
+                ? "green"
+                : insights.completion_rate > 40
+                  ? "orange"
+                  : "red"
+            }
+            trendPercentage={insights.completion_trend_percentage}
           />
           <DashboardStatCard
             label="Screening Conversion"
             value={`${insights.screening_conversion}%`}
             progressBar={insights.screening_conversion}
-            progressColor={insights.screening_conversion > 70 ? "green" : insights.screening_conversion > 40 ? "orange" : "red"}
+            progressColor={
+              insights.screening_conversion > 70
+                ? "green"
+                : insights.screening_conversion > 40
+                  ? "orange"
+                  : "red"
+            }
           />
           <DashboardStatCard
             label="New (30 days)"
@@ -259,8 +329,15 @@ export default function ResearcherDashboard() {
                 ? insights.avg_consistency_score.toFixed(2)
                 : "N/A"
             }
-            progressBar={insights.avg_consistency_score ? insights.avg_consistency_score * 100 : 0}
-            progressLabel={insights.avg_consistency_score ? "Score out of 1.0" : null}
+            progressBar={
+              insights.avg_consistency_score
+                ? insights.avg_consistency_score * 100
+                : 0
+            }
+            progressLabel={
+              insights.avg_consistency_score ? "Score out of 1.0" : null
+            }
+            trendPercentage={insights.consistency_trend_percentage}
           />
         </div>
       )}
@@ -308,15 +385,66 @@ export default function ResearcherDashboard() {
               <PopularTestsChart tests={charts.popular_tests} />
             </div>
           )}
+
+          {/* Trends Section */}
+          <div className="dashboard-charts-grid">
+            {charts.consistency_trends &&
+              charts.consistency_trends.length > 0 && (
+                <div className="dashboard-table-container">
+                  <h3 className="dashboard-table-title">
+                    Consistency Score Trends (Last {dateRange} Days)
+                  </h3>
+                  <ConsistencyTrendsChart data={charts.consistency_trends} />
+                </div>
+              )}
+
+            {charts.completion_trends &&
+              charts.completion_trends.length > 0 && (
+                <div className="dashboard-table-container">
+                  <h3 className="dashboard-table-title">
+                    Completion Rate Trends (Last {dateRange} Days)
+                  </h3>
+                  <CompletionTrendsChart data={charts.completion_trends} />
+                </div>
+              )}
+          </div>
+
+          {/* Activity Heatmap */}
+          {charts.activity_heatmap && charts.activity_heatmap.length > 0 && (
+            <div className="dashboard-table-container">
+              <h3 className="dashboard-table-title">
+                Test Activity Heatmap (Last 7 Weeks)
+              </h3>
+              <ActivityHeatmap data={charts.activity_heatmap} />
+            </div>
+          )}
         </>
       )}
 
       {/* Recent Activity Tables */}
-      <RecentTable
-        title="Recent Participants"
-        columns={["name", "email", "status", "last_login"]}
-        rows={recent?.participants || []}
-      />
+      <div className="dashboard-section">
+        <div className="section-header">
+          <h3 className="dashboard-table-title">Recent Participants</h3>
+          <input
+            type="text"
+            placeholder="Search participants..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        <RecentTable
+          title=""
+          columns={["name", "email", "status", "created_at"]}
+          rows={recent?.participants || []}
+          clickable={true}
+          onRowClick={(row) => {
+            if (row.id) {
+              handleParticipantClick(row.id);
+            }
+          }}
+        />
+      </div>
 
       <RecentTable
         title="Recent Tests Completed"
@@ -334,6 +462,14 @@ export default function ResearcherDashboard() {
         columns={["description", "family", "trigger_type", "created_at"]}
         rows={recent?.stimuli || []}
       />
+
+      {/* Participant Detail Modal */}
+      {selectedParticipantId && (
+        <ParticipantDetailModal
+          participantId={selectedParticipantId}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
