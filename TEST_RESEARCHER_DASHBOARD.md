@@ -12,15 +12,15 @@
 
 ### Module: researcher_dashboard.py
 
-| Component | Tests | Coverage Target |
-|-----------|-------|-----------------|
-| Main Dashboard Endpoint | 12 tests | 100% |
-| Participant Search | 8 tests | 100% |
-| Participant Detail | 6 tests | 100% |
-| Data Export | 6 tests | 100% |
-| Chart Data Generation | 7 tests | 100% |
-| Edge Cases & Error Handling | 6 tests | 100% |
-| **Total** | **45+ tests** | **95%+** |
+| Component                   | Tests         | Coverage Target |
+| --------------------------- | ------------- | --------------- |
+| Main Dashboard Endpoint     | 12 tests      | 100%            |
+| Participant Search          | 8 tests       | 100%            |
+| Participant Detail          | 6 tests       | 100%            |
+| Data Export                 | 6 tests       | 100%            |
+| Chart Data Generation       | 7 tests       | 100%            |
+| Edge Cases & Error Handling | 6 tests       | 100%            |
+| **Total**                   | **45+ tests** | **95%+**        |
 
 ---
 
@@ -29,6 +29,7 @@
 ### Test Classes
 
 1. **TestResearcherDashboardMain** (12 tests)
+
    - Authentication and authorization
    - Dashboard data retrieval
    - Date range filtering
@@ -38,6 +39,7 @@
    - Recent data sections
 
 2. **TestResearcherDashboardParticipantSearch** (8 tests)
+
    - Basic search functionality
    - Search by name
    - Search by email
@@ -47,6 +49,7 @@
    - Empty results handling
 
 3. **TestResearcherDashboardParticipantDetail** (6 tests)
+
    - Participant information retrieval
    - Test results inclusion
    - Screening sessions inclusion
@@ -54,6 +57,7 @@
    - Error handling
 
 4. **TestResearcherDashboardExport** (6 tests)
+
    - CSV export (participants)
    - JSON export (participants)
    - CSV export (test results)
@@ -62,6 +66,7 @@
    - Authentication requirements
 
 5. **TestResearcherDashboardChartData** (7 tests)
+
    - Participant growth chart
    - Test completion chart
    - Popular tests chart
@@ -126,21 +131,21 @@ python -m pytest v1/tests/functional/test_researcher_dashboard.py::TestResearche
 
 ### Endpoints Tested
 
-| Endpoint | Method | Tests | Status |
-|----------|--------|-------|--------|
-| `/api/v1/researcher/dashboard/` | GET | 12 | ✅ |
-| `/api/v1/researcher/dashboard/participants` | GET | 8 | ✅ |
-| `/api/v1/researcher/dashboard/participants/<id>` | GET | 6 | ✅ |
-| `/api/v1/researcher/dashboard/export` | GET | 6 | ✅ |
+| Endpoint                                         | Method | Tests | Status |
+| ------------------------------------------------ | ------ | ----- | ------ |
+| `/api/v1/researcher/dashboard/`                  | GET    | 12    | ✅     |
+| `/api/v1/researcher/dashboard/participants`      | GET    | 8     | ✅     |
+| `/api/v1/researcher/dashboard/participants/<id>` | GET    | 6     | ✅     |
+| `/api/v1/researcher/dashboard/export`            | GET    | 6     | ✅     |
 
 ### Functions Tested
 
-| Function | Purpose | Coverage |
-|----------|---------|----------|
-| `get_researcher_dashboard()` | Main dashboard endpoint | 100% |
-| `search_participants()` | Participant search | 100% |
-| `get_participant_detail()` | Participant details | 100% |
-| `export_data()` | Data export | 100% |
+| Function                     | Purpose                 | Coverage |
+| ---------------------------- | ----------------------- | -------- |
+| `get_researcher_dashboard()` | Main dashboard endpoint | 100%     |
+| `search_participants()`      | Participant search      | 100%     |
+| `get_participant_detail()`   | Participant details     | 100%     |
+| `export_data()`              | Data export             | 100%     |
 
 ### Code Paths Covered
 
@@ -164,6 +169,7 @@ python -m pytest v1/tests/functional/test_researcher_dashboard.py::TestResearche
 ### Fixtures
 
 All tests use fixtures from `conftest.py`:
+
 - `client` - Test client
 - `app` - Flask application context
 - `auth_researcher` - Authenticated researcher session
@@ -176,7 +182,7 @@ All tests use fixtures from `conftest.py`:
 ```python
 class TestResearcherDashboardMain:
     """Test main researcher dashboard endpoint"""
-    
+
     def test_dashboard_requires_authentication(self, client):
         """Test dashboard requires researcher authentication"""
         response = client.get(url(""))
@@ -187,6 +193,7 @@ class TestResearcherDashboardMain:
 ### Assertions
 
 Tests verify:
+
 - HTTP status codes
 - Response structure
 - Data correctness
@@ -220,12 +227,12 @@ Tests verify:
 
 ### Target Metrics
 
-| Metric | Target | Expected |
-|--------|--------|----------|
-| **Total Statements** | - | ~200+ |
-| **Covered Statements** | - | ~190+ |
-| **Missed Statements** | - | ~10 |
-| **Coverage** | **≥95%** | **95%+** |
+| Metric                 | Target   | Expected |
+| ---------------------- | -------- | -------- |
+| **Total Statements**   | -        | ~200+    |
+| **Covered Statements** | -        | ~190+    |
+| **Missed Statements**  | -        | ~10      |
+| **Coverage**           | **≥95%** | **95%+** |
 
 ### Potential Uncovered Lines
 
@@ -307,14 +314,14 @@ Ensure your CI/CD pipeline checks for ≥95% coverage:
 
 ## Comparison with Project Standards
 
-| Standard | Requirement | Achievement | Status |
-|----------|-------------|-------------|--------|
-| Code Coverage | ≥95% | 95%+ (expected) | ✅ Target Met |
-| All Tests Pass | 100% | 100% (expected) | ✅ Target Met |
-| Test Organization | v1/tests/ structure | Implemented | ✅ Met |
-| Test Documentation | Clear test names | Documented | ✅ Met |
-| Fixture Usage | Shared conftest | Used | ✅ Met |
-| Error Handling | Comprehensive | Covered | ✅ Met |
+| Standard           | Requirement         | Achievement     | Status        |
+| ------------------ | ------------------- | --------------- | ------------- |
+| Code Coverage      | ≥95%                | 95%+ (expected) | ✅ Target Met |
+| All Tests Pass     | 100%                | 100% (expected) | ✅ Target Met |
+| Test Organization  | v1/tests/ structure | Implemented     | ✅ Met        |
+| Test Documentation | Clear test names    | Documented      | ✅ Met        |
+| Fixture Usage      | Shared conftest     | Used            | ✅ Met        |
+| Error Handling     | Comprehensive       | Covered         | ✅ Met        |
 
 ---
 
@@ -355,4 +362,3 @@ The researcher dashboard feature has been thoroughly tested with **45+ comprehen
 - **Functions Covered**: 4
 - **Edge Cases**: 6+
 - **Expected Coverage**: 95%+
-

@@ -42,6 +42,7 @@ describe("ScreeningFlow", () => {
 		vi.clearAllMocks();
 	});
 
+<<<<<<< HEAD
 	describe("Initial Rendering", () => {
 		it("renders step 1 welcome section", () => {
 			renderWithRouter("/screening");
@@ -244,4 +245,81 @@ describe("ScreeningFlow", () => {
 			});
 		}, 10000);
 	});
+=======
+	it("requires consent before advancing to the next step", async () => {
+		renderWithRouter("/screening/0");
+
+		const checkbox = screen.getByLabelText(
+			"I consent to take part in this study.",
+		);
+		fireEvent.click(checkbox);
+
+		fireEvent.click(screen.getByRole("button", { name: /begin screening/i }));
+
+		await waitFor(() => {
+			expect(
+				screen.getByText(/confirm none apply to you/i),
+			).toBeInTheDocument();
+		});
+	});
+
+	it("saves health responses and routes to step 2 when eligible", async () => {
+		window.sessionStorage.setItem(
+			"screening_state",
+			JSON.stringify({
+				consent: true,
+				health: { drug: false, neuro: false, medical: false },
+				definition: null,
+				pain: null,
+				synTypes: {
+					grapheme: null,
+					music: null,
+					lexical: null,
+					sequence: null,
+				},
+				otherExperiences: "",
+			}),
+		);
+
+		renderWithRouter("/screening/1");
+
+		fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+		await waitFor(() => {
+			expect(screen.getByText(/what is synesthesia/i)).toBeInTheDocument();
+		});
+	});
+
+	it("records type selections and fetches summary data", async () => {
+		window.sessionStorage.setItem(
+			"screening_state",
+			JSON.stringify({
+				consent: true,
+				health: { drug: false, neuro: false, medical: false },
+				definition: "yes",
+				pain: "no",
+				synTypes: {
+					grapheme: null,
+					music: null,
+					lexical: null,
+					sequence: null,
+				},
+				otherExperiences: "",
+			}),
+		);
+
+		renderWithRouter("/screening/4");
+
+		fireEvent.click(screen.getByLabelText("Letter • Color — Yes"));
+		fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+		await waitFor(() => {
+			expect(screen.getByText(/your next step/i)).toBeInTheDocument();
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText(/color consistency/i)).toBeInTheDocument();
+		});
+	});
+>>>>>>> 294dc83 (chore: lint)
 });

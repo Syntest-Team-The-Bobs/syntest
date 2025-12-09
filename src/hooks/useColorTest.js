@@ -1,176 +1,182 @@
-import { useState, useMemo } from "react";
-import { useDeck } from "./useDeck";
+import { useMemo, useState } from "react";
 import { buildDeck } from "../services/deck";
+import { useDeck } from "./useDeck";
 
 /**
  * useColorTest - Custom hook for managing color synesthesia test state and logic
- * 
+ *
  * Responsibilities:
  * - Manages test flow phases (intro → testing → done)
  * - Handles color selection and locking state
  * - Manages trial progression and response recording
  * - Coordinates with deck management for stimulus presentation
- * 
+ *
  */
 export function useColorTest(stimuli, practiceStimuli, onComplete) {
-  // Test phase state: "intro" | "practice" | "testing" | "done"
-  const [phase, setPhase] = useState("intro");
-  
-  // Color selection state
-  const [selected, setSelected] = useState(null);  // {r, g, b, hex, canvasX, canvasY}
-  const [locked, setLocked] = useState(false);
-  const [noExperience, setNoExperience] = useState(false);
-  
-  // Response tracking
-  const [responses, setResponses] = useState([]);
+	// Test phase state: "intro" | "practice" | "testing" | "done"
+	const [phase, setPhase] = useState("intro");
 
-  // Stable keys for useMemo dependencies (prevents deck rebuilding on every render)
-  const stimuliKey = JSON.stringify(stimuli);
-  const practiceKey = JSON.stringify(practiceStimuli);
+	// Color selection state
+	const [selected, setSelected] = useState(null); // {r, g, b, hex, canvasX, canvasY}
+	const [locked, setLocked] = useState(false);
+	const [noExperience, setNoExperience] = useState(false);
 
-  // Build decks with 3 repetitions per stimulus
-  const practiceDeck = useMemo(() => buildDeck(practiceStimuli, 3), [practiceKey]);
-  const testDeck = useMemo(() => buildDeck(stimuli, 3), [stimuliKey]);
+	// Response tracking
+	const [responses, setResponses] = useState([]);
 
-  // Initialize deck state managers
-  const practice = useDeck(practiceDeck);
-  const test = useDeck(testDeck);
+	// Stable keys for useMemo dependencies (prevents deck rebuilding on every render)
+	const stimuliKey = JSON.stringify(stimuli);
+	const practiceKey = JSON.stringify(practiceStimuli);
 
-  // Select active deck based on current phase
-  const active = phase === "practice" ? practice : phase === "testing" ? test : practice;
-  const { deck, idx, setIdx, start, reactionMs, next } = active;
-  const current = deck[idx];
+	// Build decks with 3 repetitions per stimulus
+	const practiceDeck = useMemo(
+		() => buildDeck(practiceStimuli, 3),
+		[practiceKey],
+	);
+	const testDeck = useMemo(() => buildDeck(stimuli, 3), [stimuliKey]);
 
-  /**
-   * Handles color selection from color wheel
-   * Prevents selection changes when locked
-   */
-  function onPick(c) {
-    if (locked) return;
-    setSelected({
-      r: c.r, 
-      g: c.g, 
-      b: c.b,
-      hex: c.hex,
-      canvasX: c.x, 
-      canvasY: c.y,
-    });
-  }
+	// Initialize deck state managers
+	const practice = useDeck(practiceDeck);
+	const test = useDeck(testDeck);
 
-  /**
-   * Toggles lock state of current color selection
-   * Requires a color to be selected first
-   */
-  function toggleLock() {
-    if (!selected) return;
-    setLocked(v => !v);
-  }
+	// Select active deck based on current phase
+	const active =
+		phase === "practice" ? practice : phase === "testing" ? test : practice;
+	const { deck, idx, setIdx, start, reactionMs, next } = active;
+	const current = deck[idx];
 
-  /**
-   * Toggles no synesthetic experience state
-   */
-  function toggleNoExperience() {
-    setNoExperience(v => !v);
-  }
+	/**
+	 * Handles color selection from color wheel
+	 * Prevents selection changes when locked
+	 */
+	function onPick(c) {
+		if (locked) return;
+		setSelected({
+			r: c.r,
+			g: c.g,
+			b: c.b,
+			hex: c.hex,
+			canvasX: c.x,
+			canvasY: c.y,
+		});
+	}
 
-  /**
-   * Prepares for next stimulus presentation
-   * Resets selection state and starts reaction timer
-   */
-  function present() {
-    setSelected(null);
-    setLocked(false);
-    setNoExperience(false);
-    start();
-  }
+	/**
+	 * Toggles lock state of current color selection
+	 * Requires a color to be selected first
+	 */
+	function toggleLock() {
+		if (!selected) return;
+		setLocked((v) => !v);
+	}
 
-  /**
-   * Initiates the main test (skips practice)
-   * Resets deck and response tracking
-   */
-  function startTest() {
-    setPhase("testing");
-    test.setIdx(0);
-    setResponses([]);
-    setTimeout(() => present(), 0);
-  }
+	/**
+	 * Toggles no synesthetic experience state
+	 */
+	function toggleNoExperience() {
+		setNoExperience((v) => !v);
+	}
 
-  /**
-   * Records a trial response to the responses array
-   * Returns updated responses array
-   */
-  function recordResponse(trial) {
-    const newResponses = [...responses, trial];
-    setResponses(newResponses);
-    return newResponses;
-  }
+	/**
+	 * Prepares for next stimulus presentation
+	 * Resets selection state and starts reaction timer
+	 */
+	function present() {
+		setSelected(null);
+		setLocked(false);
+		setNoExperience(false);
+		start();
+	}
 
-  /**
-   * Advances to next trial or completes test
-   * 
-   * Flow:
-   * 1. Validates selection is locked OR no experience is checked
-   * 2. Records response (if in testing phase)
-   * 3. Either advances to next stimulus or completes test
-   * 4. Invokes onComplete callback with final responses
-   * 
-   * @returns {Object} - Status object with shouldContinue and optional finalResponses
-   */
-  async function handleNext() {
-    // Require locked selection OR no experience before proceeding
-    if (!noExperience && (!selected || !locked)) return { shouldContinue: true };
+	/**
+	 * Initiates the main test (skips practice)
+	 * Resets deck and response tracking
+	 */
+	function startTest() {
+		setPhase("testing");
+		test.setIdx(0);
+		setResponses([]);
+		setTimeout(() => present(), 0);
+	}
 
-    // Build trial data object
-    const trial = {
-      stimulus: current.stimulus,
-      selectedColor: noExperience ? null : selected,
-      noSynestheticExperience: noExperience,
-      reactionTime: reactionMs()
-    };
+	/**
+	 * Records a trial response to the responses array
+	 * Returns updated responses array
+	 */
+	function recordResponse(trial) {
+		const newResponses = [...responses, trial];
+		setResponses(newResponses);
+		return newResponses;
+	}
 
-    // Record response only during testing phase (not practice)
-    const newResponses = phase === "testing" ? recordResponse(trial) : responses;
+	/**
+	 * Advances to next trial or completes test
+	 *
+	 * Flow:
+	 * 1. Validates selection is locked OR no experience is checked
+	 * 2. Records response (if in testing phase)
+	 * 3. Either advances to next stimulus or completes test
+	 * 4. Invokes onComplete callback with final responses
+	 *
+	 * @returns {Object} - Status object with shouldContinue and optional finalResponses
+	 */
+	async function handleNext() {
+		// Require locked selection OR no experience before proceeding
+		if (!noExperience && (!selected || !locked))
+			return { shouldContinue: true };
 
-    // Reset selection state for next trial
-    setSelected(null);
-    setLocked(false);
-    setNoExperience(false);
+		// Build trial data object
+		const trial = {
+			stimulus: current.stimulus,
+			selectedColor: noExperience ? null : selected,
+			noSynestheticExperience: noExperience,
+			reactionTime: reactionMs(),
+		};
 
-    // Check if more stimuli remain in deck
-    if (idx < deck.length - 1) {
-      next();
-      present();
-      return { shouldContinue: true };
-    } else {
-      // Test complete
-      setPhase("done");
-      if (onComplete) {
-        await onComplete(newResponses);
-      }
-      return { shouldContinue: false, finalResponses: newResponses };
-    }
-  }
+		// Record response only during testing phase (not practice)
+		const newResponses =
+			phase === "testing" ? recordResponse(trial) : responses;
 
-  // Return state and action functions for component consumption
-  return {
-    // State
-    phase,
-    setPhase,
-    selected,
-    locked,
-    noExperience,
-    responses,
-    deck,
-    idx,
-    current,
-    stimuli,
-    practiceStimuli,
-    
-    // Actions
-    onPick,
-    toggleLock,
-    toggleNoExperience,
-    startTest,
-    handleNext
-  };
+		// Reset selection state for next trial
+		setSelected(null);
+		setLocked(false);
+		setNoExperience(false);
+
+		// Check if more stimuli remain in deck
+		if (idx < deck.length - 1) {
+			next();
+			present();
+			return { shouldContinue: true };
+		} else {
+			// Test complete
+			setPhase("done");
+			if (onComplete) {
+				await onComplete(newResponses);
+			}
+			return { shouldContinue: false, finalResponses: newResponses };
+		}
+	}
+
+	// Return state and action functions for component consumption
+	return {
+		// State
+		phase,
+		setPhase,
+		selected,
+		locked,
+		noExperience,
+		responses,
+		deck,
+		idx,
+		current,
+		stimuli,
+		practiceStimuli,
+
+		// Actions
+		onPick,
+		toggleLock,
+		toggleNoExperience,
+		startTest,
+		handleNext,
+	};
 }

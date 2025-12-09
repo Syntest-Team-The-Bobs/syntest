@@ -60,6 +60,7 @@ const DUMMY_TRIALS = [
 			{ id: "o4", label: "MONDAY", color: "#BF5AF2" },
 		],
 	},
+<<<<<<< HEAD
 	{
 		id: "t4",
 		trigger: "NEON",
@@ -85,6 +86,8 @@ const DUMMY_TRIALS = [
 			{ id: "o4", label: "SOUND", color: "#FF3B30" },
 		],
 	},
+=======
+>>>>>>> 294dc83 (chore: lint)
 ];
 
 /** Small helpers */
@@ -145,6 +148,7 @@ function SpeedCongruencyTestFlow({
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
+<<<<<<< HEAD
 	// Track which color is displayed and whether it matches the expected association
 	const [displayedOptionId, setDisplayedOptionId] = useState(null);
 	const [isCongruent, setIsCongruent] = useState(null);
@@ -664,6 +668,326 @@ function SpeedCongruencyTestFlow({
 						color: cardTextColor === "#000" ? "#777" : "#ccc",
 					}}
 				>
+=======
+	const choiceStartRef = useRef(null);
+
+	const deck = mode === "practice" ? practiceStimuli : stimuli;
+	const totalTrials = deck.length;
+	const currentTrial = deck[trialIndex] || null;
+
+	// Start countdown when entering stimulus phase
+	useEffect(() => {
+		if (phase !== "stimulus" || !currentTrial) return;
+
+		setCountdown(countdownSeconds);
+		const timerId = setInterval(() => {
+			setCountdown((prev) => {
+				if (prev <= 1) {
+					clearInterval(timerId);
+					setPhase("choices");
+					choiceStartRef.current = performance.now();
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => clearInterval(timerId);
+	}, [phase, currentTrial, countdownSeconds]);
+
+	const resetForTrial = () => {
+		setSelectedOptionId(null);
+		setErrorMessage("");
+		// Ensure submission state is cleared between trials so the UI doesn't
+		// remain disabled if a previous submission failed or was interrupted.
+		setIsSubmitting(false);
+		choiceStartRef.current = null;
+	};
+
+	const begin = () => {
+		if (!currentTrial) return;
+		resetForTrial();
+		setPhase("stimulus");
+	};
+
+	const advance = () => {
+		const nextIndex = trialIndex + 1;
+		if (nextIndex < totalTrials) {
+			setTrialIndex(nextIndex);
+			resetForTrial();
+			setPhase("stimulus");
+			return;
+		}
+
+		// If we finish practice, move to main (if any)
+		if (mode === "practice" && stimuli.length > 0) {
+			setMode("main");
+			setTrialIndex(0);
+			resetForTrial();
+			setPhase("intro");
+			return;
+		}
+
+		setPhase("done");
+	};
+
+	const submitAndNext = async () => {
+		if (!currentTrial || !selectedOptionId) return;
+
+		const reactionTimeMs = choiceStartRef.current
+			? performance.now() - choiceStartRef.current
+			: null;
+
+		const isCorrect = selectedOptionId === currentTrial.expectedOptionId;
+
+		const payload = {
+			testType: "speedCongruency",
+			mode, // practice or main
+			trialId: currentTrial.id,
+			trigger: currentTrial.trigger,
+			selectedOptionId,
+			expectedOptionId: currentTrial.expectedOptionId,
+			isCorrect,
+			reactionTimeMs,
+			trialIndex,
+			totalTrials,
+			submittedAt: new Date().toISOString(),
+		};
+
+		setIsSubmitting(true);
+		setErrorMessage("");
+		const STORAGE_KEY = "speedCongruency_results";
+
+		try {
+			// Attempt to submit to the backend. Don't branch on the method's
+			// existence — it is expected to be present in `speedCongruencyService`.
+			// Any failure (network, server, or missing implementation) will be
+			// handled by the surrounding try/catch which persists the entry
+			// locally with `status: 'pending'`.
+			await speedCongruencyService.submitTrial(payload);
+			advance();
+		} catch (e) {
+			console.error("Error submitting speed congruency trial:", e);
+			// Save locally so nothing is lost, then let the user continue
+			try {
+				// On error, save the entry to the same unified storage key and mark
+				// it as pending for later retry. We keep the original payload but add
+				// a `status` flag so consumers know this was not delivered.
+				const toStore = { ...payload, status: "pending" };
+				const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+				existing.push(toStore);
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+			} catch (err) {
+				// Log localStorage failures so they can be diagnosed during development
+				// while still allowing the user to continue the test.
+				console.error("Failed to save to localStorage:", err);
+			}
+
+			setErrorMessage(
+				"Could not save to the server. Your response was saved locally and you can continue.",
+			);
+			advance();
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	// ---- Styles (keep your current inline style vibe) ----
+	const pageStyle = {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		minHeight: "calc(100vh - 120px)",
+	};
+
+	const cardStyle = {
+		maxWidth: "720px",
+		width: "100%",
+		padding: "32px",
+		textAlign: "center",
+	};
+
+	const triggerBoxStyle = {
+		border: "2px solid #ccc",
+		borderRadius: "8px",
+		padding: "40px 24px",
+		fontSize: "1.5rem",
+		margin: "0 auto 32px",
+		maxWidth: "320px",
+	};
+
+	const timerCircleStyle = {
+		display: "inline-flex",
+		alignItems: "center",
+		justifyContent: "center",
+		width: "56px",
+		height: "56px",
+		borderRadius: "50%",
+		backgroundColor: "#222",
+		color: "#fff",
+		fontSize: "1.25rem",
+	};
+
+	const optionsGridStyle = {
+		display: "grid",
+		gridTemplateColumns: "repeat(2, 1fr)",
+		gap: "32px",
+		justifyItems: "center",
+		marginTop: "24px",
+		marginBottom: "24px",
+	};
+
+	const optionBoxBaseStyle = {
+		width: "140px",
+		height: "140px",
+		borderRadius: "12px",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		fontSize: "1rem",
+		cursor: "pointer",
+		border: "3px solid transparent",
+		color: "#000",
+		userSelect: "none",
+	};
+
+	// ---- Render ----
+	if (phase === "done") {
+		return (
+			<div style={pageStyle}>
+				<Card style={cardStyle} title={title}>
+					<p>Thank you for completing the {title}.</p>
+				</Card>
+			</div>
+		);
+	}
+
+	if (!currentTrial) {
+		return (
+			<div style={pageStyle}>
+				<Card style={cardStyle} title={title}>
+					<p>No trials are available for this test.</p>
+				</Card>
+			</div>
+		);
+	}
+
+	if (phase === "intro") {
+		return (
+			<div style={pageStyle}>
+				<Card style={cardStyle} title={title}>
+					<p style={{ marginBottom: "10px" }}>{introConfig.description}</p>
+
+					<div
+						style={{ textAlign: "left", margin: "18px auto", maxWidth: 560 }}
+					>
+						<strong>Instructions</strong>
+						<ul>
+							{introConfig.instructions.map((line) => (
+								<li key={line} style={{ marginTop: 6 }}>
+									{line}
+								</li>
+							))}
+						</ul>
+						<p style={{ marginTop: 10, color: "#666" }}>
+							Estimated time: {introConfig.estimatedTime}
+						</p>
+						<p style={{ marginTop: 10, color: "#666" }}>
+							Mode:{" "}
+							<strong>{mode === "practice" ? "Practice" : "Main Test"}</strong>
+						</p>
+					</div>
+
+					<Button onClick={begin} style={{ width: "100%", marginTop: 10 }}>
+						Begin {mode === "practice" ? "Practice" : "Test"}
+					</Button>
+
+					<p style={{ marginTop: 12, fontSize: "0.85rem", color: "#777" }}>
+						Trial count: {totalTrials}
+					</p>
+				</Card>
+			</div>
+		);
+	}
+
+	if (phase === "stimulus") {
+		return (
+			<div style={pageStyle}>
+				<Card style={cardStyle} title={title}>
+					<div style={triggerBoxStyle}>{currentTrial.trigger}</div>
+					<div style={timerCircleStyle}>{countdown}</div>
+
+					<p style={{ marginTop: "16px", color: "#777" }}>
+						Get ready to choose the matching colour…
+					</p>
+					<p style={{ marginTop: "8px", fontSize: "0.85rem", color: "#999" }}>
+						{mode === "practice" ? "Practice" : "Main"} — Trial {trialIndex + 1}{" "}
+						of {totalTrials}
+					</p>
+				</Card>
+			</div>
+		);
+	}
+
+	// choices
+	return (
+		<div style={pageStyle}>
+			<Card style={cardStyle} title={title}>
+				<h2>Pick the correct association</h2>
+				<p>Choose the colour that best matches your automatic association.</p>
+
+				<div style={{ marginTop: "16px", marginBottom: "8px" }}>
+					<strong>{currentTrial.trigger}</strong>
+				</div>
+
+				<div style={optionsGridStyle}>
+					{currentTrial.options.map((option) => {
+						const isSelected = option.id === selectedOptionId;
+
+						const optionStyle = {
+							...optionBoxBaseStyle,
+							backgroundColor: option.color,
+							borderColor: isSelected ? "#000" : "transparent",
+							boxShadow: isSelected ? "0 0 0 2px rgba(0, 0, 0, 0.35)" : "none",
+						};
+
+						return (
+							<div
+								key={option.id}
+								style={optionStyle}
+								onClick={() => !isSubmitting && setSelectedOptionId(option.id)}
+							>
+								{option.label}
+							</div>
+						);
+					})}
+				</div>
+
+				<Button
+					onClick={submitAndNext}
+					disabled={!selectedOptionId || isSubmitting}
+					style={{ width: "100%" }}
+				>
+					{
+						// If we're at the last trial in practice and there is a main deck,
+						// prompt the user to start the main test. Otherwise show 'Finish'
+						// on the last main trial, or 'Next' for intermediate trials.
+						mode === "practice" && trialIndex + 1 === totalTrials
+							? stimuli.length > 0
+								? "Start Main Test"
+								: "Finish"
+							: mode === "main" && trialIndex + 1 === totalTrials
+								? "Finish"
+								: "Next"
+					}
+				</Button>
+
+				{errorMessage && (
+					<p style={{ marginTop: 12, color: "#b00020" }}>{errorMessage}</p>
+				)}
+
+				<p style={{ marginTop: 12, fontSize: "0.9rem", color: "#777" }}>
+>>>>>>> 294dc83 (chore: lint)
 					{mode === "practice" ? "Practice" : "Main"} — Trial {trialIndex + 1}{" "}
 					of {totalTrials}
 				</p>

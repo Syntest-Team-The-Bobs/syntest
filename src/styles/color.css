@@ -1,95 +1,95 @@
 /* Color test specific styles */
 .page-color {
-  background: #f5f5f5;
+	background: #f5f5f5;
 }
 
 .wheel-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
 }
 
 .dot {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid #000;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition: border-color 0.2s;
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	border: 2px solid #000;
+	pointer-events: none;
+	transform: translate(-50%, -50%);
+	transition: border-color 0.2s;
 }
 
 .dot.locked {
-  border-color: #ff0000;
-  border-width: 3px;
+	border-color: #ff0000;
+	border-width: 3px;
 }
 
 .cct-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 2rem;
+	margin-top: 2rem;
 }
 
 .howto {
-  padding: 1rem;
-  background: #fff;
-  border-radius: 8px;
+	padding: 1rem;
+	background: #fff;
+	border-radius: 8px;
 }
 
 .stimulus-box {
-  padding: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 3rem;
-  font-weight: 700;
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	padding: 2rem;
+	background: #fff;
+	border-radius: 8px;
+	text-align: center;
+	font-size: 3rem;
+	font-weight: 700;
+	min-height: 120px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .swatch {
-  width: 100%;
-  height: 80px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #ddd;
+	width: 100%;
+	height: 80px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid #ddd;
 }
 
 .hex {
-  font-family: monospace;
-  font-size: 1.2rem;
-  font-weight: 600;
+	font-family: monospace;
+	font-size: 1.2rem;
+	font-weight: 600;
 }
 
 .status {
-  display: flex;
-  gap: 2rem;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+	display: flex;
+	gap: 2rem;
+	padding: 1rem;
+	background: #fff;
+	border-radius: 8px;
+	margin-bottom: 1rem;
 }
 
 .caption {
-  font-size: 0.875rem;
-  color: #666;
-  text-align: center;
+	font-size: 0.875rem;
+	color: #666;
+	text-align: center;
 }
 
 .no-experience-container {
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
+	margin-top: 1.5rem;
+	margin-bottom: 1rem;
 }
 
 @media (max-width: 1024px) {
-  .cct-grid {
-    grid-template-columns: 1fr;
-  }
+	.cct-grid {
+		grid-template-columns: 1fr;
+	}
 }
