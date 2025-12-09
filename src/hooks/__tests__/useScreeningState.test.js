@@ -8,7 +8,6 @@ import useScreeningState, {
 describe("useScreeningState", () => {
 	beforeEach(() => {
 		window.sessionStorage.clear();
-<<<<<<< HEAD
 		vi.clearAllMocks();
 	});
 
