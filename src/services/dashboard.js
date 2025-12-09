@@ -6,8 +6,8 @@ export const dashboardService = {
     return response.data;
   },
 
-  async getResearcherDashboard() {
-    const response = await api.get("/researcher/dashboard");
+  async getResearcherDashboard(days = 30) {
+    const response = await api.get(`/researcher/dashboard/?days=${days}`);
     return response.data;
   },
 };
