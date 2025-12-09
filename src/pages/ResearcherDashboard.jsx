@@ -1,147 +1,339 @@
-import { useEffect, useState } from 'react'
-import { dashboardService } from '../services/dashboard'
-import '../styles/dashboard.css'
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import DashboardStatCard from "../components/dashboard/DashboardStatCard";
+import RecentTable from "../components/dashboard/RecentTable";
+import ParticipantGrowthChart from "../components/dashboard/ParticipantGrowthChart";
+import TestCompletionChart from "../components/dashboard/TestCompletionChart";
+import PopularTestsChart from "../components/dashboard/PopularTestsChart";
+import StimulusBreakdownChart from "../components/dashboard/StimulusBreakdownChart";
+import { dashboardService } from "../services/dashboard";
+import "../styles/researcherdashboard.css";
 
 export default function ResearcherDashboard() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState("30"); // Default 30 days
+  const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dashboardData = await dashboardService.getResearcherDashboard()
-        setData(dashboardData)
-      } catch (error) {
-        console.error('Error fetching dashboard:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (!authLoading && (!user || user.role !== "researcher")) {
+      navigate("/login");
+      return;
     }
-    fetchData()
-  }, [])
 
-  if (loading) {
-    return <div className="container">Loading...</div>
+    if (user && user.role === "researcher") {
+      loadData();
+    }
+  }, [user, authLoading, navigate, dateRange]); // Re-fetch when dateRange changes
+
+  // Check for alerts when data changes
+  useEffect(() => {
+    if (dashboardData) {
+      checkAlerts(dashboardData);
+    }
+  }, [dashboardData]);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await dashboardService.getResearcherDashboard(dateRange);
+      setDashboardData(data);
+    } catch (e) {
+      console.error("Failed to load dashboard", e);
+      setError(e.response?.data?.error || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (!data) {
-    return <div className="container">Error loading dashboard</div>
+  function checkAlerts(data) {
+    const newAlerts = [];
+
+    // Alert 1: Low active participants
+    if (data.summary?.active_participants < 5) {
+      newAlerts.push({
+        type: "warning",
+        message: `Only ${data.summary.active_participants} active participants in the last 7 days`,
+        icon: "⚠️"
+      });
+    }
+
+    // Alert 2: Low completion rate
+    if (data.insights?.completion_rate < 50) {
+      newAlerts.push({
+        type: "error",
+        message: `Test completion rate is ${data.insights.completion_rate}% - below target`,
+        icon: "🚨"
+      });
+    }
+
+    // Alert 3: No recent activity
+    if (data.insights?.new_participants_30d === 0) {
+      newAlerts.push({
+        type: "info",
+        message: "No new participants in the last 30 days",
+        icon: "ℹ️"
+      });
+    }
+
+    // Alert 4: High screening conversion (positive alert)
+    if (data.insights?.screening_conversion > 80) {
+      newAlerts.push({
+        type: "success",
+        message: `Excellent screening conversion rate: ${data.insights.screening_conversion}%`,
+        icon: "🎉"
+      });
+    }
+
+    // Alert 5: No test data
+    if (data.summary?.tests_completed === 0) {
+      newAlerts.push({
+        type: "warning",
+        message: "No tests completed yet - encourage participants to start testing",
+        icon: "📊"
+      });
+    }
+
+    setAlerts(newAlerts);
   }
 
-  const recentParticipants = data.recent_participants || []
-  const recentStimuli = data.recent_stimuli || []
+  function handleDateRangeChange(range) {
+    setDateRange(range);
+  }
+
+  function dismissAlert(index) {
+    setAlerts(alerts.filter((_, i) => i !== index));
+  }
+
+  if (authLoading || loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="dashboard-spinner"></div>
+        <p className="dashboard-loading-text">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-error">
+        <h2 className="dashboard-error-title">Error Loading Dashboard</h2>
+        <p className="dashboard-error-text">{error}</p>
+        <button onClick={loadData} className="dashboard-error-button">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="dashboard-loading">
+        <p>No data available</p>
+      </div>
+    );
+  }
+
+  const {
+    summary,
+    recent,
+    insights,
+    charts,
+    user: researcherInfo,
+  } = dashboardData;
 
   return (
-    <div className="container">
+    <div className="dashboard-container">
+      {/* Header with Date Filter */}
       <div className="dashboard-header">
-        <h1>Researcher Dashboard</h1>
-        <div className="user-info">
-          <div className="user-avatar">
-            {data.user.name?.charAt(0).toUpperCase()}
+        <div>
+          <h1 className="dashboard-title">Researcher Dashboard</h1>
+          {researcherInfo?.institution && (
+            <p className="text-sm text-gray-600 mt-1">
+              {researcherInfo.institution}
+            </p>
+          )}
+        </div>
+        <div className="dashboard-controls">
+          <div className="dashboard-welcome">
+            <p className="text-lg font-medium">
+              Welcome back, {researcherInfo?.name || user?.name}
+            </p>
+            <p className="text-sm text-gray-500">{researcherInfo?.email}</p>
           </div>
-          <div>
-            <div style={{ fontWeight: 600 }}>{data.user.name}</div>
-            {data.user.institution && (
-              <div className="text-muted">{data.user.institution}</div>
+          <div className="date-range-filter">
+            <label htmlFor="dateRange">Time Range:</label>
+            <select
+              id="dateRange"
+              value={dateRange}
+              onChange={(e) => handleDateRangeChange(e.target.value)}
+              className="date-range-select"
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="180">Last 6 months</option>
+              <option value="365">Last year</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Alert System */}
+      {alerts.length > 0 && (
+        <div className="dashboard-alerts">
+          {alerts.map((alert, index) => (
+            <div key={index} className={`alert alert-${alert.type}`}>
+              <span className="alert-icon">{alert.icon}</span>
+              <span className="alert-message">{alert.message}</span>
+              <button
+                className="alert-dismiss"
+                onClick={() => dismissAlert(index)}
+                aria-label="Dismiss alert"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Primary Stats with Progress Bars */}
+      <div className="dashboard-stats-grid">
+        <DashboardStatCard
+          label="Total Participants"
+          value={summary?.total_participants || 0}
+          progressBar={null}
+        />
+        <DashboardStatCard
+          label="Active (7 days)"
+          value={summary?.active_participants || 0}
+          progressBar={summary?.total_participants ? 
+            (summary.active_participants / summary.total_participants * 100) : 0
+          }
+          progressLabel={`${Math.round((summary?.active_participants || 0) / (summary?.total_participants || 1) * 100)}% of total`}
+        />
+        <DashboardStatCard
+          label="Total Stimuli"
+          value={summary?.total_stimuli || 0}
+          progressBar={null}
+        />
+        <DashboardStatCard
+          label="Tests Completed"
+          value={summary?.tests_completed || 0}
+          progressBar={insights?.completion_rate || 0}
+          progressLabel={`${insights?.completion_rate || 0}% completion rate`}
+        />
+      </div>
+
+      {/* Secondary Stats with Progress */}
+      {insights && (
+        <div className="dashboard-stats-grid">
+          <DashboardStatCard
+            label="Completion Rate"
+            value={`${insights.completion_rate}%`}
+            progressBar={insights.completion_rate}
+            progressColor={insights.completion_rate > 70 ? "green" : insights.completion_rate > 40 ? "orange" : "red"}
+          />
+          <DashboardStatCard
+            label="Screening Conversion"
+            value={`${insights.screening_conversion}%`}
+            progressBar={insights.screening_conversion}
+            progressColor={insights.screening_conversion > 70 ? "green" : insights.screening_conversion > 40 ? "orange" : "red"}
+          />
+          <DashboardStatCard
+            label="New (30 days)"
+            value={insights.new_participants_30d}
+            progressBar={null}
+          />
+          <DashboardStatCard
+            label="Avg Consistency"
+            value={
+              insights.avg_consistency_score
+                ? insights.avg_consistency_score.toFixed(2)
+                : "N/A"
+            }
+            progressBar={insights.avg_consistency_score ? insights.avg_consistency_score * 100 : 0}
+            progressLabel={insights.avg_consistency_score ? "Score out of 1.0" : null}
+          />
+        </div>
+      )}
+
+      {/* Charts Section */}
+      {charts && (
+        <>
+          {charts.participant_growth && (
+            <div className="dashboard-table-container">
+              <h3 className="dashboard-table-title">
+                Participant Growth (Last {dateRange} Days)
+              </h3>
+              <ParticipantGrowthChart data={charts.participant_growth} />
+            </div>
+          )}
+
+          <div className="dashboard-charts-grid">
+            {charts.test_completion && (
+              <div className="dashboard-table-container">
+                <h3 className="dashboard-table-title">Test Status</h3>
+                <TestCompletionChart
+                  completed={charts.test_completion.completed}
+                  inProgress={charts.test_completion.in_progress}
+                  notStarted={charts.test_completion.not_started}
+                />
+              </div>
             )}
+
+            {charts.stimulus_breakdown &&
+              charts.stimulus_breakdown.length > 0 && (
+                <div className="dashboard-table-container">
+                  <h3 className="dashboard-table-title">
+                    Stimulus Distribution
+                  </h3>
+                  <StimulusBreakdownChart
+                    breakdown={charts.stimulus_breakdown}
+                  />
+                </div>
+              )}
           </div>
-        </div>
-      </div>
 
-      {/* Summary stats row */}
-      <div className="stats-container">
-        <div className="stat-card">
-          <div className="stat-number">{data.total_participants}</div>
-          <div className="stat-label">Total Participants</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.active_participants}</div>
-          <div className="stat-label">Active Participants</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.total_stimuli}</div>
-          <div className="stat-label">Total Stimuli</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{data.completed_tests}</div>
-          <div className="stat-label">Tests Completed</div>
-        </div>
-      </div>
-
-      {/* Research overview */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Research Overview</h3>
-        </div>
-        <div className="card-body">
-          <p>
-            Welcome to the researcher dashboard. Here you can view aggregated
-            participant data and analyze test results.
-          </p>
-        </div>
-      </div>
-
-      {/* Recent participants */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Recent Participants</h3>
-        </div>
-        <div className="card-body">
-          {recentParticipants.length === 0 ? (
-            <p className="text-muted">No data yet</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>NAME</th>
-                  <th>EMAIL</th>
-                  <th>CREATED AT</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentParticipants.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>{p.name}</td>
-                    <td>{p.email}</td>
-                    <td>{p.created_at}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {charts.popular_tests && charts.popular_tests.length > 0 && (
+            <div className="dashboard-table-container">
+              <h3 className="dashboard-table-title">Most Popular Tests</h3>
+              <PopularTestsChart tests={charts.popular_tests} />
+            </div>
           )}
-        </div>
-      </div>
+        </>
+      )}
 
-      {/* Recent stimuli */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Recent Stimuli</h3>
-        </div>
-        <div className="card-body">
-          {recentStimuli.length === 0 ? (
-            <p className="text-muted">No data yet</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>DESCRIPTION</th>
-                  <th>FAMILY</th>
-                  <th>CREATED AT</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentStimuli.map((s, idx) => (
-                  <tr key={idx}>
-                    <td>{s.description}</td>
-                    <td>{s.family}</td>
-                    <td>{s.created_at}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+      {/* Recent Activity Tables */}
+      <RecentTable
+        title="Recent Participants"
+        columns={["name", "email", "status", "last_login"]}
+        rows={recent?.participants || []}
+      />
+
+      <RecentTable
+        title="Recent Tests Completed"
+        columns={[
+          "participant_name",
+          "test_name",
+          "consistency_score",
+          "completed_at",
+        ]}
+        rows={recent?.tests || []}
+      />
+
+      <RecentTable
+        title="Recent Stimuli"
+        columns={["description", "family", "trigger_type", "created_at"]}
+        rows={recent?.stimuli || []}
+      />
     </div>
-  )
+  );
 }
