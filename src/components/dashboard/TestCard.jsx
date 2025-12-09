@@ -21,51 +21,63 @@ import "../../styles/TestCard.css";
  *   - isCompleted: whether test is completed
  */
 export default function TestCard({ test }) {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
-	/**
-	 * Handle card click
-	 * Only navigates if test is not locked
-	 */
-	const handleClick = () => {
-		if (!test.isLocked) {
-			navigate(test.path);
-		}
-	};
+  /**
+   * Handle card click
+   * Only navigates if test is not locked
+   */
+  const handleClick = () => {
+    if (!test.isLocked) {
+      navigate(test.path);
+    }
+  };
 
-	return (
-		<div
-			// Dynamic classes based on test state
-			className={`test-card ${test.isLocked ? "locked" : ""} ${test.isCompleted ? "completed" : ""}`}
-			onClick={handleClick}
-			// Change cursor based on lock state
-			style={{ cursor: test.isLocked ? "not-allowed" : "pointer" }}
-		>
-			{/* Card header with title and status icon */}
-			<div className="test-card-header">
-				<h3 className="test-card-title">{test.name}</h3>
-				{/* Show lock icon if test is locked */}
-				{test.isLocked && <Lock className="lock-icon" size={20} />}
-				{/* Show checkmark if test is completed */}
-				{test.isCompleted && (
-					<CheckCircle className="completed-icon" size={20} />
-				)}
-			</div>
+  const handleKeyDown = (e) => {
+    if ((e.key === "Enter" || e.key === " ") && !test.isLocked) {
+      e.preventDefault();
+      handleClick();
+    }
+  };
 
-			{/* Test description */}
-			<p className="test-card-description">{test.description}</p>
+  return (
+    <div
+      // Dynamic classes based on test state
+      className={`test-card ${test.isLocked ? "locked" : ""} ${
+        test.isCompleted ? "completed" : ""
+      }`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={test.isLocked ? -1 : 0}
+      // Change cursor based on lock state
+      style={{ cursor: test.isLocked ? "not-allowed" : "pointer" }}
+    >
+      {/* Card header with title and status icon */}
+      <div className="test-card-header">
+        <h3 className="test-card-title">{test.name}</h3>
+        {/* Show lock icon if test is locked */}
+        {test.isLocked && <Lock className="lock-icon" size={20} />}
+        {/* Show checkmark if test is completed */}
+        {test.isCompleted && (
+          <CheckCircle className="completed-icon" size={20} />
+        )}
+      </div>
 
-			{/* Card footer with status badge */}
-			<div className="test-card-footer">
-				{/* Conditional status badge based on test state */}
-				{test.isLocked ? (
-					<span className="test-status locked-status">Locked</span>
-				) : test.isCompleted ? (
-					<span className="test-status completed-status">Completed</span>
-				) : (
-					<span className="test-status available-status">Available</span>
-				)}
-			</div>
-		</div>
-	);
+      {/* Test description */}
+      <p className="test-card-description">{test.description}</p>
+
+      {/* Card footer with status badge */}
+      <div className="test-card-footer">
+        {/* Conditional status badge based on test state */}
+        {test.isLocked ? (
+          <span className="test-status locked-status">Locked</span>
+        ) : test.isCompleted ? (
+          <span className="test-status completed-status">Completed</span>
+        ) : (
+          <span className="test-status available-status">Available</span>
+        )}
+      </div>
+    </div>
+  );
 }
