@@ -12,7 +12,13 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
   async function loadParticipantDetails() {
     try {
       const data = await dashboardService.getParticipantDetails(participantId);
-      setParticipant(data);
+      // Transform backend response to match component expectations
+      setParticipant({
+        ...data.participant,
+        test_results: data.test_results || [],
+        screening: data.screening_sessions?.[0] || null,
+        statistics: data.statistics || {},
+      });
     } catch (error) {
       console.error('Failed to load participant details:', error);
     } finally {
@@ -90,16 +96,51 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
               <h3>Screening Results</h3>
               <div className="detail-grid">
                 <div className="detail-item">
-                  <label>Completed</label>
-                  <span>{participant.screening.completed ? '✅ Yes' : '❌ No'}</span>
+                  <label>Status</label>
+                  <span>{participant.screening.status || 'N/A'}</span>
                 </div>
                 <div className="detail-item">
                   <label>Eligible</label>
                   <span>{participant.screening.eligible ? '✅ Yes' : '❌ No'}</span>
                 </div>
                 <div className="detail-item">
+                  <label>Exit Code</label>
+                  <span>{participant.screening.exit_code || 'N/A'}</span>
+                </div>
+                <div className="detail-item">
                   <label>Synesthesia Types</label>
-                  <span>{participant.screening.selected_types?.join(', ') || 'None'}</span>
+                  <span>
+                    {participant.screening.selected_types
+                      ? Array.isArray(participant.screening.selected_types)
+                        ? participant.screening.selected_types.join(', ')
+                        : participant.screening.selected_types
+                      : 'None'}
+                  </span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Statistics */}
+          {participant.statistics && (
+            <section className="detail-section">
+              <h3>Statistics</h3>
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <label>Total Tests</label>
+                  <span>{participant.statistics.total_tests || 0}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Completed Tests</label>
+                  <span>{participant.statistics.completed_tests || 0}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Average Consistency Score</label>
+                  <span>
+                    {participant.statistics.avg_consistency_score
+                      ? participant.statistics.avg_consistency_score.toFixed(3)
+                      : 'N/A'}
+                  </span>
                 </div>
               </div>
             </section>
@@ -128,13 +169,17 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
                       {test.completed_at && (
                         <div className="detail-item">
                           <label>Completed</label>
-                          <span>{new Date(test.completed_at).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(test.completed_at).toLocaleString()}
+                          </span>
                         </div>
                       )}
-                      {test.duration && (
+                      {test.started_at && (
                         <div className="detail-item">
-                          <label>Duration</label>
-                          <span>{test.duration} min</span>
+                          <label>Started</label>
+                          <span>
+                            {new Date(test.started_at).toLocaleString()}
+                          </span>
                         </div>
                       )}
                     </div>
