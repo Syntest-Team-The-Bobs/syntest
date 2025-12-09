@@ -17,74 +17,74 @@ import SpeedCongruencyTest from "./pages/trigger_color/SpeedCongruencyTest";
 import "./styles/app.css";
 
 function App() {
-  return (
-    <AuthProvider>
-      <Routes>
-        {/* To wrap page in Layout.jsx (header and footer)  */}
-        <Route element={<Layout />}>
-          <Route index path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route
-            path="/participant/dashboard"
-            element={
-              <ProtectedRoute requiredRole="participant">
-                <ParticipantDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/screening/:step?" element={<ScreeningFlow />} />
-          <Route path="/screening/exit/:code" element={<ScreeningExit />} />
-          <Route
-            path="/tests/color/number"
-            element={
-              // <ProtectedRoute requiredRole="participant">
-              <ColorNumberTest />
-              // </ProtectedRoute>
-            }
-          />
-          {/* Color tests: TEMPORARY DISABLE LOGIN FOR TESTING */}
-          <Route
-            path="/tests/color/letter"
-            element={
-              // <ProtectedRoute requiredRole="participant">
-              <ColorLetterTest />
-              // </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tests/color/word"
-            element={
-              // <ProtectedRoute requiredRole="participant">
-              <ColorWordTest />
-              // </ProtectedRoute>
-            }
-          />
+	return (
+		<AuthProvider>
+			<Routes>
+				{/* To wrap page in Layout.jsx (header and footer)  */}
+				<Route element={<Layout />}>
+					<Route index path="/" element={<LandingPage />} />
+					<Route path="/login" element={<LoginPage />} />
+					<Route path="/signup" element={<SignupPage />} />
+					<Route
+						path="/participant/dashboard"
+						element={
+							<ProtectedRoute requiredRole="participant">
+								<ParticipantDashboard />
+							</ProtectedRoute>
+						}
+					/>
+					<Route path="/screening/:step?" element={<ScreeningFlow />} />
+					<Route path="/screening/exit/:code" element={<ScreeningExit />} />
+					<Route
+						path="/tests/color/number"
+						element={
+							// <ProtectedRoute requiredRole="participant">
+							<ColorNumberTest />
+							// </ProtectedRoute>
+						}
+					/>
+					{/* Color tests: TEMPORARY DISABLE LOGIN FOR TESTING */}
+					<Route
+						path="/tests/color/letter"
+						element={
+							// <ProtectedRoute requiredRole="participant">
+							<ColorLetterTest />
+							// </ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/tests/color/word"
+						element={
+							// <ProtectedRoute requiredRole="participant">
+							<ColorWordTest />
+							// </ProtectedRoute>
+						}
+					/>
 
-          {/* Music/Sound to Color test */}
-          <Route path="/tests/color/music" element={<ColorMusicTest />} />
-        </Route>
+					{/* Music/Sound to Color test */}
+					<Route path="/tests/color/music" element={<ColorMusicTest />} />
+				</Route>
 
-        <Route
-          path="/researcher/dashboard"
-          element={
-            <ProtectedRoute requiredRole="researcher">
-              <ResearcherDashboard />
-            </ProtectedRoute>
-          }
-        />
+				<Route
+					path="/researcher/dashboard"
+					element={
+						<ProtectedRoute requiredRole="researcher">
+							<ResearcherDashboard />
+						</ProtectedRoute>
+					}
+				/>
 
-        <Route
-          path="/tests/color/speed-congruency"
-          element={
-            <ProtectedRoute requiredRole="participant">
-              <SpeedCongruencyTest />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </AuthProvider>
-  );
+				<Route
+					path="/tests/color/speed-congruency"
+					element={
+						<ProtectedRoute requiredRole="participant">
+							<SpeedCongruencyTest />
+						</ProtectedRoute>
+					}
+				/>
+			</Routes>
+		</AuthProvider>
+	);
 }
 
 export default App;
