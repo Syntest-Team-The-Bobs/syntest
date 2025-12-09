@@ -4,16 +4,19 @@ Tests cover: signup, login, validation, error handling, role-based access
 Target: 95%+ branch coverage for common.py auth functions
 """
 
-from models import db, Participant, Researcher
 from werkzeug.security import check_password_hash
+
+from models import Participant, Researcher, db
 
 
 def url(path=""):
     """Helper to construct API URLs"""
     base = "/api/v1/auth"
-    if path:
-        return f"{base}/{path}" if path.startswith("/") else f"{base}/{path}"
-    return base
+    if not path:
+        return base
+    if path.startswith("/"):
+        return f"{base}{path}"
+    return f"{base}/{path}"
 
 
 class TestSignup:
@@ -91,7 +94,9 @@ class TestSignup:
 
         # Verify researcher was created
         with app.app_context():
-            researcher = Researcher.query.filter_by(email="researcher@university.edu").first()
+            researcher = Researcher.query.filter_by(
+                email="researcher@university.edu"
+            ).first()
             assert researcher is not None
             assert researcher.name == "Dr. Researcher"
             assert researcher.institution == "Test University"
@@ -297,7 +302,9 @@ class TestSignup:
 
         # Verify age is None due to conversion failure
         with app.app_context():
-            participant = Participant.query.filter_by(email="invalidage@example.com").first()
+            participant = Participant.query.filter_by(
+                email="invalidage@example.com"
+            ).first()
             assert participant.age is None
 
     def test_signup_default_role_participant(self, client, app):
@@ -316,9 +323,13 @@ class TestSignup:
 
         # Verify created as participant
         with app.app_context():
-            participant = Participant.query.filter_by(email="default@example.com").first()
+            participant = Participant.query.filter_by(
+                email="default@example.com"
+            ).first()
             assert participant is not None
-            assert Researcher.query.filter_by(email="default@example.com").first() is None
+            assert (
+                Researcher.query.filter_by(email="default@example.com").first() is None
+            )
 
 
 class TestLogin:
@@ -616,4 +627,3 @@ class TestGetCurrentUser:
         data = response.get_json()
         assert "error" in data
         assert "User not found" in data["error"]
-
