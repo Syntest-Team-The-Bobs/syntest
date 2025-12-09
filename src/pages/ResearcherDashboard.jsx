@@ -160,7 +160,11 @@ export default function ResearcherDashboard() {
 			<div className="dashboard-error">
 				<h2 className="dashboard-error-title">Error Loading Dashboard</h2>
 				<p className="dashboard-error-text">{error}</p>
-				<button type="button" onClick={loadData} className="dashboard-error-button">
+				<button
+					type="button"
+					onClick={loadData}
+					className="dashboard-error-button"
+				>
 					Try Again
 				</button>
 			</div>

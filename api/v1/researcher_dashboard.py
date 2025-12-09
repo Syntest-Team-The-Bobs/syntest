@@ -267,7 +267,7 @@ def get_researcher_dashboard():
         mid_point = days // 2
         first_half_avg_consistency = None
         second_half_avg_consistency = None
-        
+
         first_half_scores = [
             item["avg_consistency"]
             for item in consistency_trends[:mid_point]
@@ -278,12 +278,12 @@ def get_researcher_dashboard():
             for item in consistency_trends[mid_point:]
             if item["avg_consistency"] is not None
         ]
-        
+
         if first_half_scores:
             first_half_avg_consistency = sum(first_half_scores) / len(first_half_scores)
         if second_half_scores:
             second_half_avg_consistency = sum(second_half_scores) / len(second_half_scores)
-        
+
         consistency_trend_percentage = None
         if first_half_avg_consistency and second_half_avg_consistency and first_half_avg_consistency > 0:
             consistency_trend_percentage = round(
@@ -302,7 +302,7 @@ def get_researcher_dashboard():
             for item in completion_trends[mid_point:]
             if item["total"] > 0
         ]
-        
+
         completion_rate_trend_percentage = None
         if first_half_completion and second_half_completion:
             first_avg = sum(first_half_completion) / len(first_half_completion)
