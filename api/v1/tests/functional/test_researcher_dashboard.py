@@ -759,8 +759,12 @@ class TestResearcherDashboardChartData:
         popular = data["charts"]["popular_tests"]
         assert len(popular) > 0
         # Test1 should be more popular
-        test1_count = next((t["count"] for t in popular if t["name"] == "Popular Test 1"), 0)
-        test2_count = next((t["count"] for t in popular if t["name"] == "Popular Test 2"), 0)
+        test1_count = next(
+            (t["count"] for t in popular if t["name"] == "Popular Test 1"), 0
+        )
+        test2_count = next(
+            (t["count"] for t in popular if t["name"] == "Popular Test 2"), 0
+        )
         assert test1_count >= test2_count
 
     def test_stimulus_breakdown_chart_data(self, client, auth_researcher, app):
@@ -882,7 +886,9 @@ class TestResearcherDashboardChartData:
                     test_id=test.id,
                     status="completed" if i < 2 else "in_progress",
                     started_at=datetime.now(timezone.utc) - timedelta(days=i),
-                    completed_at=datetime.now(timezone.utc) - timedelta(days=i) if i < 2 else None,
+                    completed_at=datetime.now(timezone.utc) - timedelta(days=i)
+                    if i < 2
+                    else None,
                 )
                 db.session.add(result)
             db.session.commit()
@@ -929,7 +935,9 @@ class TestResearcherDashboardEdgeCases:
         # Should not crash, avg_consistency_score should be None or 0
         assert "avg_consistency_score" in data["insights"]
 
-    def test_dashboard_trend_calculation_with_insufficient_data(self, client, auth_researcher):
+    def test_dashboard_trend_calculation_with_insufficient_data(
+        self, client, auth_researcher
+    ):
         """Test trend calculations with minimal data"""
         response = client.get(url("?days=1"))
         assert response.status_code == 200
@@ -978,4 +986,3 @@ class TestResearcherDashboardEdgeCases:
 
         assert len(data["test_results"]) == 0
         assert data["statistics"]["total_tests"] == 0
-

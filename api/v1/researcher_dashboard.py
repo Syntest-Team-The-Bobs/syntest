@@ -282,13 +282,23 @@ def get_researcher_dashboard():
         if first_half_scores:
             first_half_avg_consistency = sum(first_half_scores) / len(first_half_scores)
         if second_half_scores:
-            second_half_avg_consistency = sum(second_half_scores) / len(second_half_scores)
+            second_half_avg_consistency = sum(second_half_scores) / len(
+                second_half_scores
+            )
 
         consistency_trend_percentage = None
-        if first_half_avg_consistency and second_half_avg_consistency and first_half_avg_consistency > 0:
+        if (
+            first_half_avg_consistency
+            and second_half_avg_consistency
+            and first_half_avg_consistency > 0
+        ):
             consistency_trend_percentage = round(
-                ((second_half_avg_consistency - first_half_avg_consistency) / first_half_avg_consistency) * 100,
-                1
+                (
+                    (second_half_avg_consistency - first_half_avg_consistency)
+                    / first_half_avg_consistency
+                )
+                * 100,
+                1,
             )
 
         # Calculate completion rate trend
@@ -309,8 +319,7 @@ def get_researcher_dashboard():
             second_avg = sum(second_half_completion) / len(second_half_completion)
             if first_avg > 0:
                 completion_rate_trend_percentage = round(
-                    ((second_avg - first_avg) / first_avg) * 100,
-                    1
+                    ((second_avg - first_avg) / first_avg) * 100, 1
                 )
 
         return jsonify(
@@ -401,7 +410,12 @@ def search_participants():
         total = query.count()
 
         # Apply pagination
-        participants = query.order_by(Participant.created_at.desc()).limit(limit).offset(offset).all()
+        participants = (
+            query.order_by(Participant.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
 
         # Build response
         participants_data = []
@@ -520,9 +534,7 @@ def get_participant_detail(participant_id):
             )
 
         # Calculate statistics
-        completed_tests = [
-            tr for tr in test_results if tr.status == "completed"
-        ]
+        completed_tests = [tr for tr in test_results if tr.status == "completed"]
         avg_consistency = (
             sum(tr.consistency_score for tr in completed_tests if tr.consistency_score)
             / len([tr for tr in completed_tests if tr.consistency_score])
@@ -644,8 +656,12 @@ def export_data():
                         "status": p.status,
                         "screening_completed": p.screening_completed,
                         "synesthesia_type": p.synesthesia_type,
-                        "created_at": p.created_at.isoformat() if p.created_at else None,
-                        "last_login": p.last_login.isoformat() if p.last_login else None,
+                        "created_at": p.created_at.isoformat()
+                        if p.created_at
+                        else None,
+                        "last_login": p.last_login.isoformat()
+                        if p.last_login
+                        else None,
                     }
                     for p in participants
                 ]
@@ -710,11 +726,15 @@ def export_data():
                         {
                             "id": tr.id,
                             "participant_id": tr.participant_id,
-                            "participant_name": participant.name if participant else "Unknown",
+                            "participant_name": participant.name
+                            if participant
+                            else "Unknown",
                             "test_id": tr.test_id,
                             "test_name": test.name if test else "Unknown",
                             "consistency_score": tr.consistency_score,
-                            "started_at": tr.started_at.isoformat() if tr.started_at else None,
+                            "started_at": tr.started_at.isoformat()
+                            if tr.started_at
+                            else None,
                             "completed_at": tr.completed_at.isoformat()
                             if tr.completed_at
                             else None,
