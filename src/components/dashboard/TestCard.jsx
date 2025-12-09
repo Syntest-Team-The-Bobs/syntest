@@ -41,15 +41,15 @@ export default function TestCard({ test }) {
   };
 
   return (
-    <div
+    <button
+      type="button"
       // Dynamic classes based on test state
       className={`test-card ${test.isLocked ? "locked" : ""} ${
         test.isCompleted ? "completed" : ""
       }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={test.isLocked ? -1 : 0}
+      disabled={test.isLocked}
       // Change cursor based on lock state
       style={{ cursor: test.isLocked ? "not-allowed" : "pointer" }}
     >
@@ -78,6 +78,6 @@ export default function TestCard({ test }) {
           <span className="test-status available-status">Available</span>
         )}
       </div>
-    </div>
+    </button>
   );
 }
