@@ -952,8 +952,7 @@ class TestResearcherDashboardEdgeCases:
 
         response = client.get(url("/participants?search=Test"))
         assert response.status_code == 200
-        data = response.get_json()
-        # Should not crash
+        # Should not crash with special characters
 
     def test_export_with_no_data(self, client, auth_researcher):
         """Test export handles empty data"""

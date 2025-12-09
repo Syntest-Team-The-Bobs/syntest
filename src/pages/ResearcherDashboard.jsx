@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ActivityHeatmap from "../components/dashboard/ActivityHeatmap";
 import CompletionTrendsChart from "../components/dashboard/CompletionTrendsChart";
@@ -26,25 +26,7 @@ export default function ResearcherDashboard() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isExporting, setIsExporting] = useState(false);
 
-	useEffect(() => {
-		if (!authLoading && (!user || user.role !== "researcher")) {
-			navigate("/login");
-			return;
-		}
-
-		if (user && user.role === "researcher") {
-			loadData();
-		}
-	}, [user, authLoading, navigate, dateRange]); // Re-fetch when dateRange changes
-
-	// Check for alerts when data changes
-	useEffect(() => {
-		if (dashboardData) {
-			checkAlerts(dashboardData);
-		}
-	}, [dashboardData]);
-
-	async function loadData() {
+	const loadData = useCallback(async () => {
 		try {
 			setLoading(true);
 			setError(null);
@@ -57,9 +39,9 @@ export default function ResearcherDashboard() {
 		} finally {
 			setLoading(false);
 		}
-	}
+	}, [dateRange]);
 
-	function checkAlerts(data) {
+	const checkAlerts = useCallback((data) => {
 		const newAlerts = [];
 
 		// Alert 1: Low active participants
@@ -109,7 +91,25 @@ export default function ResearcherDashboard() {
 		}
 
 		setAlerts(newAlerts);
-	}
+	}, []);
+
+	useEffect(() => {
+		if (!authLoading && (!user || user.role !== "researcher")) {
+			navigate("/login");
+			return;
+		}
+
+		if (user && user.role === "researcher") {
+			loadData();
+		}
+	}, [user, authLoading, navigate, loadData]);
+
+	// Check for alerts when data changes
+	useEffect(() => {
+		if (dashboardData) {
+			checkAlerts(dashboardData);
+		}
+	}, [dashboardData, checkAlerts]);
 
 	function handleDateRangeChange(range) {
 		setDateRange(range);
@@ -160,7 +160,7 @@ export default function ResearcherDashboard() {
 			<div className="dashboard-error">
 				<h2 className="dashboard-error-title">Error Loading Dashboard</h2>
 				<p className="dashboard-error-text">{error}</p>
-				<button onClick={loadData} className="dashboard-error-button">
+				<button type="button" onClick={loadData} className="dashboard-error-button">
 					Try Again
 				</button>
 			</div>
@@ -220,6 +220,7 @@ export default function ResearcherDashboard() {
 						</div>
 						<div className="export-buttons">
 							<button
+								type="button"
 								className="btn-export"
 								onClick={() => handleExport("csv", "participants")}
 								disabled={isExporting}
@@ -228,6 +229,7 @@ export default function ResearcherDashboard() {
 								{isExporting ? "Exporting..." : "📥 Export Participants (CSV)"}
 							</button>
 							<button
+								type="button"
 								className="btn-export"
 								onClick={() => handleExport("csv", "test_results")}
 								disabled={isExporting}
@@ -248,6 +250,7 @@ export default function ResearcherDashboard() {
 							<span className="alert-icon">{alert.icon}</span>
 							<span className="alert-message">{alert.message}</span>
 							<button
+								type="button"
 								className="alert-dismiss"
 								onClick={() => dismissAlert(index)}
 								aria-label="Dismiss alert"

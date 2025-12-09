@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { dashboardService } from "../../services/dashboard";
 
 export default function ParticipantDetailModal({ participantId, onClose }) {
 	const [participant, setParticipant] = useState(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadParticipantDetails();
-	}, [participantId]);
-
-	async function loadParticipantDetails() {
+	const loadParticipantDetails = useCallback(async () => {
 		try {
 			const data = await dashboardService.getParticipantDetails(participantId);
 			// Transform backend response to match component expectations
@@ -24,12 +20,39 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
 		} finally {
 			setLoading(false);
 		}
-	}
+	}, [participantId]);
+
+	useEffect(() => {
+		loadParticipantDetails();
+	}, [loadParticipantDetails]);
+
+	const handleOverlayClick = (e) => {
+		if (e.target === e.currentTarget) {
+			onClose();
+		}
+	};
+
+	const handleKeyDown = (e) => {
+		if (e.key === "Escape") {
+			onClose();
+		}
+	};
 
 	if (loading) {
 		return (
-			<div className="modal-overlay" onClick={onClose}>
-				<div className="modal-content" onClick={(e) => e.stopPropagation()}>
+			<div
+				className="modal-overlay"
+				onClick={handleOverlayClick}
+				onKeyDown={handleKeyDown}
+				role="dialog"
+				aria-modal="true"
+				tabIndex={-1}
+			>
+				<div
+					className="modal-content"
+					onClick={(e) => e.stopPropagation()}
+					role="document"
+				>
 					<p>Loading...</p>
 				</div>
 			</div>
@@ -41,14 +64,28 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
 	}
 
 	return (
-		<div className="modal-overlay" onClick={onClose}>
+		<div
+			className="modal-overlay"
+			onClick={handleOverlayClick}
+			onKeyDown={handleKeyDown}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="participant-detail-title"
+			tabIndex={-1}
+		>
 			<div
 				className="modal-content participant-detail-modal"
 				onClick={(e) => e.stopPropagation()}
+				role="document"
 			>
 				<div className="modal-header">
-					<h2>Participant Details</h2>
-					<button className="modal-close" onClick={onClose}>
+					<h2 id="participant-detail-title">Participant Details</h2>
+					<button
+						type="button"
+						className="modal-close"
+						onClick={onClose}
+						aria-label="Close modal"
+					>
 						×
 					</button>
 				</div>
@@ -166,8 +203,11 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
 						</h3>
 						{participant.test_results && participant.test_results.length > 0 ? (
 							<div className="test-results-list">
-								{participant.test_results.map((test, index) => (
-									<div key={index} className="test-result-card">
+								{participant.test_results.map((test) => (
+									<div
+										key={`${test.test_id}-${test.completed_at || test.started_at}`}
+										className="test-result-card"
+									>
 										<div className="test-result-header">
 											<h4>{test.test_name}</h4>
 											<span className={`status-badge status-${test.status}`}>
@@ -211,8 +251,11 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
 						<section className="detail-section">
 							<h3>Recent Activity</h3>
 							<div className="activity-timeline">
-								{participant.activity.map((event, index) => (
-									<div key={index} className="timeline-item">
+								{participant.activity.map((event) => (
+									<div
+										key={`${event.timestamp}-${event.description}`}
+										className="timeline-item"
+									>
 										<div className="timeline-dot"></div>
 										<div className="timeline-content">
 											<span className="timeline-date">
@@ -230,10 +273,11 @@ export default function ParticipantDetailModal({ participantId, onClose }) {
 				</div>
 
 				<div className="modal-footer">
-					<button className="btn-secondary" onClick={onClose}>
+					<button type="button" className="btn-secondary" onClick={onClose}>
 						Close
 					</button>
 					<button
+						type="button"
 						className="btn-primary"
 						onClick={() => exportParticipantData(participant)}
 					>
