@@ -96,6 +96,7 @@ start.sh
 *.coverage
 .coverage
 .coverage.*
+coverage/
 htmlcov/
 .cache/
 .history/
