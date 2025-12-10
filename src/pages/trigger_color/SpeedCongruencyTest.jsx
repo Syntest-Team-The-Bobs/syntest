@@ -180,7 +180,7 @@ function SpeedCongruencyTestFlow({
 					const randomOther =
 						otherOptions[Math.floor(Math.random() * otherOptions.length)];
 					setDisplayedOptionId(randomOther.id);
-				/* istanbul ignore next */
+					/* istanbul ignore next */
 				} else {
 					setDisplayedOptionId(currentTrial.expectedOptionId);
 					setIsCongruent(true);
@@ -199,13 +199,13 @@ function SpeedCongruencyTestFlow({
 			(async () => {
 				try {
 					const playMs = 2000; // play duration in ms
-				for (let i = 0; i < 3; i++) {
-					/* istanbul ignore next */
-					if (cancelled) break;
-					// start playing (musicPlayer.play does not block for duration)
-					if (currentTrial.trigger === "__FORCE_MUSIC_LOOP_ERROR__") {
-						throw new Error("forced music loop error");
-					}
+					for (let i = 0; i < 3; i++) {
+						/* istanbul ignore next */
+						if (cancelled) break;
+						// start playing (musicPlayer.play does not block for duration)
+						if (currentTrial.trigger === "__FORCE_MUSIC_LOOP_ERROR__") {
+							throw new Error("forced music loop error");
+						}
 						try {
 							musicPlayer.play(currentTrial.stimulus, playMs / 1000);
 						} /* istanbul ignore next */ catch (err) {
@@ -267,7 +267,7 @@ function SpeedCongruencyTestFlow({
 		setIsCongruent(null);
 	};
 
-			const begin = () => {
+	const begin = () => {
 		resetForTrial();
 		// Set up congruency for this trial: randomly decide 50/50 whether to show
 		// the expected color (congruent) or a different color (incongruent)
@@ -288,7 +288,7 @@ function SpeedCongruencyTestFlow({
 				const randomOther =
 					otherOptions[Math.floor(Math.random() * otherOptions.length)];
 				setDisplayedOptionId(randomOther.id);
-			/* istanbul ignore next */
+				/* istanbul ignore next */
 			} else {
 				// Fallback: if no other options, show expected
 				setDisplayedOptionId(currentTrial.expectedOptionId);
@@ -320,11 +320,11 @@ function SpeedCongruencyTestFlow({
 		setPhase("done");
 	};
 
-		const submitAndNext = async (choiceParam = null) => {
-			// Use the provided choice parameter or fall back to selectedOptionId
-			const choice = choiceParam !== null ? choiceParam : selectedOptionId;
-				/* istanbul ignore next */
-				if (!choice || isCongruent === null) return;
+	const submitAndNext = async (choiceParam = null) => {
+		// Use the provided choice parameter or fall back to selectedOptionId
+		const choice = choiceParam !== null ? choiceParam : selectedOptionId;
+		/* istanbul ignore next */
+		if (!choice || isCongruent === null) return;
 		const reactionTimeMs = choiceStartRef.current
 			? performance.now() - choiceStartRef.current
 			: null;
@@ -444,7 +444,7 @@ function SpeedCongruencyTestFlow({
 				return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 			});
 			return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-		/* istanbul ignore next */
+			/* istanbul ignore next */
 		} catch (_e) {
 			return 1; // assume light
 		}

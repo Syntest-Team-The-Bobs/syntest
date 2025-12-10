@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import { vi } from "vitest";
 
 const { submitTrialMock } = vi.hoisted(() => ({
@@ -20,8 +26,8 @@ vi.mock("../../../services/speedCongruency.js", () => ({
 	},
 }));
 
-import SpeedCongruencyTest from "../SpeedCongruencyTest";
 import { musicPlayer } from "../../../services/audioPlayer.js";
+import SpeedCongruencyTest from "../SpeedCongruencyTest";
 
 vi.mock("../../../services/audioPlayer.js", () => ({
 	__esModule: true,
@@ -65,9 +71,7 @@ describe("SpeedCongruencyTest", () => {
 		vi.useRealTimers();
 	});
 
-	it(
-		"runs through practice + main trials and reaches completion",
-		async () => {
+	it("runs through practice + main trials and reaches completion", async () => {
 		// Sequence covers: 4 shuffles + 1 practice + 4 main congruency decisions
 		mockMathRandomSequence([0, 0, 0, 0, 0.2, 0.8, 0.2, 0.8, 0.2]);
 
@@ -82,15 +86,15 @@ describe("SpeedCongruencyTest", () => {
 			const yesButton = await screen.findByRole("button", { name: /^yes$/i });
 			fireEvent.click(yesButton);
 
-			await waitFor(() => expect(submitTrialMock).toHaveBeenCalledTimes(trial + 1));
+			await waitFor(() =>
+				expect(submitTrialMock).toHaveBeenCalledTimes(trial + 1),
+			);
 		}
 
 		await waitFor(() =>
 			expect(screen.getByText(/thank you for completing/i)).toBeInTheDocument(),
 		);
-		},
-		15000,
-	);
+	}, 15000);
 
 	it("stores pending response locally when submission fails", async () => {
 		submitTrialMock.mockRejectedValueOnce(new Error("network"));
@@ -109,12 +113,14 @@ describe("SpeedCongruencyTest", () => {
 		fireEvent.click(yesButton);
 
 		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem("speedCongruency_results"))).toHaveLength(
-				1,
-			),
+			expect(
+				JSON.parse(localStorage.getItem("speedCongruency_results")),
+			).toHaveLength(1),
 		);
 
-		const saved = JSON.parse(localStorage.getItem("speedCongruency_results"))[0];
+		const saved = JSON.parse(
+			localStorage.getItem("speedCongruency_results"),
+		)[0];
 		expect(saved.status).toBe("pending");
 		expect(saved.isCorrect).toBeDefined();
 		consoleSpy.mockRestore();
@@ -130,33 +136,33 @@ describe("SpeedCongruencyTest", () => {
 					expectedOptionId: "o1",
 					options: [{ id: "o1", label: "P1", color: "#000000" }],
 				},
-		],
-		stimuli: [
-			{
-				id: "soloPlayFail",
-				expectedOptionId: "o1",
-				stimulus: "C4-piano",
-				trigger: "PLAY_FAIL",
-				options: [{ id: "o1", label: "SOLO1", color: "#123456" }],
-			},
-			{
-				id: "soloLoopErr",
-				expectedOptionId: "o1",
-				stimulus: "C4-piano",
-				trigger: "__FORCE_MUSIC_LOOP_ERROR__",
-				options: [{ id: "o1", label: "SOLO_LOOP", color: "#abcdef" }],
-			},
-			{
-				id: "solo2",
-				expectedOptionId: "o1",
-				options: [{ id: "o1", label: "SOLO2", color: undefined }],
-			},
-			{
-				id: "missingExpected",
-				expectedOptionId: "o99",
-				options: [{ id: "o1", label: "MISS", color: "#ffffff" }],
-			},
-		],
+			],
+			stimuli: [
+				{
+					id: "soloPlayFail",
+					expectedOptionId: "o1",
+					stimulus: "C4-piano",
+					trigger: "PLAY_FAIL",
+					options: [{ id: "o1", label: "SOLO1", color: "#123456" }],
+				},
+				{
+					id: "soloLoopErr",
+					expectedOptionId: "o1",
+					stimulus: "C4-piano",
+					trigger: "__FORCE_MUSIC_LOOP_ERROR__",
+					options: [{ id: "o1", label: "SOLO_LOOP", color: "#abcdef" }],
+				},
+				{
+					id: "solo2",
+					expectedOptionId: "o1",
+					options: [{ id: "o1", label: "SOLO2", color: undefined }],
+				},
+				{
+					id: "missingExpected",
+					expectedOptionId: "o99",
+					options: [{ id: "o1", label: "MISS", color: "#ffffff" }],
+				},
+			],
 		};
 
 		musicPlayer.play.mockImplementationOnce(() => {
@@ -171,7 +177,9 @@ describe("SpeedCongruencyTest", () => {
 		await advanceAllTimers();
 		fireEvent.click(await screen.findByRole("button", { name: /^yes$/i }));
 		await waitFor(() =>
-			expect(screen.getByRole("button", { name: /begin/i })).toBeInTheDocument(),
+			expect(
+				screen.getByRole("button", { name: /begin/i }),
+			).toBeInTheDocument(),
 		);
 
 		// Main trial 1 begin (music play throws -> inner catch)
@@ -256,7 +264,9 @@ describe("SpeedCongruencyTest", () => {
 			stimuli: [],
 		};
 
-		const { unmount } = render(<SpeedCongruencyTest deckOverride={deckOverride} />);
+		const { unmount } = render(
+			<SpeedCongruencyTest deckOverride={deckOverride} />,
+		);
 		fireEvent.click(screen.getByRole("button", { name: /begin/i }));
 		await advanceTimersByTimeAsync(10);
 		unmount();
@@ -310,7 +320,9 @@ describe("SpeedCongruencyTest", () => {
 			stimuli: [],
 		};
 
-		const { unmount } = render(<SpeedCongruencyTest deckOverride={deckOverride} />);
+		const { unmount } = render(
+			<SpeedCongruencyTest deckOverride={deckOverride} />,
+		);
 
 		fireEvent.click(screen.getByRole("button", { name: /begin/i }));
 		await advanceTimersByTimeAsync(10);
@@ -354,13 +366,21 @@ describe("SpeedCongruencyTest", () => {
 		});
 
 		expect(
-			await screen.findByText(/thank you for completing the speed congruency test/i),
+			await screen.findByText(
+				/thank you for completing the speed congruency test/i,
+			),
 		).toBeInTheDocument();
 	}, 15000);
 
 	it("shows no-trials message when deck is empty", async () => {
-		render(<SpeedCongruencyTest deckOverride={{ practiceStimuli: [], stimuli: [] }} />);
-		expect(await screen.findByText(/No trials are available/i)).toBeInTheDocument();
+		render(
+			<SpeedCongruencyTest
+				deckOverride={{ practiceStimuli: [], stimuli: [] }}
+			/>,
+		);
+		expect(
+			await screen.findByText(/No trials are available/i),
+		).toBeInTheDocument();
 	});
 
 	it("records correct response when user selects 'no' on incongruent trial", async () => {
@@ -405,7 +425,9 @@ describe("SpeedCongruencyTest", () => {
 
 		await waitFor(() => expect(setItemMock).toHaveBeenCalled());
 		const loggedLocalStorageError = consoleSpy.mock.calls.some(
-			(call) => call[0] === "Failed to save to localStorage:" && call[1] instanceof Error,
+			(call) =>
+				call[0] === "Failed to save to localStorage:" &&
+				call[1] instanceof Error,
 		);
 		expect(loggedLocalStorageError).toBe(true);
 
