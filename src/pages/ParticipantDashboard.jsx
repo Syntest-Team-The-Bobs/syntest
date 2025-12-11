@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import TestCard from "../components/dashboard/TestCard";
-import Sidebar from "../components/layout/Sidebar";
 import { dashboardService } from "../services/dashboard";
 import "../styles/dashboard.css";
 
@@ -97,9 +96,6 @@ export default function ParticipantDashboard() {
 		fetchData();
 	}, []);
 
-	// Sidebar navigation links
-	const sidebarLinks = [{ path: "/settings", label: "Settings" }];
-
 	// Screening test object (only shown if not completed)
 	const screeningTest = {
 		id: "screening",
@@ -139,29 +135,26 @@ export default function ParticipantDashboard() {
 
 	return (
 		<div className="dashboard-grid">
-			{/* Sidebar navigation */}
-			<Sidebar links={sidebarLinks} />
-
 			{/* Main content area */}
-			<main style={{ padding: "var(--spacing-3xl)" }}>
+			<main style={{ width: "70%", margin: "auto" }}>
 				{/* Dashboard header */}
-				<div className="dashboard-header">
-					<h1>Dashboard</h1>
-				</div>
+				<div className="section">
+					<h2 className="section-title">Dashboard</h2>
 
-				{/* Stats cards - shows completion metrics */}
-				<div className="stats-container">
-					<div className="stat-card">
-						<div className="stat-number">{data.tests_completed}</div>
-						<div className="stat-label">Tests Completed</div>
-					</div>
-					<div className="stat-card">
-						<div className="stat-number">{data.tests_pending}</div>
-						<div className="stat-label">Tests Pending</div>
-					</div>
-					<div className="stat-card">
-						<div className="stat-number">{data.completion_percentage}%</div>
-						<div className="stat-label">Completion</div>
+					{/* Stats cards - shows completion metrics */}
+					<div className="stats-container">
+						<div className="stat-card">
+							<div className="stat-number">{data.tests_completed}</div>
+							<div className="stat-label">Tests Completed</div>
+						</div>
+						<div className="stat-card">
+							<div className="stat-number">{data.tests_pending}</div>
+							<div className="stat-label">Tests Pending</div>
+						</div>
+						<div className="stat-card">
+							<div className="stat-number">{data.completion_percentage}%</div>
+							<div className="stat-label">Completion</div>
+						</div>
 					</div>
 				</div>
 

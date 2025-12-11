@@ -56,9 +56,6 @@ export default function TestCard({ test }) {
 			// Change cursor based on lock state
 			style={{
 				cursor: isClickable ? "pointer" : "not-allowed",
-				textAlign: "left",
-				border: "none",
-				width: "100%",
 			}}
 			aria-label={`${test.name} - ${test.isLocked ? "Locked" : test.isCompleted ? "Completed" : "Available"}`}
 		>
