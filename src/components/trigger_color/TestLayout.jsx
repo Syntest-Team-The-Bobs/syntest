@@ -1,4 +1,3 @@
-import React from "react";
 import ProgressBar from "../ui/ProgressBar";
 import ColorPreviewLock from "./ColorPreviewLock";
 import ColorWheel from "./ColorWheel";
@@ -20,7 +19,7 @@ export default function TestLayout({
 	title,
 	testType,
 	phase,
-	current,
+	// current,
 	stimulus,
 	currentTrial,
 	progressInTrial,
@@ -223,6 +222,7 @@ export default function TestLayout({
 
 						{/* Next button - disabled until color is locked OR no experience checked */}
 						<button
+							type="button"
 							onClick={onNext}
 							disabled={!locked && !noExperience}
 							style={{

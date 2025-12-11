@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * TestIntro - Introduction/welcome screen for color synesthesia test
  *
@@ -58,7 +56,10 @@ export default function TestIntro({ introConfig, onStart }) {
 					}}
 				>
 					{introConfig.instructions.map((txt, i) => (
-						<li key={i} style={{ marginBottom: "0.5rem" }}>
+						<li
+							key={typeof txt === "string" ? `instr-${txt}` : `instr-${i}`}
+							style={{ marginBottom: "0.5rem" }}
+						>
 							{txt}
 						</li>
 					))}
@@ -78,6 +79,7 @@ export default function TestIntro({ introConfig, onStart }) {
 
 				{/* Start button */}
 				<button
+					type="button"
 					onClick={onStart}
 					style={{
 						fontSize: "1rem",

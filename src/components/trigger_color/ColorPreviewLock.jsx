@@ -1,5 +1,4 @@
 import { Lock, Unlock } from "lucide-react";
-import React from "react";
 
 /**
  * ColorPreviewLock - Displays selected color preview with lock indicator
@@ -41,8 +40,10 @@ export default function ColorPreviewLock({ selected, locked, onToggle }) {
 			</div>
 
 			{/* Lock/unlock icon indicator - CENTERED */}
-			<div
+			<button
+				type="button"
 				onClick={onToggle}
+				onKeyUp={onToggle}
 				style={{
 					position: "absolute",
 					bottom: "-18px",
@@ -66,7 +67,7 @@ export default function ColorPreviewLock({ selected, locked, onToggle }) {
 				) : (
 					<Unlock size={16} color="#000" strokeWidth={2.5} />
 				)}
-			</div>
+			</button>
 		</div>
 	);
 }

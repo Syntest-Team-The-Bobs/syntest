@@ -1375,7 +1375,7 @@ footer {
 
 /* Display */
 .hidden {
-	display: none !important;
+	display: none;
 }
 .block {
 	display: block;

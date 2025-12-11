@@ -34,6 +34,7 @@ export default function Layout({ small, nofooter }) {
 									</Link>
 								)}
 								<button
+									type="button"
 									onClick={handleLogout}
 									className="btn btn-primary btn-sm"
 								>

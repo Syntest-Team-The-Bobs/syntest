@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * MusicPlayButton - Dedicated component for music test playback control
  *
@@ -26,6 +24,7 @@ export default function MusicPlayButton({ stimulus, onReplay }) {
 			{/* Play button for music */}
 			<div style={{ marginBottom: "0.5rem" }}>
 				<button
+					type="button"
 					onClick={onReplay}
 					aria-label="Play sound"
 					style={{
@@ -40,12 +39,9 @@ export default function MusicPlayButton({ stimulus, onReplay }) {
 						cursor: "pointer",
 						transition: "all 0.2s",
 					}}
-					onMouseOver={(e) =>
-						(e.currentTarget.style.backgroundColor = "#f3f4f6")
-					}
-					onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
 				>
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="#000">
+						<title>lock icon </title>
 						<path d="M8 5v14l11-7z" />
 					</svg>
 				</button>

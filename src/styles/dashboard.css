@@ -8,9 +8,6 @@
 	padding: var(--spacing-2xl);
 }
 
-@media (max-width: 640px) {
-}
-
 /* Sidebar styling */
 .dashboard-sidebar {
 	background: var(--bg-primary);

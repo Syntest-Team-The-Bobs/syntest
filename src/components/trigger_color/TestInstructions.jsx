@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * TestInstructions - Step-by-step instructions panel for color test
  *
