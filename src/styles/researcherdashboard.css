@@ -21,10 +21,6 @@
   font-size: 2.5rem;
   font-weight: 700;
   color: #111827;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .dashboard-welcome {
@@ -491,7 +487,7 @@
 
 .btn-export {
   padding: 0.5rem 1rem;
-  background-color: #10b981;
+  background-color: var(--color-black);
   color: white;
   border: none;
   border-radius: 6px;
@@ -505,9 +501,9 @@
 }
 
 .btn-export:hover:not(:disabled) {
-  background-color: #059669;
+  background-color: #222;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .btn-export:disabled {
@@ -938,41 +934,7 @@
   color: #111827;
 }
 
-/* Button Styles */
-.btn-primary {
-  padding: 0.75rem 1.5rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-secondary {
-  padding: 0.75rem 1.5rem;
-  background-color: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
+/* Button Styles - Using global styles from app.css */
 
 /* Responsive Modal */
 @media (max-width: 768px) {
@@ -1001,8 +963,7 @@
     flex-direction: column;
   }
 
-  .btn-primary,
-  .btn-secondary {
+  .modal-footer .btn {
     width: 100%;
   }
 }
