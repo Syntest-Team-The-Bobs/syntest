@@ -1,5 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { colorTestService } from "../../services/colorTest";
 import { useColorTestAPI } from "../useColorTestAPI";
 
