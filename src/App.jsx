@@ -33,10 +33,18 @@ function App() {
 							</ProtectedRoute>
 						}
 					/>
+					<Route
+						path="/researcher/dashboard"
+						element={
+							<ProtectedRoute requiredRole="researcher">
+								<ResearcherDashboard />
+							</ProtectedRoute>
+						}
+					/>
 					<Route path="/screening/:step?" element={<ScreeningFlow />} />
 					<Route path="/screening/exit/:code" element={<ScreeningExit />} />
 				</Route>
-				<Route element={<Layout small nofooter/>}>
+				<Route element={<Layout small nofooter />}>
 					<Route
 						path="/tests/color/number"
 						element={
@@ -65,25 +73,15 @@ function App() {
 
 					{/* Music/Sound to Color test */}
 					<Route path="/tests/color/music" element={<ColorMusicTest />} />
+					<Route
+						path="/tests/color/speed-congruency"
+						element={
+							<ProtectedRoute requiredRole="participant">
+								<SpeedCongruencyTest />
+							</ProtectedRoute>
+						}
+					/>
 				</Route>
-
-				<Route
-					path="/researcher/dashboard"
-					element={
-						<ProtectedRoute requiredRole="researcher">
-							<ResearcherDashboard />
-						</ProtectedRoute>
-					}
-				/>
-
-				<Route
-					path="/tests/color/speed-congruency"
-					element={
-						<ProtectedRoute requiredRole="participant">
-							<SpeedCongruencyTest />
-						</ProtectedRoute>
-					}
-				/>
 			</Routes>
 		</AuthProvider>
 	);

@@ -186,10 +186,9 @@ export default function ScreeningFlow() {
 
 	const stickyNavStyle = {
 		position: "sticky",
-		top: 0,
+		top: "0",
+		background: "white",
 		zIndex: 100,
-		background:
-			"linear-gradient(to bottom, #f9fafb 0%, #f9fafb 85%, transparent 100%)",
 		paddingTop: "0.5rem",
 		paddingBottom: "0.75rem",
 		marginBottom: "0.5rem",
@@ -200,16 +199,10 @@ export default function ScreeningFlow() {
 
 	const sectionStyle = (stepNum) => ({
 		background: "#ffffff",
-		borderRadius: "16px",
 		padding: isCompactStep(stepNum) ? "1.25rem 1.75rem" : "2.5rem",
 		marginBottom: isCompactStep(stepNum) ? "0.75rem" : "1.5rem",
-		boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-		border: "3px solid",
-		borderColor: completedSteps.has(stepNum)
-			? "#10b981"
-			: isStepAccessible(stepNum)
-				? "#d1d5db"
-				: "#f3f4f6",
+		border: "1px solid",
+		boxShadow: "0 5px 0px 0px",
 		opacity: isStepAccessible(stepNum) ? 1 : 0.4,
 		transition: "all 0.3s ease",
 		scrollMarginTop: "70px",
@@ -217,35 +210,35 @@ export default function ScreeningFlow() {
 	});
 
 	const sectionTitleStyle = {
-		fontSize: "2rem",
+		fontSize: "1.75rem",
 		fontWeight: 700,
 		marginBottom: "1.5rem",
 		color: "#111827",
 	};
 
 	const compactTitleStyle = {
-		fontSize: "1.5rem",
+		fontSize: "1.25rem",
 		fontWeight: 700,
 		marginBottom: "0.75rem",
 		color: "#111827",
 	};
 
 	const textStyle = {
-		fontSize: "1.375rem",
+		fontSize: "1.125rem",
 		lineHeight: 1.6,
 		color: "#374151",
 		marginBottom: "1.5rem",
 	};
 
 	const compactTextStyle = {
-		fontSize: "1.125rem",
+		fontSize: "1rem",
 		lineHeight: 1.4,
 		color: "#374151",
 		marginBottom: "0.75rem",
 	};
 
 	const mutedTextStyle = {
-		fontSize: "1.125rem",
+		fontSize: "1rem",
 		color: "#6b7280",
 		marginTop: "1rem",
 	};
@@ -276,10 +269,10 @@ export default function ScreeningFlow() {
 			<div
 				style={{
 					display: "flex",
-					justifyContent: "center",
+					justifyContent: "space-between",
 					alignItems: "center",
+					width: "100%",
 					gap: "0.5rem",
-					flexWrap: "wrap",
 				}}
 			>
 				{STEP_LABELS.map((step, index) => {
@@ -289,27 +282,41 @@ export default function ScreeningFlow() {
 					return (
 						<div
 							key={step.num}
-							style={{ display: "flex", alignItems: "center" }}
+							style={{
+								display: "flex",
+								alignItems: "center",
+								width: index < STEP_LABELS.length - 1 ? "28.5%" : "15%",
+							}}
 						>
 							<button
 								type="button"
 								onClick={() => scrollToSection(step.num)}
 								style={{
 									display: "flex",
-									flexDirection: "column",
+									flexDirection: "row",
+									gap: "0.5em",
 									alignItems: "center",
 									padding: "0.5rem 1rem",
 									background: isCompleted
-										? "#10b981"
+										? "#a9ffc7"
 										: isAccessible
-											? "#3730a3"
-											: "#e5e7eb",
-									color: isCompleted || isAccessible ? "#ffffff" : "#9ca3af",
-									border: "none",
-									borderRadius: "10px",
+											? "black"
+											: "#f6f6f6",
+									color: isCompleted
+										? "rgb(0, 143, 2)"
+										: isAccessible
+											? "white"
+											: "gray",
+									border: "1.5px solid",
+									borderColor: isCompleted
+										? "rgb(0, 143, 2)"
+										: isAccessible
+											? "white"
+											: "gray",
 									cursor: "pointer",
 									transition: "all 0.2s ease",
 									minWidth: "70px",
+									width: "100%",
 								}}
 								onMouseEnter={(e) => {
 									e.currentTarget.style.transform = "scale(1.05)";
@@ -337,13 +344,12 @@ export default function ScreeningFlow() {
 							{index < STEP_LABELS.length - 1 && (
 								<div
 									style={{
-										width: "24px",
+										width: "100%",
 										height: "3px",
 										background: completedSteps.has(step.num)
 											? "#10b981"
 											: "#e5e7eb",
 										margin: "0 4px",
-										borderRadius: "2px",
 									}}
 								/>
 							)}
@@ -385,10 +391,10 @@ export default function ScreeningFlow() {
 					className="checkbox-group"
 					htmlFor="consent"
 					style={{
-						fontSize: "1.375rem",
+						fontSize: "1em",
 						display: "flex",
 						alignItems: "flex-start",
-						gap: "1.25rem",
+						gap: "1.2rem",
 						marginBottom: "1.5rem",
 					}}
 				>
@@ -397,10 +403,14 @@ export default function ScreeningFlow() {
 						type="checkbox"
 						checked={state.consent}
 						onChange={(e) => updateState({ consent: e.target.checked })}
-						style={{ width: "26px", height: "26px", marginTop: "4px" }}
+						style={{
+							width: "26px",
+							height: "26px",
+							marginTop: "4px",
+						}}
 						data-audit-label="Consent agreement"
 					/>
-					<span style={{ fontSize: "1.375rem", lineHeight: 1.5 }}>
+					<span style={{ fontSize: "1.3rem", lineHeight: 1.5 }}>
 						I consent to take part in this study.
 					</span>
 				</label>

@@ -1,71 +1,67 @@
-import { Link, useNavigate, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export default function Layout({
-  small,
-  nofooter,
-}) {
-  const { user, logout, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+export default function Layout({ small, nofooter }) {
+	const { user, logout, isAuthenticated } = useAuth();
+	const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+	const handleLogout = async () => {
+		await logout();
+		navigate("/");
+	};
 
-  return (
-    <>
-      <header className={`topbar ${small ? "small" : ""}`}>
-        <div className={`topbar-content`}>
-          <Link to="/" className="brand">
-            SYNTEST
-          </Link>
-          <nav className="nav">
-            <Link to="/screening/0" className="nav-link">
-              Screening
-            </Link>
-            {isAuthenticated ? (
-              <>
-                {user?.role === "participant" && (
-                  <Link to="/participant/dashboard" className="nav-link">
-                    Dashboard
-                  </Link>
-                )}
-                {user?.role === "researcher" && (
-                  <Link to="/researcher/dashboard" className="nav-link">
-                    Dashboard
-                  </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-primary btn-sm"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="nav-link">
-                  Login
-                </Link>
-                <Link to="/signup" className="btn btn-primary btn-sm">
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+	return (
+		<>
+			<header className={`topbar ${small ? "small" : ""}`}>
+				<div className={`topbar-content`}>
+					<Link to="/" className="brand">
+						SYNTEST
+					</Link>
+					<nav className="nav">
+						<Link to="/screening/0" className="nav-link">
+							Screening
+						</Link>
+						{isAuthenticated ? (
+							<>
+								{user?.role === "participant" && (
+									<Link to="/participant/dashboard" className="nav-link">
+										Dashboard
+									</Link>
+								)}
+								{user?.role === "researcher" && (
+									<Link to="/researcher/dashboard" className="nav-link">
+										Dashboard
+									</Link>
+								)}
+								<button
+									onClick={handleLogout}
+									className="btn btn-primary btn-sm"
+								>
+									Logout
+								</button>
+							</>
+						) : (
+							<>
+								<Link to="/login" className="nav-link">
+									Login
+								</Link>
+								<Link to="/signup" className="btn btn-primary btn-sm">
+									Sign Up
+								</Link>
+							</>
+						)}
+					</nav>
+				</div>
+			</header>
 
-      <Outlet />
+			<Outlet />
 
-      {!nofooter && (
-        <footer>
-          &copy; 2025 Synesthesia Research Platform. All data is anonymized and
-          used for research purposes only.
-        </footer>
-      )
-      }
-    </>
-  );
+			{!nofooter && (
+				<footer>
+					&copy; 2025 Synesthesia Research Platform. All data is anonymized and
+					used for research purposes only.
+				</footer>
+			)}
+		</>
+	);
 }

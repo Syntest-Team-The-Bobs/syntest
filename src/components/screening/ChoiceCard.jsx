@@ -53,7 +53,6 @@ export default function ChoiceCard({
 				opacity: disabled ? 0.6 : 1,
 				cursor: disabled ? "not-allowed" : "pointer",
 				padding: compact ? "0.75rem 1rem" : "1.5rem",
-				border: "none",
 				width: "100%",
 				textAlign: "left",
 			}}
