@@ -57,7 +57,9 @@ describe("ScreeningFlow", () => {
 	describe("Rendering", () => {
 		it("renders consent checkbox", () => {
 			renderWithRouter();
-			expect(screen.getByLabelText("I consent to take part in this study.")).toBeInTheDocument();
+			expect(
+				screen.getByLabelText("I consent to take part in this study."),
+			).toBeInTheDocument();
 		});
 
 		it("renders step 1 section", () => {
@@ -72,7 +74,9 @@ describe("ScreeningFlow", () => {
 
 		it("renders step 3 section", () => {
 			renderWithRouter();
-			expect(screen.getByText(/select your synesthesia types/i)).toBeInTheDocument();
+			expect(
+				screen.getByText(/select your synesthesia types/i),
+			).toBeInTheDocument();
 		});
 
 		it("renders step 4 section", () => {
@@ -103,7 +107,9 @@ describe("ScreeningFlow", () => {
 
 		it("renders Maybe choice card", () => {
 			renderWithRouter();
-			expect(screen.getByRole("button", { name: /^Maybe/i })).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: /^Maybe/i }),
+			).toBeInTheDocument();
 		});
 
 		it("renders No choice card", () => {
@@ -138,7 +144,9 @@ describe("ScreeningFlow", () => {
 
 		it("renders other experiences input", () => {
 			renderWithRouter();
-			expect(screen.getByPlaceholderText(/other experiences/i)).toBeInTheDocument();
+			expect(
+				screen.getByPlaceholderText(/other experiences/i),
+			).toBeInTheDocument();
 		});
 
 		it("renders contact support", () => {
@@ -148,22 +156,30 @@ describe("ScreeningFlow", () => {
 
 		it("shows incomplete results message", () => {
 			renderWithRouter();
-			expect(screen.getByText(/complete the previous steps/i)).toBeInTheDocument();
+			expect(
+				screen.getByText(/complete the previous steps/i),
+			).toBeInTheDocument();
 		});
 
 		it("renders back buttons", () => {
 			renderWithRouter();
-			expect(screen.getAllByRole("button", { name: /← back/i }).length).toBeGreaterThan(0);
+			expect(
+				screen.getAllByRole("button", { name: /← back/i }).length,
+			).toBeGreaterThan(0);
 		});
 
 		it("renders save & continue buttons", () => {
 			renderWithRouter();
-			expect(screen.getAllByRole("button", { name: /save & continue/i }).length).toBeGreaterThan(0);
+			expect(
+				screen.getAllByRole("button", { name: /save & continue/i }).length,
+			).toBeGreaterThan(0);
 		});
 
 		it("renders submit button", () => {
 			renderWithRouter();
-			expect(screen.getByRole("button", { name: /submit & continue/i })).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: /submit & continue/i }),
+			).toBeInTheDocument();
 		});
 
 		it("renders examples list", () => {
@@ -186,7 +202,9 @@ describe("ScreeningFlow", () => {
 	describe("Consent Step", () => {
 		it("checkbox starts unchecked", () => {
 			renderWithRouter();
-			expect(screen.getByLabelText("I consent to take part in this study.")).not.toBeChecked();
+			expect(
+				screen.getByLabelText("I consent to take part in this study."),
+			).not.toBeChecked();
 		});
 
 		it("can check consent", () => {
@@ -206,36 +224,60 @@ describe("ScreeningFlow", () => {
 
 		it("first continue disabled without consent", () => {
 			renderWithRouter();
-			expect(screen.getAllByRole("button", { name: /save & continue/i })[0]).toBeDisabled();
+			expect(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			).toBeDisabled();
 		});
 
 		it("first continue enabled with consent", () => {
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			expect(screen.getAllByRole("button", { name: /save & continue/i })[0]).not.toBeDisabled();
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			expect(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			).not.toBeDisabled();
 		});
 
 		it("calls saveConsent on continue", async () => {
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(mockScreeningService.saveConsent).toHaveBeenCalledWith(true));
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(mockScreeningService.saveConsent).toHaveBeenCalledWith(true),
+			);
 		});
 
 		it("shows saving text during API call", async () => {
-			mockScreeningService.saveConsent.mockImplementation(() => new Promise(() => {}));
+			mockScreeningService.saveConsent.mockImplementation(
+				() => new Promise(() => {}),
+			);
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
 			// Multiple buttons show "Saving…" - just check at least one exists
 			expect(screen.getAllByText("Saving…").length).toBeGreaterThan(0);
 		});
 
 		it("completes consent successfully", async () => {
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(mockScreeningService.saveConsent).toHaveBeenCalled());
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(mockScreeningService.saveConsent).toHaveBeenCalled(),
+			);
 		});
 
 		it("prevents double submit during save", async () => {
@@ -243,8 +285,12 @@ describe("ScreeningFlow", () => {
 				() => new Promise(() => {}), // Never resolves
 			);
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			const btn = screen.getAllByRole("button", { name: /save & continue/i })[0];
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			const btn = screen.getAllByRole("button", {
+				name: /save & continue/i,
+			})[0];
 			fireEvent.click(btn);
 			// Button should now show Saving and be effectively disabled by saving state
 			expect(mockScreeningService.saveConsent).toHaveBeenCalledTimes(1);
@@ -306,7 +352,9 @@ describe("ScreeningFlow", () => {
 
 		it("can select grapheme Sometimes", () => {
 			renderWithRouter();
-			const r = screen.getByRole("radio", { name: /Letter.*Color.*Sometimes/i });
+			const r = screen.getByRole("radio", {
+				name: /Letter.*Color.*Sometimes/i,
+			});
 			fireEvent.click(r);
 			expect(r).toBeChecked();
 		});
@@ -415,17 +463,31 @@ describe("ScreeningFlow", () => {
 		it("shows error alert on API fail", async () => {
 			mockScreeningService.saveConsent.mockRejectedValue(new Error("Fail"));
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(screen.getByRole("alert")).toBeInTheDocument(),
+			);
 		});
 
 		it("shows error message text", async () => {
-			mockScreeningService.saveConsent.mockRejectedValue(new Error("Network failure"));
+			mockScreeningService.saveConsent.mockRejectedValue(
+				new Error("Network failure"),
+			);
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(screen.getByText(/network failure/i)).toBeInTheDocument());
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(screen.getByText(/network failure/i)).toBeInTheDocument(),
+			);
 		});
 
 		it("shows server response message", async () => {
@@ -433,28 +495,214 @@ describe("ScreeningFlow", () => {
 			e.response = { data: { message: "Server validation error" } };
 			mockScreeningService.saveConsent.mockRejectedValue(e);
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(screen.getByText(/server validation error/i)).toBeInTheDocument());
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(
+					screen.getByText(/server validation error/i),
+				).toBeInTheDocument(),
+			);
 		});
 
 		it("shows default error when no message", async () => {
 			mockScreeningService.saveConsent.mockRejectedValue({});
 			renderWithRouter();
-			fireEvent.click(screen.getByLabelText("I consent to take part in this study."));
-			fireEvent.click(screen.getAllByRole("button", { name: /save & continue/i })[0]);
-			await waitFor(() => expect(screen.getByText(/unable to save/i)).toBeInTheDocument());
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(screen.getByText(/unable to save/i)).toBeInTheDocument(),
+			);
 		});
 	});
 
 	// === SESSION STORAGE ===
 	describe("Session Storage", () => {
 		it("loads summary from session storage", () => {
-			const summary = { eligible: true, selected_types: ["Test"], recommended: [] };
-			window.sessionStorage.setItem("screening_summary", JSON.stringify(summary));
+			const summary = {
+				eligible: true,
+				selected_types: ["Test"],
+				recommended: [],
+			};
+			window.sessionStorage.setItem(
+				"screening_summary",
+				JSON.stringify(summary),
+			);
 			renderWithRouter();
-			// Component should have loaded the summary (though may not display without completing steps)
 			expect(window.sessionStorage.getItem("screening_summary")).not.toBeNull();
+		});
+	});
+
+	// === FULL FLOW TESTS ===
+	describe("Complete Flow", () => {
+		it("completes consent step", async () => {
+			renderWithRouter();
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(mockScreeningService.saveConsent).toHaveBeenCalledWith(true),
+			);
+		});
+
+		it("shows error when consent fails", async () => {
+			mockScreeningService.saveConsent.mockRejectedValue(new Error("Network"));
+			renderWithRouter();
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(screen.getByText(/unable to save/i)).toBeInTheDocument(),
+			);
+		});
+
+		it("calls saveConsent with true", async () => {
+			renderWithRouter();
+			fireEvent.click(
+				screen.getByLabelText("I consent to take part in this study."),
+			);
+			fireEvent.click(
+				screen.getAllByRole("button", { name: /save & continue/i })[0],
+			);
+			await waitFor(() =>
+				expect(mockScreeningService.saveConsent).toHaveBeenCalledWith(true),
+			);
+		});
+	});
+
+	// === UI ELEMENT TESTS ===
+	describe("UI Elements", () => {
+		it("renders all step headers", () => {
+			renderWithRouter();
+			expect(
+				screen.getByText("Step 1: Welcome to the Screening"),
+			).toBeInTheDocument();
+			expect(
+				screen.getByText("Step 2: Do you know what synesthesia is?"),
+			).toBeInTheDocument();
+			expect(
+				screen.getByText("Step 3: Let's learn about synesthesia"),
+			).toBeInTheDocument();
+			expect(screen.getByText(/Step 4/)).toBeInTheDocument();
+		});
+
+		it("renders synesthesia definition text", () => {
+			renderWithRouter();
+			// Step 3 contains synesthesia definition
+			expect(screen.getByText(/synesthesia/i)).toBeInTheDocument();
+		});
+
+		it("renders progress indicator", () => {
+			renderWithRouter();
+			// All steps are labeled with "Step X:"
+			const steps = screen.getAllByText(/Step \d/);
+			expect(steps.length).toBeGreaterThan(0);
+		});
+
+		it("renders type selection rows", () => {
+			renderWithRouter();
+			expect(screen.getAllByText(/Letter/)[0]).toBeInTheDocument();
+			expect(screen.getAllByText(/Music/)[0]).toBeInTheDocument();
+		});
+
+		it("renders instructions text", () => {
+			renderWithRouter();
+			expect(screen.getByText(/3-5 minutes/)).toBeInTheDocument();
+		});
+
+		it("shows definition choice cards", () => {
+			renderWithRouter();
+			expect(screen.getByRole("button", { name: /^Yes/i })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: /^No/i })).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: /^Maybe/i }),
+			).toBeInTheDocument();
+		});
+
+		it("renders checkbox for consent", () => {
+			renderWithRouter();
+			expect(screen.getByRole("checkbox")).toBeInTheDocument();
+		});
+
+		it("renders save button for step 1", () => {
+			renderWithRouter();
+			const buttons = screen.getAllByRole("button", {
+				name: /save & continue/i,
+			});
+			expect(buttons.length).toBeGreaterThan(0);
+		});
+
+		it("renders submit button for step 4", () => {
+			renderWithRouter();
+			expect(
+				screen.getByRole("button", { name: /submit & continue/i }),
+			).toBeInTheDocument();
+		});
+
+		it("renders all synesthesia types", () => {
+			renderWithRouter();
+			expect(screen.getAllByText(/Letter/)[0]).toBeInTheDocument();
+			expect(screen.getAllByText(/Music/)[0]).toBeInTheDocument();
+			expect(screen.getAllByText(/Lexical/)[0]).toBeInTheDocument();
+			expect(screen.getAllByText(/Sequence/)[0]).toBeInTheDocument();
+		});
+	});
+
+	// === RADIO BUTTON TESTS ===
+	describe("Type Selection Radios", () => {
+		it("renders radio buttons for each type", () => {
+			renderWithRouter();
+			const radios = screen.getAllByRole("radio");
+			expect(radios.length).toBeGreaterThanOrEqual(4);
+		});
+
+		it("allows selecting Yes for grapheme", () => {
+			renderWithRouter();
+			const radio = screen.getByRole("radio", { name: /Letter.*Color.*Yes/i });
+			fireEvent.click(radio);
+			expect(radio).toBeChecked();
+		});
+
+		it("allows selecting No for grapheme", () => {
+			renderWithRouter();
+			const radio = screen.getByRole("radio", { name: /Letter.*Color.*No/i });
+			fireEvent.click(radio);
+			expect(radio).toBeChecked();
+		});
+
+		it("allows selecting Sometimes for grapheme", () => {
+			renderWithRouter();
+			const radio = screen.getByRole("radio", {
+				name: /Letter.*Color.*Sometimes/i,
+			});
+			fireEvent.click(radio);
+			expect(radio).toBeChecked();
+		});
+
+		it("only allows one selection per row", () => {
+			renderWithRouter();
+			const yesRadio = screen.getByRole("radio", {
+				name: /Letter.*Color.*Yes/i,
+			});
+			const noRadio = screen.getByRole("radio", { name: /Letter.*Color.*No/i });
+			fireEvent.click(yesRadio);
+			expect(yesRadio).toBeChecked();
+			fireEvent.click(noRadio);
+			expect(noRadio).toBeChecked();
+			expect(yesRadio).not.toBeChecked();
 		});
 	});
 });
