@@ -157,7 +157,7 @@ describe("TestProgress", () => {
 describe("TestInstructions", () => {
 	it("renders heading", () => {
 		render(<TestInstructions testType="letter" />);
-		expect(screen.getByText("HOW TO COMPLETE THE TEST")).toBeTruthy();
+		expect(screen.getByText("INSTRUCTIONS")).toBeTruthy();
 	});
 
 	it("shows letter instruction", () => {

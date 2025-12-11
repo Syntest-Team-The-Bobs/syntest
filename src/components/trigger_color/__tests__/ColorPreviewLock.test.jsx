@@ -5,7 +5,7 @@ import ColorPreviewLock from "../ColorPreviewLock";
 describe("ColorPreviewLock", () => {
 	test("renders color preview", () => {
 		const { container } = render(<ColorPreviewLock />);
-		const preview = container.querySelector('div[style*="200px"]');
+		const preview = container.querySelector('div[style*="180px"]');
 		expect(preview).toBeTruthy();
 	});
 
@@ -23,21 +23,21 @@ describe("ColorPreviewLock", () => {
 	test("applies selected color as background", () => {
 		const selected = { r: 255, g: 0, b: 0, hex: "FF0000" };
 		const { container } = render(<ColorPreviewLock selected={selected} />);
-		const preview = container.querySelector('div[style*="200px"]');
+		const preview = container.querySelector('div[style*="180px"]');
 		expect(preview.style.backgroundColor).toBe("rgb(255, 0, 0)");
 	});
 
 	test("uses dark text on light background", () => {
 		const selected = { r: 255, g: 255, b: 255, hex: "FFFFFF" };
 		const { container } = render(<ColorPreviewLock selected={selected} />);
-		const preview = container.querySelector('div[style*="200px"]');
+		const preview = container.querySelector('div[style*="180px"]');
 		expect(preview.style.color).toBe("rgb(0, 0, 0)");
 	});
 
 	test("uses light text on dark background", () => {
 		const selected = { r: 0, g: 0, b: 0, hex: "000000" };
 		const { container } = render(<ColorPreviewLock selected={selected} />);
-		const preview = container.querySelector('div[style*="200px"]');
+		const preview = container.querySelector('div[style*="180px"]');
 		expect(preview.style.color).toBe("rgb(255, 255, 255)");
 	});
 

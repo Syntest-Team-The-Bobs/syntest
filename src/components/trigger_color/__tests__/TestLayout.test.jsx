@@ -123,7 +123,7 @@ describe("TestLayout", () => {
 
 		it("renders instructions heading", () => {
 			render(<TestLayout {...baseProps} />);
-			expect(screen.getByText("HOW TO COMPLETE THE TEST")).toBeTruthy();
+			expect(screen.getByText("INSTRUCTIONS")).toBeTruthy();
 		});
 
 		it("renders TestProgress", () => {
