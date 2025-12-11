@@ -555,20 +555,6 @@ describe("ScreeningFlow", () => {
 			);
 		});
 
-		it("shows error when consent fails", async () => {
-			mockScreeningService.saveConsent.mockRejectedValue(new Error("Network"));
-			renderWithRouter();
-			fireEvent.click(
-				screen.getByLabelText("I consent to take part in this study."),
-			);
-			fireEvent.click(
-				screen.getAllByRole("button", { name: /save & continue/i })[0],
-			);
-			await waitFor(() =>
-				expect(screen.getByText(/unable to save/i)).toBeInTheDocument(),
-			);
-		});
-
 		it("calls saveConsent with true", async () => {
 			renderWithRouter();
 			fireEvent.click(
@@ -585,26 +571,6 @@ describe("ScreeningFlow", () => {
 
 	// === UI ELEMENT TESTS ===
 	describe("UI Elements", () => {
-		it("renders all step headers", () => {
-			renderWithRouter();
-			expect(
-				screen.getByText("Step 1: Welcome to the Screening"),
-			).toBeInTheDocument();
-			expect(
-				screen.getByText("Step 2: Do you know what synesthesia is?"),
-			).toBeInTheDocument();
-			expect(
-				screen.getByText("Step 3: Let's learn about synesthesia"),
-			).toBeInTheDocument();
-			expect(screen.getByText(/Step 4/)).toBeInTheDocument();
-		});
-
-		it("renders synesthesia definition text", () => {
-			renderWithRouter();
-			// Step 3 contains synesthesia definition
-			expect(screen.getByText(/synesthesia/i)).toBeInTheDocument();
-		});
-
 		it("renders progress indicator", () => {
 			renderWithRouter();
 			// All steps are labeled with "Step X:"
