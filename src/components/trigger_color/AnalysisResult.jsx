@@ -43,7 +43,7 @@ export default function AnalysisResult({ result, onProceed }) {
 											style={{
 												background: "white",
 												padding: "0.75rem",
-												borderRadius: 8,
+
 												boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
 											}}
 										>
@@ -72,7 +72,7 @@ export default function AnalysisResult({ result, onProceed }) {
 															style={{
 																width: 36,
 																height: 36,
-																borderRadius: 6,
+
 																background: v.representative_hex,
 																border: "1px solid rgba(0,0,0,0.08)",
 															}}
@@ -108,7 +108,7 @@ export default function AnalysisResult({ result, onProceed }) {
 									background: "#2563eb",
 									color: "white",
 									padding: "0.75rem 1.75rem",
-									borderRadius: 6,
+
 									border: "none",
 									cursor: "pointer",
 								}}
