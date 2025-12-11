@@ -35,6 +35,8 @@ function App() {
 					/>
 					<Route path="/screening/:step?" element={<ScreeningFlow />} />
 					<Route path="/screening/exit/:code" element={<ScreeningExit />} />
+				</Route>
+				<Route element={<Layout small nofooter/>}>
 					<Route
 						path="/tests/color/number"
 						element={

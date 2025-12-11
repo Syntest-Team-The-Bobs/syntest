@@ -1,7 +1,10 @@
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export default function Layout() {
+export default function Layout({
+  small,
+  nofooter,
+}) {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -11,9 +14,9 @@ export default function Layout() {
   };
 
   return (
-    <div>
-      <header className="topbar">
-        <div className="topbar-content">
+    <>
+      <header className={`topbar ${small ? "small" : ""}`}>
+        <div className={`topbar-content`}>
           <Link to="/" className="brand">
             SYNTEST
           </Link>
@@ -54,16 +57,15 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="container">
-        <Outlet />
-      </main>
+      <Outlet />
 
-      <footer>
-        <p>
+      {!nofooter && (
+        <footer>
           &copy; 2025 Synesthesia Research Platform. All data is anonymized and
           used for research purposes only.
-        </p>
-      </footer>
-    </div>
+        </footer>
+      )
+      }
+    </>
   );
 }
