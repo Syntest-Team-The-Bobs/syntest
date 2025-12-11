@@ -92,7 +92,7 @@ def seed(app=None):
                     g = random.randint(0, 255)
                     b = random.randint(0, 255)
                     stim = ColorStimulus(
-                        description=f"{trigger_type.capitalize()} {i+1}",
+                        description=f"{trigger_type.capitalize()} {i + 1}",
                         owner_researcher_id=researcher.id,
                         family="color",
                         trigger_type=trigger_type,
@@ -120,12 +120,12 @@ def seed(app=None):
                 days_ago = random.randint(0, 30)
             created_at = start_date + timedelta(days=days_ago)
 
-            email = f"demo.participant{i+1}@example.com"
+            email = f"demo.participant{i + 1}@example.com"
             participant = Participant.query.filter_by(email=email).first()
 
             if not participant:
                 participant = Participant(
-                    name=f"Demo Participant {i+1}",
+                    name=f"Demo Participant {i + 1}",
                     email=email,
                     password_hash=generate_password_hash("demo123"),
                     age=random.randint(18, 65),
@@ -150,7 +150,10 @@ def seed(app=None):
                 participants_created += 1
             else:
                 # Update existing participant's creation date if needed
-                if participant.created_at is None or participant.created_at > created_at:
+                if (
+                    participant.created_at is None
+                    or participant.created_at > created_at
+                ):
                     participant.created_at = created_at
                 participants_updated += 1
 
@@ -241,4 +244,3 @@ def seed(app=None):
 
 if __name__ == "__main__":
     seed()
-
