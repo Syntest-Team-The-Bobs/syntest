@@ -110,7 +110,7 @@ describe("BaseColorTest", () => {
 		expect(screen.getByTestId("complete")).toBeInTheDocument();
 
 		fireEvent.click(screen.getByTestId("complete"));
-		expect(mockNavigate).toHaveBeenCalledWith("/speed-congruency/instructions");
+		expect(mockNavigate).toHaveBeenCalledWith("/tests/color/speed-congruency");
 	});
 
 	it("renders test layout during test phase", () => {

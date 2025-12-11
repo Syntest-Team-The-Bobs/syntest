@@ -57,15 +57,11 @@ describe("ColorPreviewLock", () => {
 		const onToggle = vi.fn();
 		const selected = { r: 255, g: 0, b: 0, hex: "FF0000" };
 
-		const { container } = render(
-			<ColorPreviewLock selected={selected} onToggle={onToggle} />,
-		);
+		render(<ColorPreviewLock selected={selected} onToggle={onToggle} />);
 
-		// Click the lock button directly
-		const lockButton = container.querySelector(
-			'button[style*="position: absolute"]',
-		);
-		fireEvent.click(lockButton);
+		// Click the lock/unlock icon area
+		const lockIcon = screen.getByTitle("Click to lock");
+		fireEvent.click(lockIcon);
 
 		expect(onToggle).toHaveBeenCalled();
 	});
