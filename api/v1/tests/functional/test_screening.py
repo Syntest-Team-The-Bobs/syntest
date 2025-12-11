@@ -270,7 +270,9 @@ class TestSaveStep2:
                 sess["user_id"] = pid
                 sess["user_role"] = "participant"
 
-            response = client.post("/api/v1/screening/step/2", json={"answer": "invalid"})
+            response = client.post(
+                "/api/v1/screening/step/2", json={"answer": "invalid"}
+            )
             assert response.status_code == 400
             assert "Invalid answer" in response.get_json()["error"]
 
@@ -687,6 +689,292 @@ class TestHelperFunctions:
             assert response.status_code == 200  # Should create new demo participant
 
 
+class TestStep2Updates:
+    """Tests for step 2 updating existing records"""
+
+    def test_step2_updates_existing_definition(self, app, client):
+        """Step 2 should update existing definition record"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step2_update@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("no"))
+            db.session.add(d)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/step/2", json={"answer": "yes"})
+            assert response.status_code == 200
+
+
+class TestStep3Updates:
+    """Tests for step 3 updating existing records"""
+
+    def test_step3_updates_existing_pain_emotion(self, app, client):
+        """Step 3 should update existing pain_emotion record"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step3_update@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            pe = ScreeningPainEmotion(session_id=s.id, answer=YesNo("no"))
+            db.session.add(pe)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/step/3", json={"answer": "yes"})
+            assert response.status_code == 200
+
+
+class TestStep4Updates:
+    """Tests for step 4 updating existing records"""
+
+    def test_step4_updates_existing_type_choice(self, app, client):
+        """Step 4 should update existing type_choice record"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step4_update@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            tc = ScreeningTypeChoice(session_id=s.id, grapheme=Frequency("no"))
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post(
+                "/api/v1/screening/step/4",
+                json={"grapheme": "yes", "music": "sometimes"},
+            )
+            assert response.status_code == 200
+
+
+class TestFinalizeEdgeCases:
+    """Tests for finalize edge cases"""
+
+    def test_finalize_with_maybe_definition(self, app, client):
+        """Finalize with maybe definition answer"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_maybe@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("maybe"))
+            db.session.add(d)
+
+            tc = ScreeningTypeChoice(session_id=s.id, grapheme=Frequency("yes"))
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+
+    def test_finalize_with_sometimes_types(self, app, client):
+        """Finalize with sometimes frequency types"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_sometimes@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("yes"))
+            db.session.add(d)
+
+            tc = ScreeningTypeChoice(
+                session_id=s.id,
+                grapheme=Frequency("sometimes"),
+                music=Frequency("sometimes"),
+            )
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+
+    def test_finalize_no_definition(self, app, client):
+        """Finalize without definition record"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_no_def@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+
+    def test_finalize_no_type_choice(self, app, client):
+        """Finalize without type_choice record"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_no_tc@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("yes"))
+            db.session.add(d)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+
+    def test_finalize_multiple_type_selections(self, app, client):
+        """Finalize with multiple types selected"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_multi@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("yes"))
+            db.session.add(d)
+
+            tc = ScreeningTypeChoice(
+                session_id=s.id,
+                grapheme=Frequency("yes"),
+                music=Frequency("yes"),
+                lexical=Frequency("yes"),
+                sequence=Frequency("yes"),
+            )
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["ok"] is True
+
+    def test_finalize_with_other_text(self, app, client):
+        """Finalize with other synesthesia text"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_other@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("yes"))
+            db.session.add(d)
+
+            tc = ScreeningTypeChoice(
+                session_id=s.id,
+                grapheme=Frequency("yes"),
+                other="Mirror-touch synesthesia",
+            )
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/finalize", json={})
+            assert response.status_code == 200
+
+
 class TestCompleteFlow:
     """Tests for complete screening flow"""
 
@@ -745,3 +1033,49 @@ class TestCompleteFlow:
             assert data["ok"] is True
             assert "eligible" in data
 
+    def test_complete_flow_ineligible(self, app, client):
+        """Complete screening flow resulting in ineligible"""
+        with app.app_context():
+            p = Participant(
+                name="Ineligible Test",
+                email="ineligible_flow@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            r = client.post("/api/v1/screening/consent", json={"consent": True})
+            assert r.status_code == 200
+
+            r = client.post(
+                "/api/v1/screening/step/1",
+                json={"drug": True, "neuro": True, "medical": True},
+            )
+            assert r.status_code == 200
+
+            r = client.post("/api/v1/screening/step/2", json={"answer": "no"})
+            assert r.status_code == 200
+
+            r = client.post("/api/v1/screening/step/3", json={"answer": "no"})
+            assert r.status_code == 200
+
+            r = client.post(
+                "/api/v1/screening/step/4",
+                json={
+                    "grapheme": "no",
+                    "music": "no",
+                    "lexical": "no",
+                    "sequence": "no",
+                },
+            )
+            assert r.status_code == 200
+
+            r = client.post("/api/v1/screening/finalize", json={})
+            assert r.status_code == 200
+            data = r.get_json()
+            assert data["ok"] is True
