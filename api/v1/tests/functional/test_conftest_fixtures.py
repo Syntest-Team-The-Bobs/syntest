@@ -6,7 +6,6 @@ This ensures the test infrastructure is reliable for other tests.
 """
 
 
-
 class TestAppFixture:
     """Test the app fixture."""
 
