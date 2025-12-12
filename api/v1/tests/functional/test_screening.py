@@ -975,6 +975,45 @@ class TestFinalizeEdgeCases:
             response = client.post("/api/v1/screening/finalize", json={})
             assert response.status_code == 200
 
+    def test_finalize_participant_deleted_mid_process(self, app, client):
+        """Finalize handles case where participant is deleted"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="finalize_deleted@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            s = ScreeningSession(participant_id=pid, consent_given=True)
+            db.session.add(s)
+            db.session.commit()
+
+            d = ScreeningDefinition(session_id=s.id, answer=YesNoMaybe("yes"))
+            db.session.add(d)
+
+            tc = ScreeningTypeChoice(session_id=s.id, grapheme=Frequency("yes"))
+            db.session.add(tc)
+            db.session.commit()
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            # Simulate participant being deleted - mock returns None
+            original_get = Participant.query.get
+
+            def mock_get(id):
+                if id == pid:
+                    return None
+                return original_get(id)
+
+            with patch.object(Participant.query, "get", side_effect=mock_get):
+                response = client.post("/api/v1/screening/finalize", json={})
+                assert response.status_code == 200
+
 
 class TestCompleteFlow:
     """Tests for complete screening flow"""
@@ -1110,6 +1149,67 @@ class TestExceptionHandling:
                 )
                 assert response.status_code == 500
                 assert "Server error" in response.get_json()["error"]
+
+    def test_consent_handles_commit_error(self, app, client):
+        """Consent handles commit errors gracefully"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="consent_commit_error@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            # Force a commit error by patching
+            with patch(
+                "v1.screening.db.session.commit", side_effect=Exception("Commit failed")
+            ):
+                response = client.post(
+                    "/api/v1/screening/consent", json={"consent": True}
+                )
+                assert response.status_code == 500
+
+    def test_get_or_create_session_error_handling(self, app, client):
+        """_get_or_create_session handles errors"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="session_error@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            # Mock ScreeningSession.query to raise error
+            with patch("v1.screening.ScreeningSession.query") as mock_query:
+                mock_query.filter_by.side_effect = Exception("Query error")
+                response = client.post(
+                    "/api/v1/screening/consent", json={"consent": True}
+                )
+                assert response.status_code == 500
+
+    def test_current_participant_id_error_handling(self, app, client):
+        """_current_participant_id handles errors during demo creation"""
+        with app.app_context():
+            # Mock db.session.add to raise error during demo participant creation
+            with patch(
+                "v1.screening.db.session.add", side_effect=Exception("Add failed")
+            ):
+                response = client.post(
+                    "/api/v1/screening/consent", json={"consent": True}
+                )
+                assert response.status_code == 500
 
 
 class TestUserRoleEdgeCases:
