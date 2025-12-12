@@ -9,7 +9,6 @@ These tests cover:
 """
 
 
-
 class TestSignup:
     """Test signup functionality."""
 
