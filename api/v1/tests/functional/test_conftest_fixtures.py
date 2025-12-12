@@ -5,8 +5,6 @@ These tests verify that all fixtures create valid objects and helper functions w
 This ensures the test infrastructure is reliable for other tests.
 """
 
-import pytest
-from datetime import datetime, timezone
 
 
 class TestAppFixture:
@@ -37,9 +35,10 @@ class TestClientFixture:
     def test_client_can_make_requests(self, client, app):
         """Test that client can make HTTP requests."""
         with app.app_context():
-            response = client.get("/")
-            # Should get some response (200, 404, or 500 depending on static files)
-            assert response.status_code in [200, 404, 500]
+            # Use an API route that exists and returns a predictable response
+            response = client.get("/api/v1/screening/consent")
+            # Should get some response (200, 401, 404, or 405)
+            assert response.status_code in [200, 401, 404, 405]
 
 
 class TestRunnerFixture:
@@ -64,7 +63,7 @@ class TestDatabaseFixtures:
 
     def test_setup_database_auto_runs(self, app):
         """Test that setup_database fixture runs automatically."""
-        from models import db, Participant
+        from models import Participant
 
         with app.app_context():
             # Tables should exist due to autouse fixture
