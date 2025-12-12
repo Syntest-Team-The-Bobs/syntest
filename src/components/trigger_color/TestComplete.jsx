@@ -99,7 +99,7 @@ export default function TestComplete({
 					style={{
 						marginBottom: "1.5rem",
 						padding: "1rem",
-						borderRadius: 8,
+
 						backgroundColor: isSynesthete ? "#f0fdf4" : "#fefce8",
 					}}
 				>
@@ -148,7 +148,7 @@ export default function TestComplete({
 										style={{
 											background: "white",
 											padding: 16,
-											borderRadius: 8,
+
 											border: isValid
 												? "2px solid #3b82f6"
 												: "1px solid #e5e7eb",
@@ -203,7 +203,7 @@ export default function TestComplete({
 														style={{
 															width: 48,
 															height: 48,
-															borderRadius: 6,
+
 															background: data.representative_hex,
 															border: "2px solid #e5e7eb",
 														}}
@@ -290,7 +290,6 @@ export default function TestComplete({
 							fontWeight: "600",
 							cursor: "pointer",
 							boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-							borderRadius: 4,
 						}}
 					>
 						Proceed to Speed Congruency Test
