@@ -4,6 +4,7 @@ Coverage target: 95%+
 """
 
 import pytest
+from unittest.mock import patch, MagicMock
 from werkzeug.security import generate_password_hash
 from models import (
     db,
@@ -1079,3 +1080,222 @@ class TestCompleteFlow:
             assert r.status_code == 200
             data = r.get_json()
             assert data["ok"] is True
+
+
+class TestExceptionHandling:
+    """Tests for exception handling paths"""
+
+    def test_consent_handles_db_error(self, app, client):
+        """Consent endpoint returns 500 on database error"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="consent_error@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            # Mock record_event to raise an exception
+            with patch.object(
+                ScreeningSession, "record_event", side_effect=Exception("DB Error")
+            ):
+                response = client.post(
+                    "/api/v1/screening/consent", json={"consent": True}
+                )
+                assert response.status_code == 500
+                assert "Server error" in response.get_json()["error"]
+
+
+class TestUserRoleEdgeCases:
+    """Tests for user role edge cases"""
+
+    def test_non_participant_role_creates_demo(self, app, client):
+        """Non-participant role triggers demo participant creation"""
+        with app.app_context():
+            with client.session_transaction() as sess:
+                sess["user_id"] = 999
+                sess["user_role"] = "researcher"  # Not a participant
+
+            response = client.post("/api/v1/screening/consent", json={"consent": True})
+            # Should create demo participant and succeed
+            assert response.status_code == 200
+
+    def test_empty_session_creates_demo(self, app, client):
+        """Empty session triggers demo participant creation"""
+        with app.app_context():
+            response = client.post("/api/v1/screening/consent", json={"consent": True})
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["ok"] is True
+            assert "session_id" in data
+
+
+class TestStep1EdgeCases:
+    """Tests for step 1 edge cases"""
+
+    def test_step1_missing_fields(self, app, client):
+        """Step 1 with missing fields defaults to False"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step1_missing_fields@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/step/1", json={})
+            assert response.status_code == 200
+
+    def test_step1_partial_fields(self, app, client):
+        """Step 1 with only some fields provided"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step1_partial@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/step/1", json={"drug": True})
+            assert response.status_code == 200
+
+
+class TestStep4EdgeCases:
+    """Tests for step 4 edge cases"""
+
+    def test_step4_empty_json(self, app, client):
+        """Step 4 with empty JSON"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step4_empty_json@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/step/4", json={})
+            assert response.status_code == 200
+
+    def test_step4_whitespace_other(self, app, client):
+        """Step 4 with whitespace-only other field"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step4_whitespace@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post(
+                "/api/v1/screening/step/4", json={"other": "    \n\t  "}
+            )
+            assert response.status_code == 200
+
+    def test_step4_none_other(self, app, client):
+        """Step 4 with None other field"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="step4_none_other@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post(
+                "/api/v1/screening/step/4", json={"grapheme": "yes", "other": None}
+            )
+            assert response.status_code == 200
+
+
+class TestSessionReuse:
+    """Tests for session reuse behavior"""
+
+    def test_multiple_consents_same_session(self, app, client):
+        """Multiple consent calls reuse same session"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="multi_consent@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            r1 = client.post("/api/v1/screening/consent", json={"consent": True})
+            session_id_1 = r1.get_json()["session_id"]
+
+            r2 = client.post("/api/v1/screening/consent", json={"consent": False})
+            session_id_2 = r2.get_json()["session_id"]
+
+            assert session_id_1 == session_id_2
+
+    def test_completed_session_creates_new(self, app, client):
+        """Completed session triggers creation of new session"""
+        with app.app_context():
+            p = Participant(
+                name="Test",
+                email="completed_session@example.com",
+                password_hash=generate_password_hash("pass"),
+            )
+            db.session.add(p)
+            db.session.commit()
+            pid = p.id
+
+            # Create a completed session
+            s = ScreeningSession(
+                participant_id=pid, consent_given=True, status="completed"
+            )
+            db.session.add(s)
+            db.session.commit()
+            old_session_id = s.id
+
+            with client.session_transaction() as sess:
+                sess["user_id"] = pid
+                sess["user_role"] = "participant"
+
+            response = client.post("/api/v1/screening/consent", json={"consent": True})
+            new_session_id = response.get_json()["session_id"]
+
+            # Should create new session since old one is completed
+            assert new_session_id != old_session_id
