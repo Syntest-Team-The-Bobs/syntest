@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { dashboardService } from "../../services/dashboard";
+import "../../styles/researcherdashboard.css";
 
 export default function ParticipantDetailModal({ participantId, onClose }) {
   const [participant, setParticipant] = useState(null);
